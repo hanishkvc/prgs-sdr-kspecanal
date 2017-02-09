@@ -6,6 +6,7 @@
 import rtlsdr
 import cairo
 import os
+import sys
 
 gHeight = 720
 gWidth = 1024
@@ -56,12 +57,24 @@ def plot_xy(pSetup, x, y):
 
 
 sdr = rtlsdr.RtlSdr()
+argCnt = len(sys.argv)
 
-sdr.sample_rate = 1e6
-sdr.center_freq = 91.1e6
+if (argCnt >= 2):
+    sdr.center_freq = sys.argv[1]
+else:
+    sdr.center_freq = 91.1e6
+if (argCnt >= 3):
+    sdr.sample_rate = sys.argv[2]
+else:
+    sdr.sample_rate = 1e6
 #sdr.freq_correction = 0
-sdr.gain = 0
+if (argCnt >= 4):
+    sdr.gain = float(sys.argv[3])
+else:
+    sdr.gain = 0
 print(dir(sdr))
+print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
+print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
 data = sdr.read_samples(1024)
 print(data)
