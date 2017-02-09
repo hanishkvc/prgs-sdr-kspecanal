@@ -11,7 +11,7 @@ import sys
 gHeight = 720
 gWidth = 1024
 
-def minmax(data):
+def minmax_complex(data):
     tMinR = 0.0
     tMaxR = 0.0
     for i in data:
@@ -55,6 +55,10 @@ def plot_xy(pSetup, x, y):
     pCR.set_source_rgb(100, 0, 0)
     plot_dot(pSetup, x, cY, False)
 
+def print_bytes(dBytes):
+    for i in dBytes:
+        print(i, end=" ")
+    print()
 
 sdr = rtlsdr.RtlSdr()
 argCnt = len(sys.argv)
@@ -77,8 +81,13 @@ print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
 print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
 data = sdr.read_samples(1024)
-print(data)
-dMinMax = minmax(data)
+#print(data)
+dMinMax = minmax_complex(data)
+
+dBytes = sdr.read_bytes(64*1024)
+dBytes = sdr.read_bytes(1024)
+print("min[{}], max[{}]".format(min(dBytes), max(dBytes)))
+print_bytes(dBytes)
 print(dMinMax)
 
 # Scale
