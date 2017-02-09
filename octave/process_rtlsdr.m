@@ -8,7 +8,7 @@ function process_rtlsdr(iMode, varargin)
 %             Decimate between these groups
 % the sample files are saved from rtl-sdr
 	numOfFiles = length(varargin)
-	numOfPlotCols = 6
+	numOfPlotCols = 7
 	for i = 1:numOfFiles
 		printf("%d=%s\n", i, varargin{i})
 		dRaw = load_rtlsdr(varargin{i});
@@ -25,26 +25,38 @@ function process_rtlsdr(iMode, varargin)
 		endif
 
 		dReal = real(dComp);
-		dRealFft = fft(dReal);
+		dRealFft = n_fft(dReal);
 		dImag = imag(dComp);
-		dImagFft = fft(dImag);
-		dCompFft = fft(abs(dComp));
+		dImagFft = n_fft(dImag);
+		dAbs = abs(dComp);
+		dAbsFft = n_fft(dAbs);
+		dSum = dReal+dImag;
+		dSumFft = n_fft(dSum);
 
 		indexStart = numOfPlotCols*(i-1)
 		subplot(numOfFiles, numOfPlotCols, indexStart+1)
-		plot(dReal(1:1:1024))
+		plot(dReal)
 		subplot(numOfFiles, numOfPlotCols, indexStart+2)
-		plot(dImag(1:1:1024))
+		plot(dImag)
 		subplot(numOfFiles, numOfPlotCols, indexStart+3)
-		plot(dComp(1:1:1024))
+		plot(dComp)
 		subplot(numOfFiles, numOfPlotCols, indexStart+4)
 		plot(abs(dRealFft))
 		subplot(numOfFiles, numOfPlotCols, indexStart+5)
 		plot(abs(dImagFft))
 		subplot(numOfFiles, numOfPlotCols, indexStart+6)
-		plot(abs(dCompFft))
+		plot(abs(dAbsFft))
+		subplot(numOfFiles, numOfPlotCols, indexStart+7)
+		plot(abs(dSumFft))
 
 		title(varargin{i})
 	endfor
+endfunction
+
+function r=n_fft(d)
+% r=n_fft(d)
+% normalised fft
+	r = fft(d)/length(d);
+	% r(1), r(2), r(end)
 endfunction
 
