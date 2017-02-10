@@ -127,6 +127,7 @@ def rtlsdr_scan(sdr):
     print("Data MinMax [{}]".format(dMinMax))
 
     dataF = np.abs(np.fft.fft(data)/len(data))
+    dataF = dataF[:len(dataF)/2]*2
     dMinMax = minmax(dataF)
     print("DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
     dataF[0] = 0
@@ -135,7 +136,7 @@ def rtlsdr_scan(sdr):
 
     return data, dataF
 
-
+bDisplaySVGFile = False
 def cairoplot_data(dataF, freq, span):
     sPlotSVGFile = "/tmp/plot_{}.svg".format(freq)
     pSetup = cairoplot_setup(sPlotSVGFile)
@@ -156,13 +157,32 @@ def cairoplot_data(dataF, freq, span):
 
     pSetup["CRSurface"].flush()
     pSetup["CRSurface"].finish()
-    os.system("display {}".format(sPlotSVGFile))
+    if (bDisplaySVGFile):
+        os.system("display {}".format(sPlotSVGFile))
 
 
+bModeCentered = False
 def plot_data(sdr, data, dataF):
-    plt.plot(dataF)
+    plt.subplot(2,1,1)
+    plt.plot(data)
+    plt.subplot(2,1,2)
+    fftBins = len(dataF)
+    freqSpan = sdr.sample_rate/2
+    deltaFreq = freqSpan/fftBins
+    if (bModeCentered):
+        startFreq = sdr.center_freq - (freqSpan/2)
+        endFreq = sdr.center_freq + (freqSpan/2)
+    else:
+        startFreq = sdr.center_freq
+        endFreq = sdr.center_freq + freqSpan - deltaFreq
+    freqAxis = np.arange(startFreq, endFreq, deltaFreq)
+    print("StartFreq[{}], CenterFreq[{}], EndFreq[{}], FreqSpan[{}]".format(startFreq, sdr.center_freq, endFreq, freqSpan))
+    print("\tNumOfFFTBins[{}], deltaFreq[{}]".format(fftBins, deltaFreq))
+    print("\tNumOf XPoints[{}], YPoints[{}]".format(len(freqAxis), len(dataF)))
+    plt.plot(freqAxis, dataF)
     plt.show()
-    cairoplot_data(dataF, sdr.center_freq, sdr.sample_rate)
+
+    cairoplot_data(dataF, sdr.center_freq, freqSpan)
 
 
 sdr = rtlsdr_init()
