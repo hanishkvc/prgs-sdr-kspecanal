@@ -7,6 +7,8 @@ import rtlsdr
 import cairo
 import os
 import sys
+import numpy as np
+import matplotlib.pyplot as plt
 
 gHeight = 720
 gWidth = 1024
@@ -19,6 +21,16 @@ def minmax_complex(data):
             tMinR = i.real
         if (tMaxR < i.real):
             tMaxR = i.real
+    return (tMinR, tMaxR)
+
+def minmax_iq(dI, dQ):
+    tMinR = min(min(dI), min(dQ))
+    tMaxR = max(max(dI), max(dQ))
+    return (tMinR, tMaxR)
+
+def minmax(data):
+    tMinR = min(data)
+    tMaxR = max(data)
     return (tMinR, tMaxR)
 
 def plot_setup(dMinMax):
@@ -60,6 +72,22 @@ def print_bytes(dBytes):
         print(i, end=" ")
     print()
 
+def read_iq(numBytes):
+    dBytes = sdr.read_bytes(numBytes)
+    print("min[{}], max[{}]".format(min(dBytes), max(dBytes)))
+    print_bytes(dBytes)
+    dI = np.array(dBytes[::2]) # dBytes[0::2]
+    dQ = np.array(dBytes[1::2])
+    dMinMax = minmax_iq(dI, dQ)
+    return dI, dQ, dMinMax
+
+def read_and_discard():
+    data = sdr.read_samples(4096)
+    #print(data)
+    dMinMax = minmax_complex(data)
+    return data, dMinMax
+
+
 sdr = rtlsdr.RtlSdr()
 argCnt = len(sys.argv)
 
@@ -80,15 +108,21 @@ print(dir(sdr))
 print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
 print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
-data = sdr.read_samples(1024)
-#print(data)
-dMinMax = minmax_complex(data)
+read_and_discard()
 
-dBytes = sdr.read_bytes(64*1024)
-dBytes = sdr.read_bytes(1024)
-print("min[{}], max[{}]".format(min(dBytes), max(dBytes)))
-print_bytes(dBytes)
-print(dMinMax)
+dI, dQ, dMinMax = read_iq(2048)
+data = dI + dQ
+print("Data MinMax [{}]".format(dMinMax))
+
+dataF = np.abs(np.fft.fft(data)/len(data))
+dMinMax = minmax(dataF)
+print("DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
+dataF[0] = 0
+dMinMax = minmax(dataF)
+print("DataFFT MinMax without DCComponent at 0 [{}]".format(dMinMax))
+
+plt.plot(dataF)
+plt.show()
 
 # Scale
 dMinMax = (dMinMax[0]*2, dMinMax[1]*2)
@@ -96,8 +130,8 @@ dMinMax = (dMinMax[0]*2, dMinMax[1]*2)
 pSetup = plot_setup(dMinMax)
 print(pSetup)
 x=1
-for i in data:
-    plot_xy(pSetup, x, i.real)
+for i in dataF:
+    plot_xy(pSetup, x, i)
     x+=1
 
 pSetup[0].flush()
