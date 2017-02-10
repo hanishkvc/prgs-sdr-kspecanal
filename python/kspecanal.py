@@ -87,26 +87,32 @@ def read_and_discard():
     dMinMax = minmax_complex(data)
     return data, dMinMax
 
+def rtlsdr_init():
+    sdr = rtlsdr.RtlSdr()
+    argCnt = len(sys.argv)
 
-sdr = rtlsdr.RtlSdr()
-argCnt = len(sys.argv)
+    if (argCnt >= 2):
+        sdr.center_freq = sys.argv[1]
+    else:
+        sdr.center_freq = 91.1e6
+    if (argCnt >= 3):
+        sdr.sample_rate = sys.argv[2]
+    else:
+        sdr.sample_rate = 1e6
+    #sdr.freq_correction = 0
+    if (argCnt >= 4):
+        sdr.gain = float(sys.argv[3])
+    else:
+        sdr.gain = 0
+    return sdr
 
-if (argCnt >= 2):
-    sdr.center_freq = sys.argv[1]
-else:
-    sdr.center_freq = 91.1e6
-if (argCnt >= 3):
-    sdr.sample_rate = sys.argv[2]
-else:
-    sdr.sample_rate = 1e6
-#sdr.freq_correction = 0
-if (argCnt >= 4):
-    sdr.gain = float(sys.argv[3])
-else:
-    sdr.gain = 0
-print(dir(sdr))
-print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
-print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
+def rtlsdr_info(sdr):
+    print(dir(sdr))
+    print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
+    print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
+
+sdr = rtlsdr_init()
+rtlsdr_info(sdr)
 
 read_and_discard()
 
