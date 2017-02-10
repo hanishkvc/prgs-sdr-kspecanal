@@ -37,21 +37,20 @@ def minmax(data):
     return (tMinR, tMaxR)
 
 
-def plot_setup(dMinMax):
+def cairoplot_setup(sPlotSVGFile):
+    pSetup = {}
     # Get Cairo Context
-    pCRSurface = cairo.SVGSurface("/tmp/t1.svg", gWidth, gHeight)
+    pCRSurface = cairo.SVGSurface(sPlotSVGFile, gWidth, gHeight)
     pCR = cairo.Context(pCRSurface)
     pCR.set_source_rgb(100,100,200)
     pCR.paint()
-    # Calculate the Y Axis details
-    pYMin = dMinMax[0]
-    pYMax = dMinMax[1]
-    pYPerPixel = (pYMax-pYMin)/gHeight
-    return (pCRSurface, pCR, pYMin, pYMax, pYPerPixel)
+    pSetup["CRSurface"] = pCRSurface
+    pSetup["CRContext"] = pCR
+    return pSetup
 
 
-def plot_dot(pSetup, x, y, bRect):
-    pCR = pSetup[1]
+def cairoplot_dot(pSetup, x, y, bRect):
+    pCR = pSetup["CRContext"]
     if (bRect):
         pCR.rectangle(x,y,x+1,y+1)
         pCR.fill()
@@ -61,16 +60,16 @@ def plot_dot(pSetup, x, y, bRect):
         pCR.show_text("*")
 
 
-def plot_xy(pSetup, x, y):
-    pCR = pSetup[1]
-    pYMin = pSetup[2]
-    pYMax = pSetup[3]
-    pYPerPixel = pSetup[4]
+def cairoplot_xy(pSetup, x, y):
+    pCR = pSetup["CRContext"]
+    pYMin = pSetup["YMin"]
+    pYMax = pSetup["YMax"]
+    pYPerPixel = pSetup["YPerPixel"]
     cData = y-pYMin
     cY = cData / pYPerPixel
     #print("plot_xy: {},{} = {},{}".format(x,y,x,cY))
     pCR.set_source_rgb(100, 0, 0)
-    plot_dot(pSetup, x, cY, False)
+    cairoplot_dot(pSetup, x, cY, False)
 
 
 def print_bytes(dBytes):
@@ -134,27 +133,42 @@ def rtlsdr_scan(sdr):
     dMinMax = minmax(dataF)
     print("DataFFT MinMax without DCComponent at 0 [{}]".format(dMinMax))
 
+    return data, dataF
+
+
+def cairoplot_data(dataF, freq, span):
+    sPlotSVGFile = "/tmp/plot_{}.svg".format(freq)
+    pSetup = cairoplot_setup(sPlotSVGFile)
+
+    dMinMax = minmax(dataF)
+    # Scale
+    dMinMax = (dMinMax[0]*2, dMinMax[1]*2)
+    # Calculate the Y Axis details
+    pSetup["YMin"] = pYMin = dMinMax[0]
+    pSetup["YMax"] = pYMax = dMinMax[1]
+    pSetup["YPerPixel"] = (pYMax-pYMin)/gHeight
+    print(pSetup)
+
+    x=1
+    for i in dataF:
+        cairoplot_xy(pSetup, x, i)
+        x+=1
+
+    pSetup["CRSurface"].flush()
+    pSetup["CRSurface"].finish()
+    os.system("display {}".format(sPlotSVGFile))
+
+
+def plot_data(sdr, data, dataF):
     plt.plot(dataF)
     plt.show()
-    return data, dataF, dMinMax
+    cairoplot_data(dataF, sdr.center_freq, sdr.sample_rate)
 
 
 sdr = rtlsdr_init()
 rtlsdr_info(sdr)
 
 read_and_discard(sdr)
-data, dataF, dMinMax = rtlsdr_scan(sdr)
-# Scale
-dMinMax = (dMinMax[0]*2, dMinMax[1]*2)
-
-pSetup = plot_setup(dMinMax)
-print(pSetup)
-x=1
-for i in dataF:
-    plot_xy(pSetup, x, i)
-    x+=1
-
-pSetup[0].flush()
-pSetup[0].finish()
-os.system("display /tmp/t1.svg")
+data, dataF = rtlsdr_scan(sdr)
+plot_data(sdr, data, dataF)
 
