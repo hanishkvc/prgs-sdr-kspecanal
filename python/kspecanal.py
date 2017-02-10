@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 gHeight = 720
 gWidth = 1024
 
+
 def minmax_complex(data):
     tMinR = 0.0
     tMaxR = 0.0
@@ -23,15 +24,18 @@ def minmax_complex(data):
             tMaxR = i.real
     return (tMinR, tMaxR)
 
+
 def minmax_iq(dI, dQ):
     tMinR = min(min(dI), min(dQ))
     tMaxR = max(max(dI), max(dQ))
     return (tMinR, tMaxR)
 
+
 def minmax(data):
     tMinR = min(data)
     tMaxR = max(data)
     return (tMinR, tMaxR)
+
 
 def plot_setup(dMinMax):
     # Get Cairo Context
@@ -44,6 +48,7 @@ def plot_setup(dMinMax):
     pYMax = dMinMax[1]
     pYPerPixel = (pYMax-pYMin)/gHeight
     return (pCRSurface, pCR, pYMin, pYMax, pYPerPixel)
+
 
 def plot_dot(pSetup, x, y, bRect):
     pCR = pSetup[1]
@@ -67,12 +72,14 @@ def plot_xy(pSetup, x, y):
     pCR.set_source_rgb(100, 0, 0)
     plot_dot(pSetup, x, cY, False)
 
+
 def print_bytes(dBytes):
     for i in dBytes:
         print(i, end=" ")
     print()
 
-def read_iq(numBytes):
+
+def read_iq(sdr, numBytes):
     dBytes = sdr.read_bytes(numBytes)
     print("min[{}], max[{}]".format(min(dBytes), max(dBytes)))
     print_bytes(dBytes)
@@ -81,11 +88,13 @@ def read_iq(numBytes):
     dMinMax = minmax_iq(dI, dQ)
     return dI, dQ, dMinMax
 
-def read_and_discard():
+
+def read_and_discard(sdr):
     data = sdr.read_samples(4096)
     #print(data)
     dMinMax = minmax_complex(data)
     return data, dMinMax
+
 
 def rtlsdr_init():
     sdr = rtlsdr.RtlSdr()
@@ -106,30 +115,35 @@ def rtlsdr_init():
         sdr.gain = 0
     return sdr
 
+
 def rtlsdr_info(sdr):
     print(dir(sdr))
     print("GainValues/*DivBy10AndThenUse*/:{}".format(sdr.gain_values))
     print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
+
+def rtlsdr_scan(sdr):
+    dI, dQ, dMinMax = read_iq(sdr, 2048)
+    data = dI + dQ
+    print("Data MinMax [{}]".format(dMinMax))
+
+    dataF = np.abs(np.fft.fft(data)/len(data))
+    dMinMax = minmax(dataF)
+    print("DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
+    dataF[0] = 0
+    dMinMax = minmax(dataF)
+    print("DataFFT MinMax without DCComponent at 0 [{}]".format(dMinMax))
+
+    plt.plot(dataF)
+    plt.show()
+    return data, dataF, dMinMax
+
+
 sdr = rtlsdr_init()
 rtlsdr_info(sdr)
 
-read_and_discard()
-
-dI, dQ, dMinMax = read_iq(2048)
-data = dI + dQ
-print("Data MinMax [{}]".format(dMinMax))
-
-dataF = np.abs(np.fft.fft(data)/len(data))
-dMinMax = minmax(dataF)
-print("DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
-dataF[0] = 0
-dMinMax = minmax(dataF)
-print("DataFFT MinMax without DCComponent at 0 [{}]".format(dMinMax))
-
-plt.plot(dataF)
-plt.show()
-
+read_and_discard(sdr)
+data, dataF, dMinMax = rtlsdr_scan(sdr)
 # Scale
 dMinMax = (dMinMax[0]*2, dMinMax[1]*2)
 
