@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 gHeight = 720
 gWidth = 1024
 
-gDwellTime = 20e-3 #8e-3
-gFftSize = 512
+gDwellTime = 8e-3 # 20e-3
+gFftSize = 2048 # 512
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -239,7 +239,7 @@ def cairoplot_data(dataF, freq, span):
 
 
 gbModeCentered = False
-bDEBUG = False
+iDEBUG = 3
 def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     if (data != None):
         plt.subplot(2,1,1)
@@ -259,16 +259,51 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     print("StartFreq[{}], CenterFreq[{}], EndFreq[{}], FreqSpan[{}]".format(startFreq, centerFreq, endFreq, freqSpan))
     print("\tNumOfFFTBins[{}], deltaFreq[{}]".format(fftBins, deltaFreq))
     print("\tNumOf XPoints[{}], YPoints[{}]".format(len(freqAxis), len(dataF)))
-    #minAmp = 8*(1.0/255)
-    #dprint(2,dataF)
-    #dataF = np.clip(dataF, minAmp*0.9, 2.0)
-    #dataF = 10*np.log10(dataF/minAmp)
-    #dprint(2,dataF)
-    #dataF = -gain + dataF
-    if (bDEBUG):
+    if (iDEBUG == 1):
         plt.subplot(2,1,1)
         plt.semilogy(freqAxis, dataF)
         plt.subplot(2,1,2)
+    elif (iDEBUG == 2):
+        plt.subplot(2,2,1)
+        plt.plot(freqAxis, dataF)
+
+        plt.subplot(2,2,2)
+        minAmp = 8*(1.0/255)
+        #dprint(2,dataF)
+        #dataF = np.clip(dataF, minAmp*0.25, 2.0)
+        dataF1 = 10*np.log10(dataF/minAmp)
+        #dprint(2,dataF)
+        dataF1 = -gain + dataF1
+        plt.plot(freqAxis, dataF1)
+        plt.show()
+    elif (iDEBUG == 3):
+        plt.subplot(2,2,1)
+        plt.plot(freqAxis, dataF)
+        plt.title("dataF")
+
+        plt.subplot(2,2,2)
+        minAmp = (1.0/255)
+        dataF1 = 10*np.log10(dataF/minAmp)
+        plt.plot(freqAxis, dataF1)
+        plt.title("10*log10 wrt 1/255")
+
+        plt.subplot(2,2,3)
+        minAmp = 4*(1.0/255)
+        dataF1 = 10*np.log10(dataF/minAmp)
+        plt.plot(freqAxis, dataF1)
+        plt.title("10*log10 wrt 4/255")
+
+        plt.subplot(2,2,4)
+        minAmp = 16*(1.0/255)
+        dataF1 = 10*np.log10(dataF/minAmp)
+        plt.plot(freqAxis, dataF1)
+        plt.title("10*log10 wrt 16/255")
+
+        plt.show()
+
+    minAmp = (1.0/255)
+    dataF = 10*np.log10(dataF/minAmp)
+    dataF = -gain + dataF
     plt.plot(freqAxis, dataF)
     plt.show()
 
