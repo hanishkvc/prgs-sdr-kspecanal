@@ -239,7 +239,7 @@ def cairoplot_data(dataF, freq, span):
 
 
 gbModeCentered = False
-iDEBUG = 3
+iDEBUG = 4
 def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     if (data != None):
         plt.subplot(2,1,1)
@@ -300,11 +300,21 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
         plt.title("10*log10 wrt 16/255")
 
         plt.show()
+    elif (iDEBUG == 4):
+        plt.subplot(2,1,1)
+        plt.plot(freqAxis, dataF)
+        plt.title("dataF")
 
-    minAmp = (1.0/255)
+        plt.subplot(2,1,2)
+
+    # Because 8bit IQ data, so smallest value sampled is 2/(2**8)
+    # ie 1VUnitpeak-peak i.e -1Vunit to +1Vunit or 1/128
+    minAmp = (2.0/256)
+    dataF = np.clip(dataF, minAmp*0.25, 2.0)
     dataF = 10*np.log10(dataF/minAmp)
     dataF = -gain + dataF
     plt.plot(freqAxis, dataF)
+    plt.title("10*log10 wrt 2/256")
     plt.show()
 
     #cairoplot_data(dataF, centerFreq, freqSpan)
