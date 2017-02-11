@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 gHeight = 720
 gWidth = 1024
 
+gDwellTime = 20e-3 #8e-3
+gFftSize = 512
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -88,16 +90,18 @@ def dprint_bytes(dbgLvl, dBytes):
 
 def read_iq(sdr, numBytes):
     dBytes = sdr.read_bytes(numBytes)
-    print("min[{}], max[{}]".format(min(dBytes), max(dBytes)))
+    dprint(10,"min[{}], max[{}]".format(min(dBytes), max(dBytes)))
     dprint_bytes(10, dBytes)
     dI = np.array(dBytes[::2]) # dBytes[0::2]
     dQ = np.array(dBytes[1::2])
+    dI = (dI - 127)/128
+    dQ = (dQ - 127)/128
     dMinMax = minmax_iq(dI, dQ)
     return dI, dQ, dMinMax
 
 
 def read_and_discard(sdr):
-    data = sdr.read_samples(4096)
+    data = sdr.read_samples(16*1024)
     #print(data)
     dMinMax = minmax_complex(data)
     return data, dMinMax
@@ -171,20 +175,30 @@ def rtlsdr_info(sdr):
 
 
 def rtlsdr_curscan(sdr):
-    dI, dQ, dMinMax = read_iq(sdr, 2048)
-    data = dI + dQ
-    print("Data MinMax [{}]".format(dMinMax))
-
-    dataF = np.abs(np.fft.fft(data)/len(data))
-    dataF = dataF[:len(dataF)/2]*2
-    dataFDC = dataF[0]
-    dataF[0] = 0
+    totalSamples = sdr.sample_rate*gDwellTime
+    decimationCnt = totalSamples/gFftSize
+    if (decimationCnt < 1):
+        print("WARN: dwellTime[{}] leads to totalSamples[{}] less than fftSize[{}], adjusting dwellTime to reach fftSize".format(gDwellTime, totalSamples, gFftSize))
+    decimationCnt = int(np.ceil(decimationCnt))
+    dprint(5,"decimationCnt[{}]".format(decimationCnt))
+    dataFDC = 0
+    dataF = np.zeros(gFftSize/2)
+    for i in range(decimationCnt):
+        dI, dQ, dMinMax = read_iq(sdr, gFftSize*2)
+        data = dI + dQ
+        dataFft = np.abs(np.fft.fft(data)/len(data))
+        dataFft = dataFft[:len(dataFft)/2]*2
+        dataFDC += dataFft[0]
+        dataFft[0] = 1/255
+        dataF += dataFft
+    dataF = dataF/decimationCnt
+    dataFDC = dataFDC/decimationCnt
     dMinMax = minmax(dataF)
 
     dprint(10, "DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
     dprint(2, "DataFFTDC [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataFDC, len(dataF), dMinMax))
 
-    return data, dataF
+    return data, dataF, dataFDC
 
 
 def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
@@ -193,7 +207,7 @@ def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
     dataFAll = np.array([])
     while curFreq < endFreq:
         rtlsdr_setup(sdr, curFreq, sampleRate, gain)
-        data, dataF = rtlsdr_curscan(sdr)
+        data, dataF, dataFDC = rtlsdr_curscan(sdr)
         dataFAll = np.append(dataFAll, dataF)
         cairoplot_data(dataF, curFreq, sampleRate/2)
         curFreq += freqSpan
@@ -225,11 +239,12 @@ def cairoplot_data(dataF, freq, span):
 
 
 gbModeCentered = False
-def plot_data(data, dataF, startOrCenterFreq, freqSpan):
-    plt.subplot(2,1,1)
+bDEBUG = False
+def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     if (data != None):
+        plt.subplot(2,1,1)
         plt.plot(data)
-    plt.subplot(2,1,2)
+        plt.subplot(2,1,2)
     fftBins = len(dataF)
     deltaFreq = freqSpan/fftBins
     if (gbModeCentered):
@@ -240,15 +255,24 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan):
         startFreq = startOrCenterFreq
         centerFreq = startOrCenterFreq + freqSpan/2
         endFreq = startOrCenterFreq + freqSpan
-    #freqAxis = np.arange(startFreq, endFreq, deltaFreq)
     freqAxis = np.linspace(startFreq, endFreq, fftBins)
     print("StartFreq[{}], CenterFreq[{}], EndFreq[{}], FreqSpan[{}]".format(startFreq, centerFreq, endFreq, freqSpan))
     print("\tNumOfFFTBins[{}], deltaFreq[{}]".format(fftBins, deltaFreq))
     print("\tNumOf XPoints[{}], YPoints[{}]".format(len(freqAxis), len(dataF)))
+    #minAmp = 8*(1.0/255)
+    #dprint(2,dataF)
+    #dataF = np.clip(dataF, minAmp*0.9, 2.0)
+    #dataF = 10*np.log10(dataF/minAmp)
+    #dprint(2,dataF)
+    #dataF = -gain + dataF
+    if (bDEBUG):
+        plt.subplot(2,1,1)
+        plt.semilogy(freqAxis, dataF)
+        plt.subplot(2,1,2)
     plt.plot(freqAxis, dataF)
     plt.show()
 
-    cairoplot_data(dataF, centerFreq, freqSpan)
+    #cairoplot_data(dataF, centerFreq, freqSpan)
 
 
 handle_args()
@@ -267,13 +291,13 @@ if (gArgs["mode"] == "FULL_SPAN") or (gArgs["mode"] == "SCAN"):
         freqArg =  (endFreq+startFreq)/2
     else:
         freqArg = startFreq
-    plot_data(None, dataF, freqArg, (endFreq-startFreq))
+    plot_data(None, dataF, freqArg, (endFreq-startFreq), gain)
 else:
-    centerFreq = gArgs["centerFreq"]
+    centerFreq = float(gArgs["centerFreq"])
     sampleRate = float(gArgs["sampleRate"])
     gain = gArgs["gain"]
     print("Mode[{}], centerFreq[{}], sampleRate[{}], gain[{}]".format(gArgs["mode"], centerFreq, sampleRate, gain))
     rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
-    data, dataF = rtlsdr_curscan(sdr)
-    plot_data(data, dataF, sdr.center_freq, sdr.sample_rate/2)
+    data, dataF, dataFDC = rtlsdr_curscan(sdr)
+    plot_data(data, dataF, sdr.center_freq, sdr.sample_rate/2, gain)
 
