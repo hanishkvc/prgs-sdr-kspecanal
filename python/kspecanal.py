@@ -16,6 +16,7 @@ gWidth = 1024
 gDwellTime = 8e-3 # 20e-3
 gFftSize = 2048 # 512
 gbLivePlot = True
+gbAdaptiveFixedYAxisZeroSpanPlot = False
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -236,6 +237,8 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
     dataFAll = np.array([])
     rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
     iCnt = 0
+    ymin = 1.0
+    ymax = 0.0
     while True:
         data, dataF, dataFDC = rtlsdr_curscan(sdr)
         if (iCnt == 0):
@@ -246,7 +249,11 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
             dataFAll /= 2
         cairoplot_data(dataF, centerFreq, sampleRate/2)
         if (gbLivePlot):
+            ymin = min(ymin,min(dataFAll))
+            ymax = max(ymax,max(dataFAll))
             plt.cla()
+            if (gbAdaptiveFixedYAxisZeroSpanPlot):
+                plt.ylim(ymin, ymax)
             if (gbModeCentered):
                 freqAxis = np.linspace(startFreq, endFreq, len(dataFAll))
             else:
