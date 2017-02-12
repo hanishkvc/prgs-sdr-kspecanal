@@ -15,6 +15,7 @@ gWidth = 1024
 
 gDwellTime = 8e-3 # 20e-3
 gFftSize = 2048 # 512
+gbLivePlot = True
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -201,9 +202,8 @@ def rtlsdr_curscan(sdr):
     return data, dataF, dataFDC
 
 
-bLivePlot = True
 def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
-    if (bLivePlot):
+    if (gbLivePlot):
         pf = plt.figure()
         plt.show(block=False)
     freqSpan = sampleRate/2
@@ -214,16 +214,50 @@ def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
         data, dataF, dataFDC = rtlsdr_curscan(sdr)
         dataFAll = np.append(dataFAll, dataF)
         cairoplot_data(dataF, curFreq, sampleRate/2)
-        if (bLivePlot):
+        if (gbLivePlot):
             plt.cla()
             freqAxis = np.linspace(startFreq, curFreq+freqSpan, len(dataFAll))
             plt.plot(freqAxis, dataFAll)
             plt.pause(0.001)
         curFreq += freqSpan
-    if (bLivePlot):
+    if (gbLivePlot):
         input("Press any key...")
         plt.close(pf)
     return dataFAll
+
+
+def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
+    if (gbLivePlot):
+        pf = plt.figure()
+        plt.show(block=False)
+    freqSpan = sampleRate/2
+    startFreq = centerFreq - freqSpan/2
+    endFreq = centerFreq + freqSpan/2
+    dataFAll = np.array([])
+    rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
+    iCnt = 0
+    while True:
+        data, dataF, dataFDC = rtlsdr_curscan(sdr)
+        if (iCnt == 0):
+            dataFAll = dataF
+            iCnt += 1
+        else:
+            dataFAll += dataF
+            dataFAll /= 2
+        cairoplot_data(dataF, centerFreq, sampleRate/2)
+        if (gbLivePlot):
+            plt.cla()
+            if (gbModeCentered):
+                freqAxis = np.linspace(startFreq, endFreq, len(dataFAll))
+            else:
+                freqAxis = np.linspace(centerFreq, centerFreq+freqSpan, len(dataFAll))
+            plt.plot(freqAxis, dataFAll)
+            plt.pause(0.001)
+    if (gbLivePlot):
+        input("Press any key...")
+        plt.close(pf)
+    return dataFAll
+
 
 bDisplaySVGFile = False
 def cairoplot_data(dataF, freq, span):
@@ -372,7 +406,10 @@ else:
     sampleRate = float(gArgs["sampleRate"])
     gain = gArgs["gain"]
     print("Mode[{}], centerFreq[{}], sampleRate[{}], gain[{}]".format(gArgs["mode"], centerFreq, sampleRate, gain))
-    rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
-    data, dataF, dataFDC = rtlsdr_curscan(sdr)
-    plot_data(data, dataF, sdr.center_freq, sdr.sample_rate/2, gain)
+    if (gbLivePlot):
+        rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain)
+    else:
+        rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
+        data, dataF, dataFDC = rtlsdr_curscan(sdr)
+        plot_data(data, dataF, sdr.center_freq, sdr.sample_rate/2, gain)
 
