@@ -201,7 +201,11 @@ def rtlsdr_curscan(sdr):
     return data, dataF, dataFDC
 
 
+bLivePlot = True
 def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
+    if (bLivePlot):
+        pf = plt.figure()
+        plt.show(block=False)
     freqSpan = sampleRate/2
     curFreq = startFreq
     dataFAll = np.array([])
@@ -210,7 +214,15 @@ def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
         data, dataF, dataFDC = rtlsdr_curscan(sdr)
         dataFAll = np.append(dataFAll, dataF)
         cairoplot_data(dataF, curFreq, sampleRate/2)
+        if (bLivePlot):
+            plt.cla()
+            freqAxis = np.linspace(startFreq, curFreq+freqSpan, len(dataFAll))
+            plt.plot(freqAxis, dataFAll)
+            plt.pause(0.001)
         curFreq += freqSpan
+    if (bLivePlot):
+        input("Press any key...")
+        plt.close(pf)
     return dataFAll
 
 bDisplaySVGFile = False
