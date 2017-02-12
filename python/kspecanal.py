@@ -239,7 +239,7 @@ def cairoplot_data(dataF, freq, span):
 
 
 gbModeCentered = False
-iDEBUG = 4
+iDEBUG = 0
 def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     if (data != None):
         plt.subplot(2,1,1)
@@ -259,7 +259,13 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     print("StartFreq[{}], CenterFreq[{}], EndFreq[{}], FreqSpan[{}]".format(startFreq, centerFreq, endFreq, freqSpan))
     print("\tNumOfFFTBins[{}], deltaFreq[{}]".format(fftBins, deltaFreq))
     print("\tNumOf XPoints[{}], YPoints[{}]".format(len(freqAxis), len(dataF)))
-    if (iDEBUG == 1):
+    if (iDEBUG == 0):
+        plt.subplot(2,1,1)
+        plt.plot(freqAxis, dataF)
+        plt.title("dataF")
+
+        plt.subplot(2,1,2)
+    elif (iDEBUG == 1):
         plt.subplot(2,1,1)
         plt.semilogy(freqAxis, dataF)
         plt.subplot(2,1,2)
@@ -307,10 +313,22 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
 
         plt.subplot(2,1,2)
 
+        # Because 8bit IQ data, so smallest value sampled is 2/(2**8)
+        # ie 1VUnitpeak-peak i.e -1Vunit to +1Vunit or 1/128
+        minAmp = (2.0/256)
+        dataF = np.clip(dataF, minAmp*0.25, 2.0)
+        dataF = 10*np.log10(dataF/minAmp)
+        dataF = -gain + dataF
+        plt.plot(freqAxis, dataF)
+        plt.title("10*log10 wrt 2/256")
+        plt.show()
+
+
+
     # Because 8bit IQ data, so smallest value sampled is 2/(2**8)
     # ie 1VUnitpeak-peak i.e -1Vunit to +1Vunit or 1/128
     minAmp = (2.0/256)
-    dataF = np.clip(dataF, minAmp*0.25, 2.0)
+    dataF = dataF + minAmp*0.33
     dataF = 10*np.log10(dataF/minAmp)
     dataF = -gain + dataF
     plt.plot(freqAxis, dataF)
