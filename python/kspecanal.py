@@ -15,8 +15,8 @@ import pickle
 gHeight = 720
 gWidth = 1024
 
-gDwellTime = 8e-3 # 20e-3
-gFftSize = 2048 # 512
+gDwellTime = 16e-3 #32e-3 # 20e-3
+gFftSize = 2048 #2048 #4096 # 512
 gbLivePlot = True
 gbAdaptiveFixedYAxisZeroSpanPlot = True
 
@@ -181,10 +181,11 @@ def rtlsdr_info(sdr):
 def rtlsdr_curscan(sdr):
     totalSamples = sdr.sample_rate*gDwellTime
     decimationCnt = totalSamples/gFftSize
+    fftRBW = (sdr.sample_rate/2)/(gFftSize/2)
     if (decimationCnt < 1):
         print("WARN: dwellTime[{}] leads to totalSamples[{}] less than fftSize[{}], adjusting dwellTime to reach fftSize".format(gDwellTime, totalSamples, gFftSize))
     decimationCnt = int(np.ceil(decimationCnt))
-    dprint(5,"decimationCnt[{}]".format(decimationCnt))
+    dprint(5,"decimationCnt[{}] fftRBW=[{}]".format(decimationCnt, fftRBW))
     dataFDC = 0
     dataF = np.zeros(gFftSize/2)
     for i in range(decimationCnt):
@@ -193,7 +194,7 @@ def rtlsdr_curscan(sdr):
         dataFft = np.abs(np.fft.fft(data)/len(data))
         dataFft = dataFft[:len(dataFft)/2]*2
         dataFDC += dataFft[0]
-        dataFft[0] = 1/255
+        dataFft[0] = 1/(256*2)
         dataF += dataFft
     dataF = dataF/decimationCnt
     dataFDC = dataFDC/decimationCnt
@@ -224,7 +225,7 @@ def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
             plt.pause(0.001)
         curFreq += freqSpan
     if (gbLivePlot):
-        input("Press any key...")
+        #input("Press any key...")
         plt.close(pf)
     return dataFAll
 
@@ -384,20 +385,21 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
 
     # Because 8bit IQ data, so smallest value sampled is 2/(2**8)
     # ie 1VUnitpeak-peak i.e -1Vunit to +1Vunit or 1/128
-    minAmp = (2.0/256)
+    minAmp = (1.0/256)
     dataF = dataF + minAmp*0.33
     dataF = 10*np.log10(dataF/minAmp)
     dataF = -gain + dataF
     plt.plot(freqAxis, dataF)
     plt.grid()
-    plt.title("10*log10 wrt 2/256")
+    plt.title("10*log10 wrt 1/256")
     plt.show()
 
     #cairoplot_data(dataF, centerFreq, freqSpan)
 
 
 def save_plot(dataFft, startOrCenterFreq, freqSpan, gain):
-    t=time.gmtime()
+    #t=time.gmtime()
+    t=time.localtime()
     sFName="/tmp/scan_{}{:02}{:02}_{:02}{:02}.pickle".format(t.tm_year,t.tm_mon,t.tm_mday,t.tm_hour,t.tm_min)
     fSave = open(sFName,"wb+")
     d={}
