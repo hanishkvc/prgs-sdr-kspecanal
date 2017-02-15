@@ -9,6 +9,8 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import pickle
 
 gHeight = 720
 gWidth = 1024
@@ -16,7 +18,7 @@ gWidth = 1024
 gDwellTime = 8e-3 # 20e-3
 gFftSize = 2048 # 512
 gbLivePlot = True
-gbAdaptiveFixedYAxisZeroSpanPlot = False
+gbAdaptiveFixedYAxisZeroSpanPlot = True
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -316,6 +318,7 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     if (iDEBUG == 0):
         plt.subplot(2,1,1)
         plt.plot(freqAxis, dataF)
+        plt.grid()
         plt.title("dataF")
 
         plt.subplot(2,1,2)
@@ -386,10 +389,25 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     dataF = 10*np.log10(dataF/minAmp)
     dataF = -gain + dataF
     plt.plot(freqAxis, dataF)
+    plt.grid()
     plt.title("10*log10 wrt 2/256")
     plt.show()
 
     #cairoplot_data(dataF, centerFreq, freqSpan)
+
+
+def save_plot(dataFft, startOrCenterFreq, freqSpan, gain):
+    t=time.gmtime()
+    sFName="/tmp/scan_{}{:02}{:02}_{:02}{:02}.pickle".format(t.tm_year,t.tm_mon,t.tm_mday,t.tm_hour,t.tm_min)
+    fSave = open(sFName,"wb+")
+    d={}
+    d['freq']=startOrCenterFreq
+    d['span']=freqSpan
+    d['gain']=gain
+    d['data']=dataFft
+    pickle.dump(d,fSave)
+    fSave.close()
+
 
 
 handle_args()
@@ -409,6 +427,7 @@ if (gArgs["mode"] == "FULL_SPAN") or (gArgs["mode"] == "SCAN"):
     else:
         freqArg = startFreq
     plot_data(None, dataF, freqArg, (endFreq-startFreq), gain)
+    save_plot(dataF, freqArg, (endFreq-startFreq), gain)
 else:
     centerFreq = float(gArgs["centerFreq"])
     sampleRate = float(gArgs["sampleRate"])
