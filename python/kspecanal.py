@@ -247,7 +247,6 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
         else:
             dataFAll += dataF
             dataFAll /= 2
-        cairoplot_data(dataF, centerFreq, sampleRate/2)
         if (gbLivePlot):
             ymin = min(ymin,min(dataFAll))
             ymax = max(ymax,max(dataFAll))
@@ -260,6 +259,8 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
                 freqAxis = np.linspace(centerFreq, centerFreq+freqSpan, len(dataFAll))
             plt.plot(freqAxis, dataFAll)
             plt.pause(0.001)
+        else:
+            cairoplot_data(dataF, centerFreq, sampleRate/2)
     if (gbLivePlot):
         input("Press any key...")
         plt.close(pf)
