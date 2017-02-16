@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 
 sr = 10e3
 totalTime = 2
-t = np.arange(0, totalTime, 1/sr)
+t = np.arange(0+0.137, totalTime+0.137, 1/sr)
 
-s1k = np.sin(2*np.pi*1e3*t)
-s2k = np.sin(2*np.pi*2e3*t)
+s10k = np.sin(2*np.pi*1e3*t)
+s20k = np.sin(2*np.pi*2e3*t)
+s17k = np.sin(2*np.pi*1.7e3*t)
 
-s=s1k+s2k
+s=s10k+s20k+s17k
 
 def do_fft(s, startFreq, endFreq, sr):
     f=np.fft.fft(s)
