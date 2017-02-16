@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sr = 10e3
-totalTime = 2
+totalTime = 3 #4
 t = np.arange(0+0.137, totalTime+0.137, 1/sr)
 
 s10k = np.sin(2*np.pi*1e3*t)
@@ -24,8 +24,8 @@ def do_fft(s, startFreq, endFreq, sr):
     plt.title("sampleLen[{}]".format(len(s)))
 
 def exp_fft(s, startFreq, endFreq, sr):
-    for i in range(1,9):
-        plt.subplot(4,2,i)
+    for i in range(1,21):
+        plt.subplot(5,4,i)
         do_fft(s[0:len(s)/i], startFreq, endFreq, sr)
     plt.show()
 
