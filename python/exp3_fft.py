@@ -66,15 +66,19 @@ def do_fft(s, startFreq, endFreq, sr):
     check_fftresult(f, dataLen, sr)
 
 def exp_fft(s, startFreq, endFreq, sr):
-    for i in range(1,21):
-        plt.subplot(5,4,i)
+    for i in range(1, gLoopCnt):
+        plt.subplot(gPlotRows,4,2*i-1)
+        plt.plot(s[0:len(s)/i])
+        plt.subplot(gPlotRows,4,2*i)
         do_fft(s[0:len(s)/i], startFreq, endFreq, sr)
     # dpi option to savefig didn't seem to help in anyway for ps files
     # Most probably dpi is used for image based formats like svg
     # while papertype seems to help for ps
-    plt.savefig("/tmp/exp3_fft.ps", papertype="a2", orientation="landscape")
+    plt.savefig("/tmp/exp3_fft.pdf")
     #plt.show()
 
-plt.figure(num=1, figsize=(26,20))
+gLoopCnt = 51
+gPlotRows = gLoopCnt/2
+plt.figure(num=1, figsize=(24,gPlotRows*4))
 exp_fft(s, 0, sr/2, sr)
 
