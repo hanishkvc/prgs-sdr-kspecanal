@@ -58,5 +58,6 @@ function r=n_fft(d)
 % normalised fft
 	r = fft(d)/length(d);
 	% r(1), r(2), r(end)
+	r = r(1:end/2);
 endfunction
 
