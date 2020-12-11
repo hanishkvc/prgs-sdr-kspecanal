@@ -75,7 +75,7 @@ def check_fftresult(fftD, dataLen, sr):
 
 def do_fft(s, dataLen, startFreq, endFreq, sr):
     ratio = sr/dataLen
-    f = np.zeros(dataLen/2)
+    f = np.zeros(int(dataLen/2))
     iCnt = max(int(ratio),1)
     for i in range(0, iCnt):
         iStart = i*dataLen
@@ -85,9 +85,9 @@ def do_fft(s, dataLen, startFreq, endFreq, sr):
         fT=abs(fT)
         fT=fT/len(fT)
         if (i == 0):
-            f = fT[0:len(fT)/2]
+            f = fT[0:int(len(fT)/2)]
         else:
-            f=(f+fT[0:len(fT)/2])/2
+            f=(f+fT[0:int(len(fT)/2)])/2
     fr=np.linspace(startFreq, endFreq,len(f))
     plt.plot(fr,f)
     plt.grid()
@@ -97,7 +97,7 @@ def do_fft(s, dataLen, startFreq, endFreq, sr):
 def exp_fft(s, startFreq, endFreq, sr):
     for i in range(1, gLoopCnt):
         plt.subplot(gPlotRows,4,2*i-1)
-        plt.plot(s[0:len(s)/i])
+        plt.plot(s[0:int(len(s)/i)])
         plt.subplot(gPlotRows,4,2*i)
         do_fft(s, int(len(s)/i), startFreq, endFreq, sr)
     # dpi option to savefig didn't seem to help in anyway for ps files
