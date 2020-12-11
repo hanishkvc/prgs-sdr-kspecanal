@@ -7,8 +7,16 @@ sr = 1024
 sr = 10e3
 totalTime = 4
 totalTime = 3
+maxTestFreq = 5e3
+
+skipStartFreq = np.random.rand(1)*maxTestFreq
+skipWidth = 50
+bSkipInBtw = True
+if bSkipInBtw:
+    input("Skip: Start[{}], Width[{}]".format(skipStartFreq, skipWidth))
+
 sampleStartTime = np.random.rand(1)
-print("sampleStartTime[{}]".format(sampleStartTime))
+input("sampleStartTime[{}]".format(sampleStartTime))
 t = np.arange(0+sampleStartTime, totalTime+sampleStartTime, 1/sr)
 
 s10k = np.sin(2*np.pi*1e3*t)
@@ -30,7 +38,11 @@ s47k = np.sin(2*np.pi*4.7e3*t)
 
 s=s10k+s20k+s17k+s27k+s30k+s31k+s32k+s33k+s34k+s35k+s36k+s37k+s38k+s39k+s40k+s47k
 s=0
-for i in np.arange(0,5e3,0.1e3):
+for i in np.arange(0, maxTestFreq, 0.1e3):
+    if bSkipInBtw:
+        m = i % skipStartFreq
+        if (m < skipWidth):
+            continue
     sT=np.sin(2*np.pi*i*t)
     if (i == 0):
         s = sT
