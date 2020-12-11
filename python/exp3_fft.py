@@ -7,10 +7,11 @@ sr = 1024
 sr = 10e3
 totalTime = 4
 totalTime = 3
-maxTestFreq = 5e3
+maxTestFreq = sr/2
+deltaBtwTestFreqs = 0.1e3
 
 skipStartFreq = np.random.rand(1)*maxTestFreq
-skipWidth = 50
+skipWidth = deltaBtwTestFreqs*2
 bSkipInBtw = True
 if bSkipInBtw:
     input("Skip: Start[{}], Width[{}]".format(skipStartFreq, skipWidth))
@@ -38,7 +39,7 @@ s47k = np.sin(2*np.pi*4.7e3*t)
 
 s=s10k+s20k+s17k+s27k+s30k+s31k+s32k+s33k+s34k+s35k+s36k+s37k+s38k+s39k+s40k+s47k
 s=0
-for i in np.arange(0, maxTestFreq, 0.1e3):
+for i in np.arange(0, maxTestFreq, deltaBtwTestFreqs):
     if bSkipInBtw:
         m = i % skipStartFreq
         if (m < skipWidth):
@@ -103,7 +104,7 @@ def do_fft(s, dataLen, startFreq, endFreq, sr):
     fr=np.linspace(startFreq, endFreq,len(f))
     plt.plot(fr,f)
     plt.grid()
-    plt.title("sampleLen[{}], ratioWithSR[{}]".format(dataLen, ratio))
+    plt.title("sampleLen[{}], ratioWrtSR[{}]".format(dataLen, 1/ratio))
     check_fftresult(f, dataLen, sr)
 
 def exp_fft(s, startFreq, endFreq, sr):
@@ -122,4 +123,5 @@ gLoopCnt = 61
 gPlotRows = gLoopCnt/2
 plt.figure(num=1, figsize=(24,gPlotRows*4))
 exp_fft(s, 0, sr/2, sr)
-
+if bSkipInBtw:
+    print("Skip: Start[{}], Width[{}]".format(skipStartFreq, skipWidth))
