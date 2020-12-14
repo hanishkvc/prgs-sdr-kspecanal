@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 # Setup parameters
 sr = 80
-f = 2
+f1 = 2
+f2 = 8
 startTime = 0
 endTime = 10
 
@@ -31,11 +32,13 @@ def plot_fft(fftN):
     '''
     fftN = fftN[:int(len(fftN)/2)]
     freqs = np.linspace(0, sr/2, len(fftN))
-    plt.plot(freqs, fftN)
+    plt.plot(freqs, fftN, ".-")
 
 
 # Generate the signal
-s = np.sin(2*np.pi*f*t)
+s1 = np.sin(2*np.pi*f1*t)
+s2 = np.sin(2*np.pi*f2*t)
+s = s1 + s2
 print("NumOfSamples:", len(s))
 plt.subplot(nRows, nCols, 1)
 plt.plot(s)
@@ -84,7 +87,7 @@ for i in range(0, 10):
     plt.subplot(nRows, nCols, 7+i*4)
     plt.plot(sT)
     plt.subplot(nRows, nCols, 8+i*4)
-    plot_fft(fftN)
+    plot_fft(fftN*2.5)
     if winFftMaxMin > max(fftN):
         winFftMaxMin = max(fftN)
     if winFftMaxMax < max(fftN):
