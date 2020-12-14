@@ -94,6 +94,7 @@ def do_fft(s, dataLen, startFreq, endFreq, sr):
         iStart = i*dataLen
         print("DBG:{}:iStart[{}]".format(i, iStart))
         sT = s[iStart:iStart+dataLen]
+        sT = sT*np.kaiser(len(sT),8)
         fT=np.fft.fft(sT)
         fT=abs(fT)
         fT=fT/len(fT)
