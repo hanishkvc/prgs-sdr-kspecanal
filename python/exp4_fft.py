@@ -79,11 +79,17 @@ def do_it(s, i=1, r=nRows, c=nCols, msg=None):
 
 def do_it_sliding(s, winSize=0.5, pi=1, r=nRows, c=nCols, msg=None):
     winSamples = int(winSize*sr)
-    numLoops = int(len(s)/winSamples)
+    numLoops = int(len(s)/(winSamples*0.1))
     fftNCum = np.zeros(winSamples)
     fftWNCum = np.zeros(winSamples)
     for i in range(numLoops):
-        sT = s[i*winSamples:(i+1)*winSamples]
+        startIndex = int(i*winSamples*0.1)
+        endIndex = startIndex + winSamples
+        #sT = s[i*winSamples:(i+1)*winSamples]
+        sT = s[startIndex:endIndex]
+        if len(sT) < winSamples:
+            break
+        print("doitslid:", startIndex, endIndex)
         sT,fftN, sW, fftWN = fft_ex(sT)
         fftNCum = fftNCum + np.abs(fftN)
         fftWNCum = fftWNCum + np.abs(fftWN)
