@@ -78,11 +78,11 @@ def do_it(s, i=1, r=nRows, c=nCols, msg=None):
 
 
 # Generate the signal
-s1 = np.sin(2*np.pi*f1*t)
+s1 = 1*np.sin(2*np.pi*f1*t)
 do_it(s1,1, msg="s1")
-s2 = np.sin(2*np.pi*f2*t)
+s2 = 1*np.sin(2*np.pi*f2*t)
 do_it(s2,5, msg="s2")
-s3 = np.sin(2*np.pi*f3*t)
+s3 = 2*np.sin(2*np.pi*f3*t)
 do_it(s3,9, msg="s3")
 s = s1 + s2 + s3
 do_it(s,13)
