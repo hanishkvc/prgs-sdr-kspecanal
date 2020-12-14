@@ -19,8 +19,8 @@ t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 
 
 # set plot params
-nRows = 2
-nCols = 3
+nRows = 11
+nCols = 4
 
 
 def plot_fft(fftN):
@@ -50,6 +50,29 @@ plt.subplot(nRows, nCols, 3)
 plt.plot(np.kaiser(sr, 0))
 plt.plot(np.hanning(sr))
 plt.plot(np.kaiser(sr, 8))
+
+
+# Check Fft with X.y cycles - ie partial cycle impact
+for i in range(0, 10):
+    endIndex = int(sr*(5+(i/20)))
+    # Plot Raw signal and fft
+    sT = s[0:endIndex]
+    print(endIndex, len(sT))
+    fftN = np.abs(np.fft.fft(sT)/len(sT))
+    plt.subplot(nRows, nCols, 5+i*4)
+    plt.plot(sT)
+    plt.subplot(nRows, nCols, 6+i*4)
+    plot_fft(fftN)
+    print(max(fftN))
+    # Plot Windowed signal and fft
+    win = np.hanning(len(sT))
+    sT = sT*win
+    fftN = np.abs(np.fft.fft(sT)/len(sT))
+    plt.subplot(nRows, nCols, 7+i*4)
+    plt.plot(sT)
+    plt.subplot(nRows, nCols, 8+i*4)
+    plot_fft(fftN)
+    print(max(fftN))
 
 
 # Show the plots
