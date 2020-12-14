@@ -12,7 +12,7 @@ f1 = 2
 f2 = 8
 f3 = 38
 startTime = 0
-endTime = 2
+endTime = 8
 
 
 # Generate time units
@@ -91,9 +91,9 @@ def do_it_sliding(s, winSize=0.5, pi=1, r=nRows, c=nCols, msg=None):
             break
         print("doitslid:", startIndex, endIndex)
         sT,fftN, sW, fftWN = fft_ex(sT)
-        fftNCum = fftNCum + np.abs(fftN)
-        fftWNCum = fftWNCum + np.abs(fftWN)
-    plot_it(s, fftNCum*1/numLoops, sW, fftWNCum*1/numLoops, r, c, pi)
+        fftNCum = (fftNCum + np.abs(fftN))*0.5
+        fftWNCum = (fftWNCum + np.abs(fftWN))*0.5
+    plot_it(s, fftNCum, sW, fftWNCum, r, c, pi)
     return fftNCum, fftWNCum
 
 
@@ -135,7 +135,7 @@ def fftmax_minmax(dFftMax, fftN, fftWN):
 # while partial seconds correspond to partial cycle of the signal in the test sample.
 startSec = 0
 startSec = 0.6
-endSec = 1
+endSec = 1.6
 for i in range(0, 10):
     startIndex = int(sr*startSec)
     endIndex = int(sr*(endSec+(i/20)))
@@ -154,7 +154,7 @@ for i in range(0, 10):
     startIndex = int(sr*(startSec+(i/20)))
     sT = s[startIndex:]
     print(startIndex, len(sT))
-    fftN, fftWN = do_it_sliding(sT, 0.3, 21+i*4)
+    fftN, fftWN = do_it_sliding(sT, 1.0, 21+i*4)
 
 
 # Show the plots

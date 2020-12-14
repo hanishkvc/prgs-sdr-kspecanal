@@ -1,7 +1,32 @@
 #!/bin/env python3
 # kSpecAnal - A Spectrum Analyser
-# v20170211_1342, HanishKVC
+# v20201214_1415, HanishKVC
 #
+
+''' Note
+
+This is currently setup to check how things behave in few specific cases,
+while at same time having a related freq spectrum view.
+
+For a more useful simple run, it maybe better to change the logic to
+one or more of below
+
+Set0
+* have FftSize equal to the full Sampling rate
+* set the DwellTime variable of the logic to 1
+
+Set1 - if only having a second of data
+* Use a window function like hanning or kaiser on the sample data before fft
+
+Set2 - if having few seconds of data
+* for non zero span modes maybe go for a overlaped sliding window logic.
+  Even the simple rectangular window function (i.e no processing of time domain
+  data before fft) is good enough.
+
+Exp4_fft, gives a good set of data points to show the above.
+
+'''
+
 
 import rtlsdr
 import cairo
