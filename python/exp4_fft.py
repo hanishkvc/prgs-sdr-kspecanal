@@ -77,6 +77,20 @@ def do_it(s, i=1, r=nRows, c=nCols, msg=None):
     return fftN, fftWN
 
 
+def do_it_sliding(s, winSize=0.5, pi=1, r=nRows, c=nCols, msg=None):
+    winSamples = int(winSize*sr)
+    numLoops = int(len(s)/winSamples)
+    fftNCum = np.zeros(winSamples)
+    fftWNCum = np.zeros(winSamples)
+    for i in range(numLoops):
+        sT = s[i*winSamples:(i+1)*winSamples]
+        sT,fftN, sW, fftWN = fft_ex(sT)
+        fftNCum = fftNCum + np.abs(fftN)
+        fftWNCum = fftWNCum + np.abs(fftWN)
+    plot_it(s, fftNCum*1/numLoops, sW, fftWNCum*1/numLoops, r, c, pi)
+    return fftNCum, fftWNCum
+
+
 # Generate the signal
 s1 = 1*np.sin(2*np.pi*f1*t)
 do_it(s1,1, msg="s1")
@@ -126,6 +140,15 @@ for i in range(0, 10):
     fftmax_minmax(dFftMax, fftN, fftWN)
 print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
 print("Win", dFftMax['win']['max']/dFftMax['win']['min'])
+
+
+# Working with smaller than a second of data
+startSec = 0.6
+for i in range(0, 10):
+    startIndex = int(sr*(startSec+(i/20)))
+    sT = s[startIndex:]
+    print(startIndex, len(sT))
+    fftN, fftWN = do_it_sliding(sT, 0.3, 21+i*4)
 
 
 # Show the plots
