@@ -113,12 +113,15 @@ def fftmax_minmax(dFftMax, fftN, fftWN):
 # Check Fft with X.y cycles - ie partial cycle impact
 # as the test signal starts at time 0, so also full seconds correspond to full cycles.
 # while partial seconds correspond to partial cycle of the signal in the test sample.
-fullSecs = 1
+startSec = 0
+startSec = 0.6
+endSec = 1
 for i in range(0, 10):
-    endIndex = int(sr*(fullSecs+(i/20)))
+    startIndex = int(sr*startSec)
+    endIndex = int(sr*(endSec+(i/20)))
     # Plot Raw signal and fft
-    sT = s[0:endIndex]
-    print(endIndex, len(sT))
+    sT = s[startIndex:endIndex]
+    print(startIndex, endIndex, len(sT))
     fftN, fftWN = do_it(sT, 21+i*4)
     fftmax_minmax(dFftMax, fftN, fftWN)
 print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
