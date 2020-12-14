@@ -57,6 +57,7 @@ plt.subplot(nRows, nCols, 3)
 plt.plot(np.kaiser(sr, 0))
 plt.plot(np.hanning(sr))
 plt.plot(np.kaiser(sr, 8))
+plt.plot(np.kaiser(sr, 15))
 
 
 rawFftMaxMin = 10
@@ -84,7 +85,7 @@ for i in range(0, 10):
     print(max(fftN))
     # Plot Windowed signal and fft
     #win = np.hanning(len(sT))
-    win = np.kaiser(len(sT),8)
+    win = np.kaiser(len(sT),15)
     sT = sT*win
     fftN = np.abs(np.fft.fft(sT)/len(sT))
     plt.subplot(nRows, nCols, 7+i*4)
