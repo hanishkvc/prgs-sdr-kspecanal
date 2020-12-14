@@ -69,7 +69,9 @@ def plot_it(s, fftN, sW, fftWN, r=nRows, c=nCols, i=1):
     plot_fft(fftWN)
 
 
-def do_it(s, i=1, r=nRows, c=nCols):
+def do_it(s, i=1, r=nRows, c=nCols, msg=None):
+    if msg != None:
+        print("{}:AreaUnderAmps[{}]".format(msg, np.sum(np.abs(s))))
     s,fftN, sW, fftWN = fft_ex(s)
     plot_it(s, fftN, sW, fftWN, r, c, i)
     return fftN, fftWN
@@ -77,11 +79,11 @@ def do_it(s, i=1, r=nRows, c=nCols):
 
 # Generate the signal
 s1 = np.sin(2*np.pi*f1*t)
-do_it(s1,1)
+do_it(s1,1, msg="s1")
 s2 = np.sin(2*np.pi*f2*t)
-do_it(s2,5)
+do_it(s2,5, msg="s2")
 s3 = np.sin(2*np.pi*f3*t)
-do_it(s3,9)
+do_it(s3,9, msg="s3")
 s = s1 + s2 + s3
 do_it(s,13)
 print("NumOfSamples:", len(s))
@@ -95,10 +97,19 @@ plt.plot(np.kaiser(sr, 8))
 plt.plot(np.kaiser(sr, 15))
 
 
-rawFftMaxMin = 10
-rawFftMaxMax = -10
-winFftMaxMin = 10
-winFftMaxMax = -10
+# Help track fftMax's min and max values
+dFftMax = { 'raw': {'min': 10, 'max': -10}, 'win': {'min': 10, 'max': -10} }
+def fftmax_minmax(dFftMax, fftN, fftWN):
+    if dFftMax['raw']['min'] > max(fftN):
+        dFftMax['raw']['min'] = max(fftN)
+    if dFftMax['raw']['max'] < max(fftN):
+        dFftMax['raw']['max'] = max(fftN)
+    if dFftMax['win']['min'] > max(fftWN):
+        dFftMax['win']['min'] = max(fftWN)
+    if dFftMax['win']['max'] < max(fftWN):
+        dFftMax['win']['max'] = max(fftWN)
+
+
 # Check Fft with X.y cycles - ie partial cycle impact
 # as the test signal starts at time 0, so also full seconds correspond to full cycles.
 # while partial seconds correspond to partial cycle of the signal in the test sample.
@@ -109,17 +120,9 @@ for i in range(0, 10):
     sT = s[0:endIndex]
     print(endIndex, len(sT))
     fftN, fftWN = do_it(sT, 21+i*4)
-    if rawFftMaxMin > max(fftN):
-        rawFftMaxMin = max(fftN)
-    if rawFftMaxMax < max(fftN):
-        rawFftMaxMax = max(fftN)
-    # Plot Windowed signal and fft
-    if winFftMaxMin > max(fftWN):
-        winFftMaxMin = max(fftWN)
-    if winFftMaxMax < max(fftWN):
-        winFftMaxMax = max(fftWN)
-print("Raw", rawFftMaxMax/rawFftMaxMin)
-print("Win", winFftMaxMax/winFftMaxMin)
+    fftmax_minmax(dFftMax, fftN, fftWN)
+print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
+print("Win", dFftMax['win']['max']/dFftMax['win']['min'])
 
 
 # Show the plots
