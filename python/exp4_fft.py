@@ -18,6 +18,11 @@ t = np.arange(startTime, endTime, 1/sr)
 t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 
 
+# set plot params
+nRows = 2
+nCols = 3
+
+
 def plot_fft(fftN):
     '''
     Plot fft data, till Nyquist freq
@@ -31,13 +36,21 @@ def plot_fft(fftN):
 # Generate the signal
 s = np.sin(2*np.pi*f*t)
 print("NumOfSamples:", len(s))
-plt.subplot(2, 2, 1)
+plt.subplot(nRows, nCols, 1)
 plt.plot(s)
 
 
 # Get the Normalised Fft
 fftN = np.abs(np.fft.fft(s)/len(s))
-plt.subplot(2, 2, 2)
+plt.subplot(nRows, nCols, 2)
 plot_fft(fftN)
 
+# Plot the window functions
+plt.subplot(nRows, nCols, 3)
+plt.plot(np.kaiser(sr, 0))
+plt.plot(np.hanning(sr))
+plt.plot(np.kaiser(sr, 8))
+
+
+# Show the plots
 plt.show()
