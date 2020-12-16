@@ -42,6 +42,7 @@ gWidth = 1024
 
 gDwellTime = 16e-3 #32e-3 # 20e-3
 gSecsPerScan = 2
+gSamplingRate = 1.2e6
 gFftSize = 1e6 #2048 #4096 # 512
 gbLivePlot = True
 gbAdaptiveFixedYAxisZeroSpanPlot = True
@@ -157,11 +158,11 @@ def handle_args():
         if (argCnt >= 3):
             gArgs["centerFreq"] = sys.argv[2]
         else:
-            gArgs["centerFreq"] = 91.1e6
+            gArgs["centerFreq"] = 91.0e6
         if (argCnt >= 4):
             gArgs["sampleRate"] = sys.argv[3]
         else:
-            gArgs["sampleRate"] = 1e6
+            gArgs["sampleRate"] = gSamplingRate
         #sdr.freq_correction = 0
         if (argCnt >= 5):
             gArgs["gain"] = float(sys.argv[4])
@@ -204,22 +205,34 @@ def rtlsdr_info(sdr):
     print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
 
+READBUFSIZE = 2**16
 def rtlsdr_curscan(sdr):
     global gFftSize
     if (gSecsPerScan < 1):
         print("WARN: gSecsPerScan [{}] < 1, adjusting to 1".format(gSecsPerScan))
     totalSamples = sdr.sample_rate*gSecsPerScan
-    gFftSize = sdr.sample_rate
+    numReadLoops = int(totalSamples/READBUFSIZE)+1
+    totalSamples = numReadLoops*READBUFSIZE
+    gFftSize = int(sdr.sample_rate)
     loopCnt = int(totalSamples/(gFftSize*0.1))
     fftRBW = (sdr.sample_rate/2)/(gFftSize/2)
-    dprint(5,"fftRBW=[{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, totalSamples, loopCnt))
-    dI, dQ, dMinMax = read_iq(sdr, totalSamples*2)
+    dprint(5,"fftRBW=[{}] samplingRate [{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, sdr.sample_rate, totalSamples, loopCnt))
+    dI = np.zeros(totalSamples)
+    dQ = np.zeros(totalSamples)
+    for i in range(numReadLoops):
+        tI, tQ, dMinMax = read_iq(sdr, READBUFSIZE*2)
+        dI[i*READBUFSIZE:(i+1)*READBUFSIZE] = tI
+        dQ[i*READBUFSIZE:(i+1)*READBUFSIZE] = tQ
     data = dI + dQ
+    print("curscan:",len(data))
     dataFDC = 0
-    dataF = np.zeros(gFftSize/2)
+    dataF = np.zeros(int(gFftSize/2))
     for i in range(loopCnt):
         iStart = int(i*gFftSize*0.1)
         iEnd = iStart + gFftSize
+        print("curscan:", len(data), iStart, iEnd)
+        if (iEnd > len(data)):
+            break
         dataTemp = data[iStart:iEnd]
         dataFft = np.abs(np.fft.fft(dataTemp)/len(dataTemp))
         dataFft = dataFft[:int(len(dataFft)/2)]*2
