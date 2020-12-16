@@ -23,7 +23,7 @@ t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 # set plot params
 nRows = 25
 nCols = 4
-plt.figure(figsize=(4*nCols, 3*nRows))
+plt.figure(figsize=(6*nCols, 4*nRows))
 
 
 def fft_ex(s):
@@ -61,6 +61,7 @@ def plot_it(s, fftN, sW, fftWN, r=nRows, c=nCols, i=1):
     print("plot_it", r, c, i)
     plt.subplot(r, c, i)
     plt.plot(s)
+    plt.title("NumSamps:{}x".format(len(s)/sr))
     plt.subplot(r, c, i+1)
     plot_fft(fftN)
     plt.subplot(r, c, i+2)
