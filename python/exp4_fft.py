@@ -36,6 +36,10 @@ def fig_text(text, xD=0, yD=0):
     plt.figtext(x0+xD, y0+yD, text)
 
 
+def pltind(row=0, col=0):
+    return row*pltCols + col + 1
+
+
 def fft_ex(s):
     '''
     Normalised Fft of raw sample (rectangle window)
@@ -112,19 +116,19 @@ def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
 
 # Generate the signal
 s1 = 1*np.sin(2*np.pi*f1*t)
-do_it(s1,1, msg="s1")
+do_it(s1, pltind(0), msg="s1")
 s2 = 1*np.sin(2*np.pi*f2*t)
-do_it(s2,5, msg="s2")
+do_it(s2, pltind(1), msg="s2")
 s3 = 2*np.sin(2*np.pi*f3*t)
-do_it(s3,9, msg="s3")
+do_it(s3, pltind(2), msg="s3")
 s = s1 + s2 + s3
-do_it(s,13)
+do_it(s, pltind(3))
 print("NumOfSamples:", len(s))
 
 
 fig_text("Window Functions", yD=-3*pltYRes)
 # Plot the window functions
-plt.subplot(pltRows, pltCols, 17)
+plt.subplot(pltRows, pltCols, pltind(4))
 plt.plot(np.hanning(sr))
 for i in range(0,25,2):
     plt.plot(np.kaiser(sr, i))
@@ -156,7 +160,7 @@ for i in range(0, 10):
     # Plot Raw signal and fft
     sT = s[startIndex:endIndex]
     print(startIndex, endIndex, len(sT))
-    fftN, fftWN = do_it(sT, 21+i*4)
+    fftN, fftWN = do_it(sT, pltind(5+i))
     fftmax_minmax(dFftMax, fftN, fftWN)
 print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
 print("Win", dFftMax['win']['max']/dFftMax['win']['min'])
@@ -169,7 +173,7 @@ for i in range(0, 10):
     startIndex = int(sr*(startSec+(i/20)))
     sT = s[startIndex:]
     print(startIndex, len(sT))
-    fftN, fftWN = do_it_sliding(sT, 1.0, 61+i*4)
+    fftN, fftWN = do_it_sliding(sT, 1.0, pltind(15+i))
 
 
 # Show the plots
