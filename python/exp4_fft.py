@@ -21,7 +21,7 @@ t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 
 
 # set plot params
-pltRows = 25
+pltRows = 35
 pltCols = 4
 pltWidth = 6*pltCols
 pltHeight = 4*pltRows
@@ -34,6 +34,7 @@ def fig_text(text, xD=0, yD=0):
     x0 = plt.gca().get_position().x0
     y0 = plt.gca().get_position().y0
     plt.figtext(x0+xD, y0+yD, text)
+    print("******", text)
 
 
 def pltind(row=0, col=0):
@@ -52,7 +53,7 @@ def fft_ex(s):
     sW = s*win
     k2rWin = (len(sW)/win.sum())
     fftWN = np.abs(np.fft.fft(sW)/len(sW))*k2rWin*2
-    print('rawFftMax', max(fftN), 'kaisFftMax', max(fftWN))
+    #print('rawFftMax', max(fftN), 'kaisFftMax', max(fftWN))
     return s, fftN, sW, fftWN
 
 
@@ -106,7 +107,7 @@ def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
         sT = s[startIndex:endIndex]
         if len(sT) < winSamples:
             break
-        print("doitslid:", startIndex, endIndex)
+        #print("doitslid:", startIndex, endIndex)
         sT,fftN, sW, fftWN = fft_ex(sT)
         fftNCum = (fftNCum + np.abs(fftN))*0.5
         fftWNCum = (fftWNCum + np.abs(fftWN))*0.5
@@ -114,7 +115,7 @@ def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
     return fftNCum, fftWNCum
 
 
-# Generate the signal
+#### Generate the signal
 s1 = 1*np.sin(2*np.pi*f1*t)
 do_it(s1, pltind(0), msg="s1")
 s2 = 1*np.sin(2*np.pi*f2*t)
@@ -126,8 +127,8 @@ do_it(s, pltind(3))
 print("NumOfSamples:", len(s))
 
 
+#### Plot the window functions
 fig_text("Window Functions", yD=-3*pltYRes)
-# Plot the window functions
 plt.subplot(pltRows, pltCols, pltind(4))
 plt.plot(np.hanning(sr))
 for i in range(0,25,2):
@@ -147,13 +148,15 @@ def fftmax_minmax(dFftMax, fftN, fftWN):
         dFftMax['win']['max'] = max(fftWN)
 
 
+
+#### Partial Cycles beyond a full sr window
 fig_text("Partial Cycles")
 # Check Fft with X.y cycles - ie partial cycle impact
 # as the test signal starts at time 0, so also full seconds correspond to full cycles.
 # while partial seconds correspond to partial cycle of the signal in the test sample.
 startSec = 0
-startSec = 0.6
-endSec = 1.6
+startSec = np.random.rand()
+endSec = startSec + 1
 for i in range(0, 10):
     startIndex = int(sr*startSec)
     endIndex = int(sr*(endSec+(i/20)))
@@ -166,14 +169,27 @@ print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
 print("Win", dFftMax['win']['max']/dFftMax['win']['min'])
 
 
-fig_text("Overlapped sliding", yD=-3*pltYRes)
-# Working with smaller than a second of data
-startSec = 0.6
+
+#### For Overlapped sliding
+startSec = np.random.rand()
+
+
+# Overlapped Sliding with partial sr width windows
+fig_text("Overlapped sliding - partial window", yD=-3*pltYRes)
 for i in range(0, 10):
-    startIndex = int(sr*(startSec+(i/20)))
+    startIndex = int(sr*(startSec+(i/10)))
     sT = s[startIndex:]
-    print(startIndex, len(sT))
-    fftN, fftWN = do_it_sliding(sT, 1.0, pltind(15+i))
+    print("ForDoItSliding:", startIndex, len(sT))
+    fftN, fftWN = do_it_sliding(sT, 0.5, pltind(15+i))
+
+
+# Overlapped Sliding with full sr width windows
+fig_text("Overlapped sliding - full window", yD=-3*pltYRes)
+for i in range(0, 10):
+    startIndex = int(sr*(startSec+(i/10)))
+    sT = s[startIndex:]
+    print("ForDoItSliding:", startIndex, len(sT))
+    fftN, fftWN = do_it_sliding(sT, 1.0, pltind(25+i))
 
 
 # Show the plots
