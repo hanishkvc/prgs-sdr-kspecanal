@@ -123,7 +123,7 @@ do_it(s2, pltind(1), msg="s2")
 s3 = 2*np.sin(2*np.pi*f3*t)
 do_it(s3, pltind(2), msg="s3")
 s = s1 + s2 + s3
-do_it(s, pltind(3))
+do_it(s, pltind(3), msg="All")
 print("NumOfSamples:", len(s))
 
 
@@ -193,6 +193,28 @@ for i in range(0, 10):
 
 
 # Show the plots
-plt.savefig("/tmp/exp4_fft.png")
+plt.savefig("/tmp/exp4_fft_freq.png")
 plt.show()
+
+
+####
+#### Testing signal which is available only for a partial amount of time
+####
+
+plt.figure(figsize=(pltWidth, pltHeight))
+
+iStart = int(2.3*sr)
+iEnd = int(5.3*sr)
+print("s2", iStart, iEnd)
+s2[iStart:iEnd] = 0
+do_it(s2, pltind(0), msg="InBtwS2")
+s = s1 + s2 + s3
+do_it(s, pltind(1), msg="All")
+
+fftN, fftWN = do_it_sliding(s, 0.5, pltind(2))
+fftN, fftWN = do_it_sliding(s, 1.0, pltind(3))
+
+plt.savefig("/tmp/exp4_fft_time.png")
+plt.show()
+
 
