@@ -224,7 +224,6 @@ def rtlsdr_curscan(sdr):
         dI[i*READBUFSIZE:(i+1)*READBUFSIZE] = tI
         dQ[i*READBUFSIZE:(i+1)*READBUFSIZE] = tQ
     data = dI + dQ
-    print("curscan:",len(data))
     dataFDC = 0
     dataF = np.zeros(int(gFftSize/2))
     for i in range(loopCnt):
@@ -236,11 +235,10 @@ def rtlsdr_curscan(sdr):
         dataTemp = data[iStart:iEnd]
         dataFft = np.abs(np.fft.fft(dataTemp)/len(dataTemp))
         dataFft = dataFft[:int(len(dataFft)/2)]*2
-        dataFDC += dataFft[0]
+        dataFDC = (dataFDC + dataFft[0])/2
         dataFft[0] = 1/(256*2)
-        dataF += dataFft
-    dataF = dataF/loopCnt
-    dataFDC = dataFDC/loopCnt
+        dataFft[0] = np.min(dataFft[1:])
+        dataF = (dataF + dataFft)/2
     dMinMax = minmax(dataF)
 
     dprint(10, "DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
