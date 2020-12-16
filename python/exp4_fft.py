@@ -95,7 +95,7 @@ def do_it(s, i=1, r=pltRows, c=pltCols, msg=None):
     return fftN, fftWN
 
 
-def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
+def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None, cType="AVG"):
     winSamples = int(winSize*sr)
     numLoops = int(len(s)/(winSamples*0.1))
     fftNCum = np.zeros(winSamples)
@@ -109,8 +109,14 @@ def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
             break
         #print("doitslid:", startIndex, endIndex)
         sT,fftN, sW, fftWN = fft_ex(sT)
-        fftNCum = (fftNCum + np.abs(fftN))*0.5
-        fftWNCum = (fftWNCum + np.abs(fftWN))*0.5
+        if cType == 'AVG':
+            fftNCum = (fftNCum + np.abs(fftN))*0.5
+        else:
+            fftNCum = np.max([fftNCum, np.abs(fftN)], axis=0)
+        if cType == 'AVG':
+            fftWNCum = (fftWNCum + np.abs(fftWN))*0.5
+        else:
+            fftWNCum = np.max([fftWNCum, np.abs(fftWN)], axis=0)
     plot_it(s, fftNCum, sW, fftWNCum, r, c, pi)
     return fftNCum, fftWNCum
 
@@ -193,6 +199,7 @@ for i in range(0, 10):
 
 
 # Show the plots
+#plt.gcf().set_tight_layout(True)
 plt.savefig("/tmp/exp4_fft_freq.png")
 plt.show()
 
@@ -202,19 +209,32 @@ plt.show()
 ####
 
 plt.figure(figsize=(pltWidth, pltHeight))
+#plt.gcf().set_tight_layout(True)
 
-iStart = int(2.3*sr)
-iEnd = int(5.3*sr)
-print("s2", iStart, iEnd)
-s2[iStart:iEnd] = 0
-do_it(s2, pltind(0), msg="InBtwS2")
-s = s1 + s2 + s3
-do_it(s, pltind(1), msg="All")
 
-fftN, fftWN = do_it_sliding(s, 0.5, pltind(2))
-fftN, fftWN = do_it_sliding(s, 1.0, pltind(3))
+def hideandseek(tStart, tEnd, pi):
+    iStart = int(tStart*sr)
+    iEnd = int(tEnd*sr)
+    print("s2", iStart, iEnd)
+    s2T = np.copy(s2)
+    s2T[iStart:iEnd] = 0
+    do_it(s2T, pltind(pi+0), msg="InBtwS2")
+    s = s1 + s2T + s3
+    do_it(s, pltind(pi+1), msg="All")
+
+    fftN, fftWN = do_it_sliding(s, 0.5, pltind(pi+2))
+    fig_text("SlidPartialWindow")
+    fftN, fftWN = do_it_sliding(s, 1.0, pltind(pi+3))
+    fig_text("SlidFullWindowAvg")
+    fftN, fftWN = do_it_sliding(s, 1.0, pltind(pi+4), cType="MAX")
+    fig_text("SlidFullWindowMax")
+
+
+for i in range(4):
+    tStart = startSec + i*2
+    tEnd = tStart + 3
+    hideandseek(tStart, tEnd, i*5)
+
 
 plt.savefig("/tmp/exp4_fft_time.png")
 plt.show()
-
-
