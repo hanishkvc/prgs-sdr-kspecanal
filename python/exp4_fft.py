@@ -21,7 +21,7 @@ t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 
 
 # set plot params
-nRows = 15
+nRows = 25
 nCols = 4
 plt.figure(figsize=(4*nCols, 3*nRows))
 
@@ -154,7 +154,7 @@ for i in range(0, 10):
     startIndex = int(sr*(startSec+(i/20)))
     sT = s[startIndex:]
     print(startIndex, len(sT))
-    fftN, fftWN = do_it_sliding(sT, 1.0, 21+i*4)
+    fftN, fftWN = do_it_sliding(sT, 1.0, 61+i*4)
 
 
 # Show the plots
