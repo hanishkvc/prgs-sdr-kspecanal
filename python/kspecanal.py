@@ -1,29 +1,29 @@
 #!/bin/env python3
 # kSpecAnal - A Spectrum Analyser
-# v20201214_1415, HanishKVC
+# v20201217_1841, HanishKVC
 #
 
 ''' Note
 
-This is currently setup to check how things behave in few specific cases,
-while at same time having a related freq spectrum view.
+It is setup to allow one to look at the em spectrum to help with designing
+and finetuning products, in a simple way.
 
-For a more useful simple run, it maybe better to change the logic to
-one or more of below
+Helps identify all the frequencies that are there and their amplitude.
+And inturn see if their amplitude is changing or not. Relative variation
+in the em spectrum as one tweaks the design or its setup is usefull in
+itself to help finetune designs.
 
-Set0
-* have FftSize equal to the full Sampling rate
-* set the DwellTime variable of the logic to 1
+It captures gSecsPerScan seconds of data, then does a overlapped sliding
+based time to freq domain transform, with the following characteristics
 
-Set1 - if only having a second of data
-* Use a window function like hanning or kaiser on the sample data before fft
+* total samples = n * sampling rate
+* window size = sampling rate
+* overlap during sliding = 90%
+* window function applied = rectangular (need to think about kaiser with
+  value of 2 or 3).
 
-Set2 - if having few seconds of data
-* for non zero span modes maybe go for a overlaped sliding window logic.
-  Even the simple rectangular window function (i.e no processing of time domain
-  data before fft) is good enough.
-
-Exp4_fft, gives a good set of data points to show the above.
+NOTE: May also add a heat-map/water-fall view, with hanning or kaiser(15)
+or so windowing, to get idea about available frequencies and their timing.
 
 '''
 
@@ -41,7 +41,8 @@ gHeight = 720
 gWidth = 1024
 
 gDwellTime = 16e-3 #32e-3 # 20e-3
-gFftSize = 2048 #2048 #4096 # 512
+gSecsPerScan = 2
+gFftSize = 1e6 #2048 #4096 # 512
 gbLivePlot = True
 gbAdaptiveFixedYAxisZeroSpanPlot = True
 
@@ -204,25 +205,29 @@ def rtlsdr_info(sdr):
 
 
 def rtlsdr_curscan(sdr):
-    totalSamples = sdr.sample_rate*gDwellTime
-    decimationCnt = totalSamples/gFftSize
+    global gFftSize
+    if (gSecsPerScan < 1):
+        print("WARN: gSecsPerScan [{}] < 1, adjusting to 1".format(gSecsPerScan))
+    totalSamples = sdr.sample_rate*gSecsPerScan
+    gFftSize = sdr.sample_rate
+    loopCnt = int(totalSamples/(gFftSize*0.1))
     fftRBW = (sdr.sample_rate/2)/(gFftSize/2)
-    if (decimationCnt < 1):
-        print("WARN: dwellTime[{}] leads to totalSamples[{}] less than fftSize[{}], adjusting dwellTime to reach fftSize".format(gDwellTime, totalSamples, gFftSize))
-    decimationCnt = int(np.ceil(decimationCnt))
-    dprint(5,"decimationCnt[{}] fftRBW=[{}]".format(decimationCnt, fftRBW))
+    dprint(5,"fftRBW=[{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, totalSamples, loopCnt))
+    dI, dQ, dMinMax = read_iq(sdr, totalSamples*2)
+    data = dI + dQ
     dataFDC = 0
     dataF = np.zeros(gFftSize/2)
-    for i in range(decimationCnt):
-        dI, dQ, dMinMax = read_iq(sdr, gFftSize*2)
-        data = dI + dQ
-        dataFft = np.abs(np.fft.fft(data)/len(data))
-        dataFft = dataFft[:len(dataFft)/2]*2
+    for i in range(loopCnt):
+        iStart = int(i*gFftSize*0.1)
+        iEnd = iStart + gFftSize
+        dataTemp = data[iStart:iEnd]
+        dataFft = np.abs(np.fft.fft(dataTemp)/len(dataTemp))
+        dataFft = dataFft[:int(len(dataFft)/2)]*2
         dataFDC += dataFft[0]
         dataFft[0] = 1/(256*2)
         dataF += dataFft
-    dataF = dataF/decimationCnt
-    dataFDC = dataFDC/decimationCnt
+    dataF = dataF/loopCnt
+    dataFDC = dataFDC/loopCnt
     dMinMax = minmax(dataF)
 
     dprint(10, "DataFFT [{}]\n\tLength[{}]\n\tMinMax [{}]\n".format(dataF, len(dataF), dMinMax))
