@@ -25,9 +25,15 @@ pltRows = 25
 pltCols = 4
 pltWidth = 6*pltCols
 pltHeight = 4*pltRows
-pltXRes = 1/pltWidth
-pltYRes = 1/pltHeight
+pltXRes = 0.1/pltWidth
+pltYRes = 0.1/pltHeight
 plt.figure(figsize=(pltWidth, pltHeight))
+
+
+def fig_text(text, xD=0, yD=0):
+    x0 = plt.gca().get_position().x0
+    y0 = plt.gca().get_position().y0
+    plt.figtext(x0+xD, y0+yD, text)
 
 
 def fft_ex(s):
@@ -70,6 +76,8 @@ def plot_it(s, fftN, sW, fftWN, r=pltRows, c=pltCols, i=1):
     plot_fft(fftN)
     plt.subplot(r, c, i+2)
     plt.plot(sW)
+    sigSamps = np.count_nonzero(np.abs(sW) < 0.1*np.max(np.abs(sW)))
+    plt.title("SignificantSamps:{}x".format(sigSamps/sr))
     plt.subplot(r, c, i+3)
     plot_fft(fftWN)
 
@@ -114,6 +122,7 @@ do_it(s,13)
 print("NumOfSamples:", len(s))
 
 
+fig_text("Window Functions", yD=-3*pltYRes)
 # Plot the window functions
 plt.subplot(pltRows, pltCols, 17)
 plt.plot(np.hanning(sr))
@@ -134,6 +143,7 @@ def fftmax_minmax(dFftMax, fftN, fftWN):
         dFftMax['win']['max'] = max(fftWN)
 
 
+fig_text("Partial Cycles")
 # Check Fft with X.y cycles - ie partial cycle impact
 # as the test signal starts at time 0, so also full seconds correspond to full cycles.
 # while partial seconds correspond to partial cycle of the signal in the test sample.
@@ -152,6 +162,7 @@ print("Raw", dFftMax['raw']['max']/dFftMax['raw']['min'])
 print("Win", dFftMax['win']['max']/dFftMax['win']['min'])
 
 
+fig_text("Overlapped sliding", yD=-3*pltYRes)
 # Working with smaller than a second of data
 startSec = 0.6
 for i in range(0, 10):
