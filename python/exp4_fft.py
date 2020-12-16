@@ -21,9 +21,13 @@ t = np.linspace(startTime, endTime, sr*(endTime-startTime))
 
 
 # set plot params
-nRows = 25
-nCols = 4
-plt.figure(figsize=(6*nCols, 4*nRows))
+pltRows = 25
+pltCols = 4
+pltWidth = 6*pltCols
+pltHeight = 4*pltRows
+pltXRes = 1/pltWidth
+pltYRes = 1/pltHeight
+plt.figure(figsize=(pltWidth, pltHeight))
 
 
 def fft_ex(s):
@@ -53,7 +57,7 @@ def plot_fft(fftN):
     plt.plot(freqs, fftN, ".-")
 
 
-def plot_it(s, fftN, sW, fftWN, r=nRows, c=nCols, i=1):
+def plot_it(s, fftN, sW, fftWN, r=pltRows, c=pltCols, i=1):
     '''
     Plot fft data, till Nyquist freq
     Also match it to its corresponding frequencies
@@ -70,7 +74,7 @@ def plot_it(s, fftN, sW, fftWN, r=nRows, c=nCols, i=1):
     plot_fft(fftWN)
 
 
-def do_it(s, i=1, r=nRows, c=nCols, msg=None):
+def do_it(s, i=1, r=pltRows, c=pltCols, msg=None):
     if msg != None:
         print("{}:AreaUnderAmps[{}]".format(msg, np.sum(np.abs(s))))
     s,fftN, sW, fftWN = fft_ex(s)
@@ -78,7 +82,7 @@ def do_it(s, i=1, r=nRows, c=nCols, msg=None):
     return fftN, fftWN
 
 
-def do_it_sliding(s, winSize=0.5, pi=1, r=nRows, c=nCols, msg=None):
+def do_it_sliding(s, winSize=0.5, pi=1, r=pltRows, c=pltCols, msg=None):
     winSamples = int(winSize*sr)
     numLoops = int(len(s)/(winSamples*0.1))
     fftNCum = np.zeros(winSamples)
@@ -111,11 +115,10 @@ print("NumOfSamples:", len(s))
 
 
 # Plot the window functions
-plt.subplot(nRows, nCols, 17)
-plt.plot(np.kaiser(sr, 0))
+plt.subplot(pltRows, pltCols, 17)
 plt.plot(np.hanning(sr))
-plt.plot(np.kaiser(sr, 8))
-plt.plot(np.kaiser(sr, 15))
+for i in range(0,25,2):
+    plt.plot(np.kaiser(sr, i))
 
 
 # Help track fftMax's min and max values
