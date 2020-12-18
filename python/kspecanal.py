@@ -49,7 +49,7 @@ gGain = 7.1
 gFftSize = -1 #1e6 #2048 #4096 # 512
 gNonOverlap = 0.1
 gbLivePlot = True
-gbAdaptiveFixedYAxisZeroSpanPlot = True
+gbAdaptiveFixedYAxisZeroSpanPlot = False    # If True: Allows plot to zoom out, but not zoom in
 
 gDebugLevel = 5
 def dprint(dbgLvl, msg):
@@ -226,7 +226,7 @@ def rtlsdr_curscan(sdr):
     loopCnt = int(totalSamples/(gFftSize*gNonOverlap))
     fftRBW = (sdr.sample_rate/2)/(gFftSize/2)
     dprint(5,"curscan: fftRBW=[{}] samplingRate [{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, sdr.sample_rate, totalSamples, loopCnt))
-    data = np.zeros(totalSamples)
+    data = np.array(np.zeros(totalSamples), dtype=complex)
     for i in range(numReadLoops):
         data[i*READBUFSIZE:(i+1)*READBUFSIZE] = sdr.read_samples(READBUFSIZE)
     dataFDC = 0
@@ -287,6 +287,7 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
     freqSpan = sampleRate/2
     startFreq = centerFreq - freqSpan/2
     endFreq = centerFreq + freqSpan/2
+    print("ZeroSpan: startFreq[{}] endFreq[{}]".format(startFreq, endFreq))
     dataFAll = np.array([])
     rtlsdr_setup(sdr, centerFreq, sampleRate, gain)
     iCnt = 0
@@ -356,7 +357,7 @@ def plot_data(data, dataF, startOrCenterFreq, freqSpan, gain):
     deltaFreq = freqSpan/fftBins
     if (gbModeCentered):
         startFreq = startOrCenterFreq - (freqSpan/2)
-        centerFreq = startOfCenterFreq
+        centerFreq = startOrCenterFreq
         endFreq = startOrCenterFreq + (freqSpan/2)
     else:
         startFreq = startOrCenterFreq
