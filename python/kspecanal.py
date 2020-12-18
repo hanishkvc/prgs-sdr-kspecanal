@@ -239,10 +239,8 @@ def rtlsdr_curscan(sdr):
             break
         dataTemp = data[iStart:iEnd]
         dataFft = np.abs(np.fft.fft(dataTemp)/len(dataTemp))
-        dataFft = dataFft[:int(len(dataFft)/2)]*2
+        dataFft = dataFft[1:1+int(len(dataFft)/2)]*2
         dataFDC = (dataFDC + dataFft[0])/2
-        dataFft[0] = 1/(256*2)
-        dataFft[0] = np.min(dataFft[1:])
         dataF = (dataF + dataFft)/2
     dMinMax = minmax(dataF)
 
