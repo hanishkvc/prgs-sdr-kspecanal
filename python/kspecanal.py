@@ -46,7 +46,8 @@ gMode = "ZERO_SPAN"
 gCenterFreq = 90.5e6
 gSamplingRate = 2e6
 gGain = 7.1
-gFftSize = 1e6 #2048 #4096 # 512
+gFftSize = -1 #1e6 #2048 #4096 # 512
+gNonOverlap = 0.1
 gbLivePlot = True
 gbAdaptiveFixedYAxisZeroSpanPlot = True
 
@@ -208,6 +209,10 @@ def rtlsdr_info(sdr):
     print("CenterFreq[{}], SamplingRate[{}], Gain[{}]".format(sdr.center_freq, sdr.sample_rate, sdr.gain))
 
 
+def nextpow2(val):
+    return np.ceil(np.log2(np.abs(val)))
+
+
 READBUFSIZE = 2**16
 def rtlsdr_curscan(sdr):
     global gFftSize
@@ -216,21 +221,18 @@ def rtlsdr_curscan(sdr):
     totalSamples = sdr.sample_rate*gSecsPerScan
     numReadLoops = int(totalSamples/READBUFSIZE)+1
     totalSamples = numReadLoops*READBUFSIZE
-    gFftSize = int(sdr.sample_rate)
-    loopCnt = int(totalSamples/(gFftSize*0.1))
+    if gFftSize == -1:
+        gFftSize = int(sdr.sample_rate)
+    loopCnt = int(totalSamples/(gFftSize*gNonOverlap))
     fftRBW = (sdr.sample_rate/2)/(gFftSize/2)
-    dprint(5,"fftRBW=[{}] samplingRate [{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, sdr.sample_rate, totalSamples, loopCnt))
-    dI = np.zeros(totalSamples)
-    dQ = np.zeros(totalSamples)
+    dprint(5,"curscan: fftRBW=[{}] samplingRate [{}] totalSamples[{}] loopCnt[{}]".format(fftRBW, sdr.sample_rate, totalSamples, loopCnt))
+    data = np.zeros(totalSamples)
     for i in range(numReadLoops):
-        tI, tQ, dMinMax = read_iq(sdr, READBUFSIZE*2)
-        dI[i*READBUFSIZE:(i+1)*READBUFSIZE] = tI
-        dQ[i*READBUFSIZE:(i+1)*READBUFSIZE] = tQ
-    data = dI + dQ
+        data[i*READBUFSIZE:(i+1)*READBUFSIZE] = sdr.read_samples(READBUFSIZE)
     dataFDC = 0
     dataF = np.zeros(int(gFftSize/2))
     for i in range(loopCnt):
-        iStart = int(i*gFftSize*0.1)
+        iStart = int(i*gFftSize*gNonOverlap)
         iEnd = iStart + gFftSize
         print("curscan:", len(data), iStart, iEnd)
         if (iEnd > len(data)):
