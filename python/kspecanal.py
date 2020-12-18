@@ -42,7 +42,10 @@ gWidth = 1024
 
 gDwellTime = 16e-3 #32e-3 # 20e-3
 gSecsPerScan = 2
-gSamplingRate = 1.2e6
+gMode = "ZERO_SPAN"
+gCenterFreq = 90.5e6
+gSamplingRate = 2e6
+gGain = 7.1
 gFftSize = 1e6 #2048 #4096 # 512
 gbLivePlot = True
 gbAdaptiveFixedYAxisZeroSpanPlot = True
@@ -153,12 +156,12 @@ def handle_args():
     if (argCnt >= 2):
         gArgs["mode"] = sys.argv[1]
     else:
-        gArgs["mode"] = "ZERO_SPAN"
+        gArgs["mode"] = gMode
     if (gArgs["mode"] == "ZERO_SPAN"):
         if (argCnt >= 3):
             gArgs["centerFreq"] = sys.argv[2]
         else:
-            gArgs["centerFreq"] = 91.0e6
+            gArgs["centerFreq"] = gCenterFreq
         if (argCnt >= 4):
             gArgs["sampleRate"] = sys.argv[3]
         else:
@@ -167,7 +170,7 @@ def handle_args():
         if (argCnt >= 5):
             gArgs["gain"] = float(sys.argv[4])
         else:
-            gArgs["gain"] = 0
+            gArgs["gain"] = gGain
     elif (gArgs["mode"] == "SCAN"):
         if (argCnt >= 3):
             gArgs["startFreq"] = sys.argv[2]
@@ -180,18 +183,18 @@ def handle_args():
         if (argCnt >= 5):
             gArgs["sampleRate"] = sys.argv[4]
         else:
-            gArgs["sampleRate"] = 1e6
+            gArgs["sampleRate"] = gSamplingRate
         #sdr.freq_correction = 0
         if (argCnt >= 6):
             gArgs["gain"] = float(sys.argv[5])
         else:
-            gArgs["gain"] = 0
+            gArgs["gain"] = gGain
     else:
         gArgs["mode"] = "FULL_SPAN"
         gArgs["startFreq"] = 28e6
         gArgs["endFreq"] = 1.7e9
-        gArgs["sampleRate"] = 1e6
-        gArgs["gain"] = 48.0
+        gArgs["sampleRate"] = gSamplingRate
+        gArgs["gain"] = gGain
 
 
 def rtlsdr_init():
