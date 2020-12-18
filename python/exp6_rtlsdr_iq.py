@@ -38,29 +38,36 @@ print("min[{}] max[{}]".format(min(freqs), max(freqs)))
 #plot(centerFreq+freqs, f)
 #show()
 
+win = kaiser(len(samples),6)
+
 fR=abs(fft.fft(real(samples)))
 fI=abs(fft.fft(imag(samples)))
 fC=abs(fft.fft(samples)) # The thing I missed out and or didnt try for what ever reason 2+ years back or maybe wanted to avoid complex fft or ...
+fCW=abs(fft.fft(samples*win))
 fA=abs(fft.fft(abs(samples)))
 fP=abs(fft.fft(real(samples)+imag(samples)))
 fR[0] = 0
 fI[0] = 0
 fC[0] = 0
+fCW[0] = 0
 fA[0] = 0
 fP[0] = 0
-subplot(5,1,1)
+subplot(6,1,1)
 plot(fR)
 title("Real")
-subplot(5,1,2)
+subplot(6,1,2)
 plot(fI)
 title("Imag")
-subplot(5,1,3)
+subplot(6,1,3)
 plot(fC)
 title("Comp")
-subplot(5,1,4)
+subplot(6,1,4)
+plot(fCW)
+title("CompWin")
+subplot(6,1,5)
 plot(fA)
 title("Abs")
-subplot(5,1,5)
+subplot(6,1,6)
 plot(fP)
 title("I+Q")
 show()

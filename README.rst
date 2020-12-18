@@ -23,6 +23,9 @@ max amplitude captured over multisec data in each freq band being scanned,
 potentially using rectangle window function, can give a picture of what
 frequencies are at play. And potentially to what max amplitude levels.
 
+While running the same with a reduced fft window size and sliding, will
+allow one to scan through with less fidelity in a fast way.
+
 And using water-fall/heat-map view of fft outputs of smoothing windowed
 (hanning/kaiser) data, as one slides over the full data in a overlapped
 manner, looking at a subset of the data at each given step, should help
@@ -41,6 +44,12 @@ The log plot is shown at the end.
 
 TODO
 #######
+
+Account -ve freqs of complex iq fft.
+
+Put something similar to old dwelltime, but controlled using rbw
+rather than dwell time. Along with windowing and some amount of limited
+sliding.
 
 Add Max based cumulation of fft result and provide option to switch
 between average and Max.
