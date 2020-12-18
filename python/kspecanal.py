@@ -11,11 +11,11 @@ import rtlsdr
 
 
 gNonOverlap = 0.1
-gCenterFreq = 91.7e6
+gCenterFreq = 92e6
 gSamplingRate = 2.4e6
-gFftSize = 2**16
+gFftSize = 2**14
 gFullSize = gFftSize*4
-gGain = 7.1
+gGain = 19.1
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -60,7 +60,7 @@ def zero_span(sdr, d):
         plt.pause(0.001)
 
 
-def scan_range(sdr, d):
+def _scan_range(sdr, d):
     freqSpan = d['samplingRate']
     curFreq = d['startFreq'] + freqSpan/2
     dataFAll = np.array([])
@@ -72,22 +72,34 @@ def scan_range(sdr, d):
         dataFAll = np.append(dataFAll, dataF)
         freqsAll = np.append(freqsAll, freqs)
         plt.cla()
-        plt.plot(freqsAll, dataFAll)
+        #plt.plot(freqsAll, 10*np.log10(dataFAll))
+        plt.plot(freqsAll, 10*np.log10(dataFAll)-d['gain'])
         plt.pause(0.001)
         curFreq += freqSpan
+
+
+def scan_range(sdr, d):
+    while True:
+        _scan_range(sdr, d)
 
 
 gD = {}
 gD['samplingRate'] = gSamplingRate
 gD['gain'] = gGain
 
-curMode = sys.argv[1].upper()
+if len(sys.argv) < 2:
+    curMode = 'ZERO_SPAN'
+else:
+    curMode = sys.argv[1].upper()
 if curMode == 'SCAN':
     gD['startFreq'] = float(sys.argv[2])
     gD['endFreq'] = float(sys.argv[3])
     gD['centerFreq'] = gD['startFreq'] + ((gD['endFreq'] - gD['startFreq'])/2)
 else:
-    gD['centerFreq'] = float(sys.argv[2])
+    if len(sys.argv) < 3:
+        gD['centerFreq'] = gCenterFreq
+    else:
+        gD['centerFreq'] = float(sys.argv[2])
     gD['startFreq'] = gD['centerFreq'] - gD['samplingRate']/2
     gD['endFreq'] = gD['centerFreq'] + gD['samplingRate']/2
 print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}], samplingRate[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq'], gD['samplingRate']))
