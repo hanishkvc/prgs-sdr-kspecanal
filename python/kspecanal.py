@@ -277,6 +277,12 @@ def rtlsdr_scan(sdr, startFreq, endFreq, sampleRate, gain):
 
 
 def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
+    '''
+    Keep looping through the same freq band again and again.
+
+    It keeps repeating a cycle consisting of a refresh and
+    few cummulates wrt the fft results.
+    '''
     if (gbLivePlot):
         pf = plt.figure()
         plt.show(block=False)
@@ -290,12 +296,12 @@ def rtlsdr_zerospan_repeat(sdr, centerFreq, sampleRate, gain):
     ymax = 0.0
     while True:
         data, dataF, dataFDC = rtlsdr_curscan(sdr)
-        if (iCnt == 0):
+        if ((iCnt % 10) == 0):
             dataFAll = dataF
-            iCnt += 1
         else:
             dataFAll += dataF
             dataFAll /= 2
+        iCnt += 1
         if (gbLivePlot):
             ymin = min(ymin,min(dataFAll))
             ymax = max(ymax,max(dataFAll))
