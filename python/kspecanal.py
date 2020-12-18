@@ -16,6 +16,7 @@ gSamplingRate = 2.4e6
 gFftSize = 2**14
 gFullSize = gFftSize*4
 gGain = 19.1
+gWindow = True
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -35,13 +36,18 @@ def sdr_curscan(sdr):
     print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, gFullSize))
     samples = sdr.read_samples(gFullSize)
     fftAll = np.zeros(gFftSize)
+    if gWindow:
+        win = np.hanning(gFftSize)
+    else:
+        win = np.ones(gFftSize)
+    winAdj = len(win)/np.sum(win)
     for i in range(numLoops):
         iStart = int(i*gFftSize*gNonOverlap)
         iEnd = iStart + gFftSize
         tSamples = samples[iStart:iEnd]
         if len(tSamples) < gFftSize:
             break
-        fftN = 2*abs(np.fft.fft(tSamples))/len(tSamples)
+        fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
         fftAll = (fftAll + fftN)/2
     fftAll[0] = 0
     return fftAll

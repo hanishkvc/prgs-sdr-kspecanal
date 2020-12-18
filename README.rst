@@ -45,11 +45,11 @@ The log plot is shown at the end.
 TODO
 #######
 
-Account -ve freqs of complex iq fft.
+Account -ve freqs of complex iq fft. [almost]
 
 Put something similar to old dwelltime, but controlled using rbw
 rather than dwell time. Along with windowing and some amount of limited
-sliding.
+sliding. [5050]
 
 Add Max based cumulation of fft result and provide option to switch
 between average and Max.
