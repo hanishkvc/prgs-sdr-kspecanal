@@ -62,14 +62,14 @@ def sdr_curscan(sdr):
 def zero_span(sdr, d):
     sdr_setup(sdr, d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + d['centerFreq']
+    freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
     while True:
-        #print(".")
         fftAll = sdr_curscan(sdr)
+        fftAll = np.fft.fftshift(fftAll)
         fftPr = fftvals_proc(d, fftAll)
         plt.cla()
         plt.plot(freqs, fftPr)
-        plt.show(block=False)
         plt.pause(0.001)
 
 
@@ -81,13 +81,13 @@ def _scan_range(sdr, d):
     while curFreq < d['endFreq']:
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + curFreq
+        freqs = np.fft.fftshift(freqs)
         dataF = sdr_curscan(sdr)
         dataFAll = np.append(dataFAll, dataF)
         freqsAll = np.append(freqsAll, freqs)
-        plt.cla()
-        #plt.plot(freqsAll, 10*np.log10(dataFAll))
-        #plt.stem(freqsAll, 10*np.log10(dataFAll)-d['gain'], use_line_collection=True)
+        dataFAll = np.fft.fftshift(dataFAll)
         fftPr = fftvals_proc(d, dataFAll)
+        plt.cla()
         plt.plot(freqsAll, fftPr)
         plt.pause(0.001)
         curFreq += freqSpan
@@ -119,6 +119,7 @@ else:
     gD['endFreq'] = gD['centerFreq'] + gD['samplingRate']/2
 print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}], samplingRate[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq'], gD['samplingRate']))
 
+plt.show(block=False)
 sdr = rtlsdr.RtlSdr()
 if curMode == 'SCAN':
     scan_range(sdr, gD)
