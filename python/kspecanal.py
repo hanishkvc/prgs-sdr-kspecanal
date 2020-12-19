@@ -14,14 +14,24 @@ gNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
 gFftSize = 2**14
-gFullSize = gFftSize*4
+gFullSize = gFftSize*8
 gGain = 19.1
 gWindow = True
+gFftProcMode = 'log'
+gFftProcMode = 'loghist'
 
 
-def fftvals_proc(d, vals):
-    valLogs = 10*np.log10(vals)-d['gain']
-    #valLogs[valLogs[:] < -40] = -40
+def fftvals_dispproc(d, vals):
+    if gFftProcMode == 'raw':
+        return vals
+    if gFftProcMode.startswith('log'):
+        valLogs = 10*np.log10(vals)-d['gain']
+        #filt = np.array([0.2, 0.2, 0.2, 0.2, 0.2])
+        #valLogs = np.convolve(valLogs, filt, 'same')
+        #valLogs[valLogs[:] < -40] = -40
+        if gFftProcMode == 'loghist':
+            hist = np.histogram(valLogs)
+            valLogs[valLogs[:]<hist[1][5]] = hist[1][5]
     return valLogs
 
 
@@ -55,7 +65,7 @@ def sdr_curscan(sdr):
             break
         fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
         fftAll = (fftAll + fftN)/2
-    fftAll[0] = 0
+    #fftAll[0] = 0
     return fftAll
 
 
@@ -67,7 +77,7 @@ def zero_span(sdr, d):
     while True:
         fftAll = sdr_curscan(sdr)
         fftAll = np.fft.fftshift(fftAll)
-        fftPr = fftvals_proc(d, fftAll)
+        fftPr = fftvals_dispproc(d, fftAll)
         plt.cla()
         plt.plot(freqs, fftPr)
         plt.pause(0.001)
@@ -86,7 +96,7 @@ def _scan_range(sdr, d):
         dataFAll = np.append(dataFAll, dataF)
         freqsAll = np.append(freqsAll, freqs)
         dataFAll = np.fft.fftshift(dataFAll)
-        fftPr = fftvals_proc(d, dataFAll)
+        fftPr = fftvals_dispproc(d, dataFAll)
         plt.cla()
         plt.plot(freqsAll, fftPr)
         plt.pause(0.001)
