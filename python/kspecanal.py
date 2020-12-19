@@ -19,12 +19,14 @@ gGain = 19.1
 gWindow = True
 gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
+gScanRangeClipProcMode = 'Clip2MinAmp'
+gScanRangeClipProcMode = 'HistLowClip'
 
 
 def data_proc(d, vals, dataProc):
     if dataProc == 'HistLowClip':
         hist = np.histogram(vals)
-        vals[vals[:]<hist[1][2]] = hist[1][2]
+        vals[vals[:]<hist[1][1]] = hist[1][1]
     elif dataProc == 'Clip2MinAmp':
         vals = vals + (1/256)*0.33
     elif dataProc == 'Log':
@@ -112,8 +114,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         freqs = np.fft.fftshift(freqs)
         freqsAll[iStart:iEnd] = freqs
         fftCur = sdr_curscan(sdr)
-        #fftCur = data_proc(d, fftCur, 'HistLowClip')
-        fftCur = data_proc(d, fftCur, 'Clip2MinAmp')
+        fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
         fftAll[iStart:iEnd] = fftCur
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
