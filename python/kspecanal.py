@@ -92,31 +92,45 @@ def zero_span(sdr, d):
         plt.pause(0.001)
 
 
-def _scan_range(sdr, d):
+def _scan_range(sdr, d, freqsAll, fftAll):
     freqSpan = d['samplingRate']
     curFreq = d['startFreq'] + freqSpan/2
-    fftAll = np.array([])
-    freqsAll = np.array([])
+    print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
+    if type(freqsAll) == type(None):
+        totalFreqs = d['endFreq'] - d['startFreq']
+        numGroups = (int(totalFreqs/freqSpan) + 1)
+        totalEntries = numGroups * gFftSize
+        print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
+        fftAll = np.zeros(totalEntries)
+        freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
+    i = 0
     while curFreq < d['endFreq']:
+        iStart = i*gFftSize
+        iEnd = iStart+gFftSize
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
-        freqsAll = np.append(freqsAll, freqs)
+        freqsAll[iStart:iEnd] = freqs
         fftCur = sdr_curscan(sdr)
         #fftCur = data_proc(d, fftCur, 'HistLowClip')
         fftCur = data_proc(d, fftCur, 'Clip2MinAmp')
         fftCur = np.fft.fftshift(fftCur)
-        fftAll = np.append(fftAll, fftCur)
+        fftAll[iStart:iEnd] = fftCur
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
+        fftPr[np.isinf(fftPr)] = 0
         plt.cla()
         plt.plot(freqsAll, fftPr)
         plt.pause(0.001)
         curFreq += freqSpan
+        i += 1
+    return freqsAll, fftAll
 
 
 def scan_range(sdr, d):
+    freqs = None
+    ffts = None
     while True:
-        _scan_range(sdr, d)
+        freqs, ffts = _scan_range(sdr, d, freqs, ffts)
 
 
 gD = {}
