@@ -17,6 +17,7 @@ gFftSize = 2**14
 gFft2FullMult = 8
 gGain = 19.1
 gWindow = False
+gMinAmp4Clip = (1/256)*0.33
 gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
@@ -36,7 +37,7 @@ def data_proc(d, vals, dataProc):
         hist = np.histogram(vals)
         vals[vals[:]<hist[1][1]] = hist[1][1]
     elif dataProc == 'Clip2MinAmp':
-        vals = np.clip(vals, (1/256)*0.33, None)
+        vals = np.clip(vals, d['minAmp4Clip'], None)
     elif dataProc == 'Log':
         vals = 10*np.log10(vals)
     elif dataProc == 'LogNoGain':
@@ -196,6 +197,7 @@ def handle_args(d):
     d['fftSize'] = gFftSize
     d['nonOverlap'] = gNonOverlap
     d['window'] = gWindow
+    d['minAmp4Clip'] = gMinAmp4Clip
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -216,6 +218,9 @@ def handle_args(d):
         elif (curArg == 'GAIN'):
             iArg += 1
             d['gain'] = float(sys.argv[iArg])
+        elif (curArg == 'MINAMP4CLIP'):
+            iArg += 1
+            d['minAmp4Clip'] = float(sys.argv[iArg])
         elif (curArg == 'NONOVERLAP'):
             iArg += 1
             d['nonOverlap'] = float(sys.argv[iArg])
@@ -243,6 +248,7 @@ handle_args(gD)
 print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq']))
 print("INFO: samplingRate[{}], gain[{}]".format(gD['samplingRate'], gD['gain']))
 print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(gD['fullSize'], gD['fftSize'], gD['nonOverlap'], gD['window']))
+print("INFO: minAmp4Clip[{}]".format(gD['minAmp4Clip']))
 plt.show(block=False)
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
