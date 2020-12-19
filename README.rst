@@ -84,6 +84,7 @@ Other Args
 samplingRate <samplingRateFloat>
 minAmp4Clip <float>
 gain <gainFloat>
+cumuMode <Avg|Max|Copy>
 window <true|false>
 fftSize <integer>
 nonOverlap <float>

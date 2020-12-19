@@ -22,6 +22,8 @@ gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
+gCumuMode = 'Avg'
+
 
 
 def data_proc(d, vals, dataProc):
@@ -59,7 +61,7 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
         curVals[cStart:cEnd] += newVals[nStart:nEnd]
         curVals[cStart:cEnd] /= 2
     elif mode == 'Max':
-        curVals[cStart:cEnd] = np.max(newVals[nStart:nEnd], curVals[cStart:cEnd])
+        curVals[cStart:cEnd] = np.max([newVals[nStart:nEnd], curVals[cStart:cEnd]], axis=0)
     return curVals
 
 
@@ -171,7 +173,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
-        fftAll = data_cumu(d, 'Avg', fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
+        fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
         plt.cla()
@@ -198,6 +200,7 @@ def handle_args(d):
     d['nonOverlap'] = gNonOverlap
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
+    d['cumuMode'] = gCumuMode
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -227,6 +230,9 @@ def handle_args(d):
         elif (curArg == 'FFTSIZE'):
             iArg += 1
             d['fftSize'] = int(sys.argv[iArg])
+        elif (curArg == 'CUMUMODE'):
+            iArg += 1
+            d['cumuMode'] = sys.argv[iArg]
         elif (curArg == 'WINDOW'):
             iArg += 1
             if sys.argv[iArg].upper() == 'TRUE':
@@ -248,7 +254,7 @@ handle_args(gD)
 print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq']))
 print("INFO: samplingRate[{}], gain[{}]".format(gD['samplingRate'], gD['gain']))
 print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(gD['fullSize'], gD['fftSize'], gD['nonOverlap'], gD['window']))
-print("INFO: minAmp4Clip[{}]".format(gD['minAmp4Clip']))
+print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(gD['minAmp4Clip'], gD['cumuMode']))
 plt.show(block=False)
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
