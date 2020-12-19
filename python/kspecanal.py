@@ -44,6 +44,24 @@ def data_proc(d, vals, dataProc):
     return vals
 
 
+def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
+    '''
+    Cumulate data from different buffers using one of possible logics
+
+    Copy: copy values in newVals buffer into curVals buffer at specified offsets.
+    Avg: average the values between curVals and newVals buffer and store into curVals.
+    Max: copy the larger value between curVals and newVals into curVals.
+    '''
+    if mode == 'Copy':
+        curVals[cStart:cEnd] = newVals[nStart:nEnd]
+    elif mode == 'Avg':
+        curVals[cStart:cEnd] += newVals[nStart:nEnd]
+        curVals[cStart:cEnd] /= 2
+    elif mode == 'Max':
+        curVals[cStart:cEnd] = np.max(newVals[nStart:nEnd], curVals[cStart:cEnd])
+    return curVals
+
+
 def fftvals_dispproc(d, vals, fftDispProcMode):
     '''
     Process fft value wrt displaying it.
@@ -152,7 +170,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
-        fftAll[iStart:iEnd] = fftCur
+        fftAll = data_cumu(d, 'Avg', fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
         plt.cla()
