@@ -19,6 +19,12 @@ gGain = 19.1
 gWindow = True
 
 
+def fftvals_proc(d, vals):
+    valLogs = 10*np.log10(vals)-d['gain']
+    #valLogs[valLogs[:] < -40] = -40
+    return valLogs
+
+
 def sdr_setup(sdr, fC, fS, gain):
     '''
     Setup rtlsdr.
@@ -60,8 +66,9 @@ def zero_span(sdr, d):
     while True:
         #print(".")
         fftAll = sdr_curscan(sdr)
+        fftPr = fftvals_proc(d, fftAll)
         plt.cla()
-        plt.plot(freqs, fftAll)
+        plt.plot(freqs, fftPr)
         plt.show(block=False)
         plt.pause(0.001)
 
@@ -79,7 +86,9 @@ def _scan_range(sdr, d):
         freqsAll = np.append(freqsAll, freqs)
         plt.cla()
         #plt.plot(freqsAll, 10*np.log10(dataFAll))
-        plt.plot(freqsAll, 10*np.log10(dataFAll)-d['gain'])
+        #plt.stem(freqsAll, 10*np.log10(dataFAll)-d['gain'], use_line_collection=True)
+        fftPr = fftvals_proc(d, dataFAll)
+        plt.plot(freqsAll, fftPr)
         plt.pause(0.001)
         curFreq += freqSpan
 
