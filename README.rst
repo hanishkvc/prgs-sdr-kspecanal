@@ -40,7 +40,43 @@ simple level. It doesnt go into nitty gritties beyond it.
 It is a study in rough relatives and not absolutes,
 and that is good enough / sufficiently useful, many a times ;-)
 
-The log plot is shown at the end.
+
+Use
+#####
+
+Supports two scan modes
+
+Zero Span
+===========
+
+kspecanal.py zero_span centerFreq
+
+This scans a frequency band centered at centerFreq, and spread over a
+band width of 2.4MHz (decided based on the sampling rate limit of rtlsdr),
+again and again.
+
+It shows the normalised fft result magnitudes of the scan on a Log scale.
+
+
+Scan
+=======
+
+kspecanal.py scan startFreq endFreq
+
+One can specify a frequency range over which to scan. If the specified
+range is larger than what is supported by the hardware in one go, then
+it will step through the specified range, in steps.
+
+The normalised fft result is clipped wrt low values (so that the noise
+can be clipped to some extent) and then shown on a log scale.
+
+
+NOTE
+=======
+
+Currently the logic is setup to apply fft on 2**14 samples at a time,
+this gives a fft bin width / RBW of around 150Hz for 2.4e6 sampling rate.
+
 
 TODO
 #######

@@ -19,16 +19,24 @@ gGain = 19.1
 gWindow = True
 gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
-gScanRangeClipProcMode = 'Clip2MinAmp'
 gScanRangeClipProcMode = 'HistLowClip'
+gScanRangeClipProcMode = 'Clip2MinAmp'
 
 
 def data_proc(d, vals, dataProc):
+    '''
+    Process the passed array of values in different ways.
+
+    HistLowClip: Takes a histogram of passed data and resets all values below the 2nd bin to equal 2nd bin.
+    Clip2MinAmp: Clip values below a predefined value.
+    Log: Convert to dB.
+    LogNoGain: Convert to dB and substract the gain applied.
+    '''
     if dataProc == 'HistLowClip':
         hist = np.histogram(vals)
         vals[vals[:]<hist[1][1]] = hist[1][1]
     elif dataProc == 'Clip2MinAmp':
-        vals = vals + (1/256)*0.33
+        vals = np.clip(vals, (1/256)*0.33, None)
     elif dataProc == 'Log':
         vals = 10*np.log10(vals)
     elif dataProc == 'LogNoGain':
@@ -37,6 +45,9 @@ def data_proc(d, vals, dataProc):
 
 
 def fftvals_dispproc(d, vals, fftDispProcMode):
+    '''
+    Process fft value wrt displaying it.
+    '''
     if fftDispProcMode == 'Raw':
         return vals
     if fftDispProcMode.startswith('LogNoGain'):
@@ -59,6 +70,22 @@ def sdr_setup(sdr, fC, fS, gain):
 
 
 def sdr_curscan(sdr):
+    '''
+    Scan the currently set freq band (upto max sampling rate supported).
+    Inturn normalise the fft on captured samples.
+
+    It does a overlapped sliding over the captured samples, with a per
+    fft window of gFftSize.
+
+    gFullSize is the amount of data captured over which overlapped sliding
+    is done.
+
+    Based on gWindow, hanning window may be applied to the data before fft.
+    The result is compensated wrt windowing related loss of amplitude.
+
+    As IQ data is what is got from the hardware, so both +ve and -ve freqs
+    are used to get the embedded signals in the sample data.
+    '''
     numLoops = int(gFullSize/(gFftSize*gNonOverlap))
     print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, gFullSize))
     samples = sdr.read_samples(gFullSize)
@@ -81,6 +108,10 @@ def sdr_curscan(sdr):
 
 
 def zero_span(sdr, d):
+    '''
+    Repeatadly keep scanning a specified freq band, which is configured
+    by default to be the max sampling rate supported by the hardware.
+    '''
     sdr_setup(sdr, d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
@@ -95,6 +126,11 @@ def zero_span(sdr, d):
 
 
 def _scan_range(sdr, d, freqsAll, fftAll):
+    '''
+    Scan a specified range, this can be larger than the freq band
+    that can be sampled/scanned by the hardware in one go, in which
+    case it will do multiple scans to cover the full specified range.
+    '''
     freqSpan = d['samplingRate']
     curFreq = d['startFreq'] + freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
