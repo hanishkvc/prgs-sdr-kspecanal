@@ -21,13 +21,15 @@ gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 
 
-def data_proc(d, vals, fftProc):
-    if fftProc == 'HistLowClip':
+def data_proc(d, vals, dataProc):
+    if dataProc == 'HistLowClip':
         hist = np.histogram(vals)
         vals[vals[:]<hist[1][2]] = hist[1][2]
-    elif fftProc == 'Log':
+    elif dataProc == 'Clip2MinAmp':
+        vals = vals + (1/256)*0.33
+    elif dataProc == 'Log':
         vals = 10*np.log10(vals)
-    elif fftProc == 'LogNoGain':
+    elif dataProc == 'LogNoGain':
         vals = 10*np.log10(vals)-d['gain']
     return vals
 
@@ -82,9 +84,9 @@ def zero_span(sdr, d):
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
     while True:
-        fftAll = sdr_curscan(sdr)
-        fftAll = np.fft.fftshift(fftAll)
-        fftPr = fftvals_dispproc(d, fftAll, gZeroSpanFftDispProcMode)
+        fftCur = sdr_curscan(sdr)
+        fftCur = np.fft.fftshift(fftCur)
+        fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         plt.cla()
         plt.plot(freqs, fftPr)
         plt.pause(0.001)
@@ -93,18 +95,19 @@ def zero_span(sdr, d):
 def _scan_range(sdr, d):
     freqSpan = d['samplingRate']
     curFreq = d['startFreq'] + freqSpan/2
-    dataFAll = np.array([])
+    fftAll = np.array([])
     freqsAll = np.array([])
     while curFreq < d['endFreq']:
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
-        dataF = sdr_curscan(sdr)
-        dataF = data_proc(d, dataF, 'HistLowClip')
-        dataFAll = np.append(dataFAll, dataF)
         freqsAll = np.append(freqsAll, freqs)
-        dataFAll = np.fft.fftshift(dataFAll)
-        fftPr = fftvals_dispproc(d, np.copy(dataFAll), gScanRangeFftDispProcMode)
+        fftCur = sdr_curscan(sdr)
+        #fftCur = data_proc(d, fftCur, 'HistLowClip')
+        fftCur = data_proc(d, fftCur, 'Clip2MinAmp')
+        fftCur = np.fft.fftshift(fftCur)
+        fftAll = np.append(fftAll, fftCur)
+        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         plt.cla()
         plt.plot(freqsAll, fftPr)
         plt.pause(0.001)
