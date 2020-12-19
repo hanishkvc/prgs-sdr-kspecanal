@@ -49,7 +49,7 @@ Supports two scan modes
 Zero Span
 ===========
 
-kspecanal.py zero_span centerFreq
+kspecanal.py zerospan centerFreq <theFreq>
 
 This scans a frequency band centered at centerFreq, and spread over a
 band width of 2.4MHz (decided based on the sampling rate limit of rtlsdr),
@@ -61,7 +61,7 @@ It shows the normalised fft result magnitudes of the scan on a Log scale.
 Scan
 =======
 
-kspecanal.py scan startFreq endFreq
+kspecanal.py scan startFreq <theStartFreq> endFreq <theEndFreq>
 
 One can specify a frequency range over which to scan. If the specified
 range is larger than what is supported by the hardware in one go, then
@@ -71,11 +71,23 @@ The normalised fft result is clipped wrt low values (so that the noise
 can be clipped to some extent) and then shown on a log scale.
 
 
+
 NOTE
 =======
 
 Currently the logic is setup to apply fft on 2**14 samples at a time,
 this gives a fft bin width / RBW of around 150Hz for 2.4e6 sampling rate.
+
+Other Args
+-----------
+
+samplingRate <samplingRateInt>
+gain <gainFloat>
+window <true|false>
+fftSize <integer>
+nonOverlap <float>
+
+
 
 
 TODO

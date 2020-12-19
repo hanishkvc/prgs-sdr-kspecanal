@@ -14,9 +14,9 @@ gNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
 gFftSize = 2**14
-gFullSize = gFftSize*8
+gFft2FullMult = 8
 gGain = 19.1
-gWindow = True
+gWindow = False
 gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
@@ -69,15 +69,15 @@ def sdr_setup(sdr, fC, fS, gain):
     print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
 
 
-def sdr_curscan(sdr):
+def sdr_curscan(sdr, d):
     '''
     Scan the currently set freq band (upto max sampling rate supported).
     Inturn normalise the fft on captured samples.
 
     It does a overlapped sliding over the captured samples, with a per
-    fft window of gFftSize.
+    fft window of d['fftSize'].
 
-    gFullSize is the amount of data captured over which overlapped sliding
+    d['fullSize'] is the amount of data captured over which overlapped sliding
     is done.
 
     Based on gWindow, hanning window may be applied to the data before fft.
@@ -86,20 +86,20 @@ def sdr_curscan(sdr):
     As IQ data is what is got from the hardware, so both +ve and -ve freqs
     are used to get the embedded signals in the sample data.
     '''
-    numLoops = int(gFullSize/(gFftSize*gNonOverlap))
-    print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, gFullSize))
-    samples = sdr.read_samples(gFullSize)
-    fftAll = np.zeros(gFftSize)
+    numLoops = int(d['fullSize']/(d['fftSize']*d['nonOverlap']))
+    print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
+    samples = sdr.read_samples(d['fullSize'])
+    fftAll = np.zeros(d['fftSize'])
     if gWindow:
-        win = np.hanning(gFftSize)
+        win = np.hanning(d['fftSize'])
     else:
-        win = np.ones(gFftSize)
+        win = np.ones(d['fftSize'])
     winAdj = len(win)/np.sum(win)
     for i in range(numLoops):
-        iStart = int(i*gFftSize*gNonOverlap)
-        iEnd = iStart + gFftSize
+        iStart = int(i*d['fftSize']*d['nonOverlap'])
+        iEnd = iStart + d['fftSize']
         tSamples = samples[iStart:iEnd]
-        if len(tSamples) < gFftSize:
+        if len(tSamples) < d['fftSize']:
             break
         fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
         fftAll = (fftAll + fftN)/2
@@ -113,11 +113,11 @@ def zero_span(sdr, d):
     by default to be the max sampling rate supported by the hardware.
     '''
     sdr_setup(sdr, d['centerFreq'], d['samplingRate'], d['gain'])
-    freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + d['centerFreq']
+    freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
     while True:
-        fftCur = sdr_curscan(sdr)
+        fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         plt.cla()
@@ -137,19 +137,19 @@ def _scan_range(sdr, d, freqsAll, fftAll):
     if type(freqsAll) == type(None):
         totalFreqs = d['endFreq'] - d['startFreq']
         numGroups = (int(totalFreqs/freqSpan) + 1)
-        totalEntries = numGroups * gFftSize
+        totalEntries = numGroups * d['fftSize']
         print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
         fftAll = np.zeros(totalEntries)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
     i = 0
     while curFreq < d['endFreq']:
-        iStart = i*gFftSize
-        iEnd = iStart+gFftSize
+        iStart = i*d['fftSize']
+        iEnd = iStart+d['fftSize']
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
-        freqs = np.fft.fftfreq(gFftSize,1/d['samplingRate']) + curFreq
+        freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
         freqsAll[iStart:iEnd] = freqs
-        fftCur = sdr_curscan(sdr)
+        fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
         fftAll[iStart:iEnd] = fftCur
@@ -170,33 +170,70 @@ def scan_range(sdr, d):
         freqs, ffts = _scan_range(sdr, d, freqs, ffts)
 
 
-gD = {}
-gD['samplingRate'] = gSamplingRate
-gD['gain'] = gGain
-
-if len(sys.argv) < 2:
-    curMode = 'ZERO_SPAN'
-else:
-    curMode = sys.argv[1].upper()
-if curMode == 'SCAN':
-    gD['startFreq'] = float(sys.argv[2])
-    gD['endFreq'] = float(sys.argv[3])
-    gD['centerFreq'] = gD['startFreq'] + ((gD['endFreq'] - gD['startFreq'])/2)
-else:
-    if len(sys.argv) < 3:
-        gD['centerFreq'] = gCenterFreq
+def handle_args(d):
+    d['prgMode'] = 'ZEROSPAN'
+    d['samplingRate'] = gSamplingRate
+    d['gain'] = gGain
+    d['centerFreq'] = gCenterFreq
+    d['fftSize'] = gFftSize
+    d['nonOverlap'] = gNonOverlap
+    d['window'] = gWindow
+    iArg = 1
+    while iArg < len(sys.argv):
+        curArg = sys.argv[iArg].upper()
+        if (curArg == 'ZEROSPAN') or (curArg == 'SCAN'):
+            d['prgMode'] = curArg
+        elif (curArg == 'CENTERFREQ'):
+            iArg += 1
+            d['centerFreq'] = float(sys.argv[iArg])
+        elif (curArg == 'STARTFREQ'):
+            iArg += 1
+            d['startFreq'] = float(sys.argv[iArg])
+        elif (curArg == 'ENDFREQ'):
+            iArg += 1
+            d['endFreq'] = float(sys.argv[iArg])
+        elif (curArg == 'SAMPLINGRATE'):
+            iArg += 1
+            d['samplingRate'] = int(sys.argv[iArg])
+        elif (curArg == 'GAIN'):
+            iArg += 1
+            d['gain'] = float(sys.argv[iArg])
+        elif (curArg == 'NONOVERLAP'):
+            iArg += 1
+            d['nonOverlap'] = float(sys.argv[iArg])
+        elif (curArg == 'FFTSIZE'):
+            iArg += 1
+            d['fftSize'] = int(sys.argv[iArg])
+        elif (curArg == 'WINDOW'):
+            iArg += 1
+            if sys.argv[iArg].upper() == 'TRUE':
+                d['window'] = True
+            else:
+                d['window'] = False
+        iArg += 1
+    if d['prgMode'] == 'SCAN':
+        d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
     else:
-        gD['centerFreq'] = float(sys.argv[2])
-    gD['startFreq'] = gD['centerFreq'] - gD['samplingRate']/2
-    gD['endFreq'] = gD['centerFreq'] + gD['samplingRate']/2
-print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}], samplingRate[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq'], gD['samplingRate']))
+        d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
+        d['endFreq'] = d['centerFreq'] + d['samplingRate']/2
+    d['fullSize'] = d['fftSize'] * gFft2FullMult
 
+
+
+gD = {}
+handle_args(gD)
+print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq']))
+print("INFO: samplingRate[{}], gain[{}]".format(gD['samplingRate'], gD['gain']))
+print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(gD['fullSize'], gD['fftSize'], gD['nonOverlap'], gD['window']))
 plt.show(block=False)
 sdr = rtlsdr.RtlSdr()
-if curMode == 'SCAN':
+if gD['prgMode'] == 'SCAN':
     scan_range(sdr, gD)
 else:
     zero_span(sdr, gD)
 sdr.close()
 
+
+
 input("Press any key to quit...")
+
