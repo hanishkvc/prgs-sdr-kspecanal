@@ -81,7 +81,8 @@ this gives a fft bin width / RBW of around 150Hz for 2.4e6 sampling rate.
 Other Args
 -----------
 
-samplingRate <samplingRateInt>
+samplingRate <samplingRateFloat>
+minAmp4Clip <float>
 gain <gainFloat>
 window <true|false>
 fftSize <integer>

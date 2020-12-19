@@ -214,7 +214,7 @@ def handle_args(d):
             d['endFreq'] = float(sys.argv[iArg])
         elif (curArg == 'SAMPLINGRATE'):
             iArg += 1
-            d['samplingRate'] = int(sys.argv[iArg])
+            d['samplingRate'] = float(sys.argv[iArg])
         elif (curArg == 'GAIN'):
             iArg += 1
             d['gain'] = float(sys.argv[iArg])
