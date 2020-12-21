@@ -142,6 +142,9 @@ def zero_span(sdr, d):
     '''
     Repeatadly keep scanning a specified freq band, which is configured
     by default to be the max sampling rate supported by the hardware.
+
+    Display the instanteneous signal levels as well as
+    history of signal levels as a heat map.
     '''
     sdr_setup(sdr, d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
@@ -153,6 +156,9 @@ def zero_span(sdr, d):
         indexHM = 0
         plt.figure(PLTFIG_HEATMAP)
         hm = plt.imshow(fftHM, extent=(0,1, 0,1))
+        plt.xticks([0, 0.5, 1], [d['startFreq'], d['centerFreq'], d['endFreq']])
+        plt.xlabel("Freqs")
+        plt.ylabel("ScanNum")
     while True:
         print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,100])
         fftCur = sdr_curscan(sdr, d)
@@ -189,6 +195,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftAll = np.zeros(totalEntries)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
     i = 0
+    plt.figure(PLTFIG_LEVELS)
     while curFreq < d['endFreq']:
         iStart = i*d['fftSize']
         iEnd = iStart+d['fftSize']
