@@ -83,6 +83,11 @@ it will step through the specified range, in steps.
 The normalised fft result is clipped wrt low values (so that the noise
 can be clipped to some extent) and then shown on a log scale.
 
+NOTE: If the freq range being scanned isn't a multiple of the sampling
+rate, then endFreq will be adjusted to make it a multiple. User will
+be alerted about the same and they have to press any key to continue,
+in this case.
+
 QuickFullScan
 ---------------
 

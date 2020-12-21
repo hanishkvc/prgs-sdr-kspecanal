@@ -226,7 +226,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
     curFreq = d['startFreq'] + freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
     totalFreqs = d['endFreq'] - d['startFreq']
-    numGroups = (int(totalFreqs/freqSpan) + 1)
+    numGroups = int(totalFreqs/freqSpan)
     totalEntries = numGroups * d['fftSize']
     print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
@@ -271,6 +271,13 @@ def _scan_range(sdr, d, freqsAll, fftAll):
 def scan_range(sdr, d):
     freqs = None
     ffts = None
+    # Adjust endFreq such that start-end is a multiple of samplingRate, if required
+    freqBands = (d['endFreq'] - d['startFreq'])/d['samplingRate']
+    if (freqBands % 1) != 0:
+        d['orig.EndFreq'] = d['endFreq']
+        d['endFreq'] = d['startFreq'] + np.ceil(freqBands)*d['samplingRate']
+        print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
+        input("Press any key to continue...")
     if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
         hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
