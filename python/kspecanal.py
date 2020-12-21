@@ -210,6 +210,8 @@ def zero_span(d):
         plt.ylabel("ScanNum")
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
+        if d['cmd.stop']:
+            break
         curTime = time.time()
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
@@ -255,7 +257,7 @@ def _scan_range(d, freqsAll, fftAll):
         if d['bPltHeatMap']:
             d['fftCursMax'] = 128
             d['fftCursIndex'] = 0
-            d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
+            d['fftCurs'] = np.ones([d['fftCursMax'], totalEntries]) * d['minAmp4Clip']
     i = 0
     while startFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
@@ -305,10 +307,21 @@ def scan_range(d):
     if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
         hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
+        centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
+        plt.xticks([0, 0.5, 1], [d['startFreq'], centerFreq, d['endFreq']])
+        plt.xlabel("Freqs")
+        plt.ylabel("ScanHistory")
+    prevTime = time.time()
     for i in range(d['prgLoopCnt']):
-        print_info(d)
+        if d['cmd.stop']:
+            break
+        curTime = time.time()
+        print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
+        prevTime = curTime
+        #print_info(d)
         freqs, ffts = _scan_range(d, freqs, ffts)
         if d['bPltHeatMap']:
+            #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
             plt.figure(PLTFIG_HEATMAP)
             hm.set_data(d['fftCurs'])
             hm.autoscale()
@@ -419,6 +432,7 @@ def print_info(d):
 def prg_quit(d, msg = None):
     if type(msg) != type(None):
         print(msg)
+    d['cmd.stop'] = True
     sys.exit()
 
 
@@ -442,6 +456,7 @@ def handle_signals(d):
 
 
 gD = {}
+gD['cmd.stop'] = False
 handle_args(gD)
 print_info(gD)
 handle_signals(gD)
