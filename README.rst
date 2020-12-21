@@ -208,4 +208,5 @@ Overlap across scan bands [Done].
 
 Use pygame or cairo or .. to do the plots. Heatmap with large freq bands and
 default or large fftSize, could bring the program and the system to its knees.
+And or parallely save into image with sufficient resolution.
 

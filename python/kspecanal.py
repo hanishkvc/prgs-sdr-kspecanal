@@ -225,11 +225,11 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         prg_quit(d, msg)
     curFreq = d['startFreq'] + freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
+    totalFreqs = d['endFreq'] - d['startFreq']
+    numGroups = (int(totalFreqs/freqSpan) + 1)
+    totalEntries = numGroups * d['fftSize']
+    print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
-        totalFreqs = d['endFreq'] - d['startFreq']
-        numGroups = (int(totalFreqs/freqSpan) + 1)
-        totalEntries = numGroups * d['fftSize']
-        print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
         fftAll = np.zeros(totalEntries)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
@@ -240,16 +240,22 @@ def _scan_range(sdr, d, freqsAll, fftAll):
     while curFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
         iEnd = iStart+d['fftSize']
+        sStart = 0
+        if iEnd > totalEntries:
+            sEnd = iEnd - iStart - (iEnd - totalEntries)
+        else:
+            sEnd = iEnd - iStart
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
-        freqsAll[iStart:iEnd] = freqs
+        print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
+        freqsAll[iStart:iEnd] = freqs[sStart:sEnd]
         fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
         if d['bPltHeatMap']:
-            d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur
-        fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
+            d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
+        fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
         if d['bPltLevels']:
@@ -388,7 +394,9 @@ def prg_quit(d, msg = None):
 def plt_figures(d):
     plt.ion()
     if d['bPltLevels']:
-        plt.figure(PLTFIG_LEVELS)
+        freqBlocks = (d['endFreq'] - d['startFreq'])/d['samplingRate']
+        freqBlocks = 12
+        plt.figure(PLTFIG_LEVELS, figsize=(freqBlocks*6, 6))
     if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
 
