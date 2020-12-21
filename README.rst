@@ -49,7 +49,7 @@ Supports two scan modes
 Zero Span
 ===========
 
-kspecanal.py zerospan centerFreq <theFreq>
+kspecanal.py zeroSpan centerFreq <theFreq>
 
 This scans a frequency band centered at centerFreq, and spread over a
 band width of 2.4MHz (decided based on the sampling rate limit of rtlsdr),
@@ -64,6 +64,9 @@ time till then.
 Scan
 =======
 
+Normal
+--------
+
 kspecanal.py scan startFreq <theStartFreq> endFreq <theEndFreq>
 
 One can specify a frequency range over which to scan. If the specified
@@ -73,6 +76,16 @@ it will step through the specified range, in steps.
 The normalised fft result is clipped wrt low values (so that the noise
 can be clipped to some extent) and then shown on a log scale.
 
+QuickFullScan
+---------------
+
+kspecanal.py quickFullScan
+
+is a alias for
+
+        kspecanal.py scan startFreq 30e6 endFreq 1.5e9 fftSize 256
+
+i.e this triggers a quick scan from 30e6 to 1.5e9 with fftSize of 256
 
 
 NOTE

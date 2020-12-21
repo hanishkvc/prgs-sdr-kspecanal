@@ -31,6 +31,9 @@ gScanRangeClipProcMode = 'Clip2MinAmp'
 gCumuMode = 'AVG'
 
 
+PRGMODE_SCAN = 'SCAN'
+PRGMODE_ZEROSPAN = 'ZEROSPAN'
+
 PLTFIG_LEVELS = "Levels"
 PLTFIG_HEATMAP = "Heatmap"
 
@@ -286,8 +289,13 @@ def handle_args(d):
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
-        if (curArg == 'ZEROSPAN') or (curArg == 'SCAN'):
+        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_SCAN):
             d['prgMode'] = curArg
+        elif (curArg == 'QUICKFULLSCAN'):
+            d['prgMode'] = PRGMODE_SCAN
+            d['startFreq'] = 30e6
+            d['endFreq'] = 1.5e9
+            d['fftSize'] = 256
         elif (curArg == 'CENTERFREQ'):
             iArg += 1
             d['centerFreq'] = float(sys.argv[iArg])
@@ -337,7 +345,7 @@ def handle_args(d):
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
         iArg += 1
-    if d['prgMode'] == 'SCAN':
+    if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
     else:
         d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
@@ -387,7 +395,7 @@ print_info(gD)
 handle_signals(gD)
 plt_figures(gD)
 sdr = rtlsdr.RtlSdr()
-if gD['prgMode'] == 'SCAN':
+if gD['prgMode'] == PRGMODE_SCAN:
     scan_range(sdr, gD)
 else:
     zero_span(sdr, gD)
