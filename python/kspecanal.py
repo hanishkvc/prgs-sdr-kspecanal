@@ -18,7 +18,8 @@ gNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
 gFftSize = 2**14
-gFft2FullMult = 8
+gFft2FullMult4Less = 8
+gFft2FullMult4More = 2
 gGain = 19.1
 gWindow = False
 gMinAmp4Clip = (1/256)*0.33
@@ -101,6 +102,28 @@ def sdr_setup(sdr, fC, fS, gain):
     print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
 
 
+gSdrReadUnit = 2**16
+def sdr_read(sdr, length):
+    '''
+    Read from the rtlsdr.
+    If the given length is very large, then it is broken down into
+    multiple smaller reads, to avoid libusb io errors.
+
+    If the length to be read is larger than 2**16, then it requires
+    to be a multiple of 2**16.
+    '''
+    if length > gSdrReadUnit:
+        loopCnt = length//gSdrReadUnit
+        readLength = gSdrReadUnit
+    else:
+        loopCnt = 1
+        readLength = length
+    samples = np.zeros(length, dtype=complex)
+    for i in range(loopCnt):
+        samples[i*readLength:(i+1)*readLength] = sdr.read_samples(readLength)
+    return samples
+
+
 def sdr_curscan(sdr, d):
     '''
     Scan the currently set freq band (upto max sampling rate supported).
@@ -120,7 +143,7 @@ def sdr_curscan(sdr, d):
     '''
     numLoops = int(d['fullSize']/(d['fftSize']*d['nonOverlap']))
     #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
-    samples = sdr.read_samples(d['fullSize'])
+    samples = sdr_read(sdr, d['fullSize'])
     fftAll = np.zeros(d['fftSize'])
     if gWindow:
         win = np.hanning(d['fftSize'])
@@ -318,7 +341,12 @@ def handle_args(d):
     else:
         d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
         d['endFreq'] = d['centerFreq'] + d['samplingRate']/2
-    d['fullSize'] = d['fftSize'] * gFft2FullMult
+    if d['fftSize'] < (d['samplingRate']//8):
+        d['fullSize'] = d['fftSize'] * gFft2FullMult4Less
+    else:
+        d['fullSize'] = d['fftSize'] * gFft2FullMult4More
+    if d['fullSize'] % gSdrReadUnit != 0:
+        prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
 
 
 def print_info(d):
