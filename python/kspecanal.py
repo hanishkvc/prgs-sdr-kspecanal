@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import rtlsdr
 
 
+gbPltHeatMap = True
+gbPltLevels = True
+
 gNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
@@ -23,6 +26,10 @@ gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
 gCumuMode = 'AVG'
+
+
+PLTFIG_LEVELS = "Levels"
+PLTFIG_HEATMAP = "Heatmap"
 
 
 
@@ -111,7 +118,7 @@ def sdr_curscan(sdr, d):
     are used to get the embedded signals in the sample data.
     '''
     numLoops = int(d['fullSize']/(d['fftSize']*d['nonOverlap']))
-    print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
+    #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr.read_samples(d['fullSize'])
     fftAll = np.zeros(d['fftSize'])
     if gWindow:
@@ -140,13 +147,26 @@ def zero_span(sdr, d):
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
+    if gbPltHeatMap:
+        maxHM = 128
+        fftHM = np.zeros((maxHM, d['fftSize']))
+        indexHM = 0
     while True:
+        print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,100])
         fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
-        plt.cla()
-        plt.plot(freqs, fftPr)
-        plt.pause(0.001)
+        if gbPltHeatMap:
+            plt.figure(PLTFIG_HEATMAP)
+            fftHM[indexHM,:] = fftPr
+            plt.imshow(fftHM, extent=(0,1,0,1))
+            plt.pause(0.001)
+            indexHM = (indexHM + 1) % maxHM
+        if gbPltLevels:
+            plt.figure(PLTFIG_LEVELS)
+            plt.cla()
+            plt.plot(freqs, fftPr)
+            plt.pause(0.001)
 
 
 def _scan_range(sdr, d, freqsAll, fftAll):
@@ -265,11 +285,17 @@ def prg_quit(d, msg = None):
     quit()
 
 
+def plt_figures():
+    plt.ion()
+    plt.figure(PLTFIG_LEVELS)
+    plt.figure(PLTFIG_HEATMAP)
+
+
 
 gD = {}
 handle_args(gD)
 print_info(gD)
-plt.show(block=False)
+plt_figures()
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
     scan_range(sdr, gD)
