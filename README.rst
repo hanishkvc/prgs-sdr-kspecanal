@@ -91,6 +91,8 @@ cumuMode <Avg|Max|Copy>
 window <true|false>
 fftSize <integer>
 nonOverlap <float>
+bPltLevels <true|false>
+bPltHeatMap <true|false>
 
 
 

@@ -150,7 +150,7 @@ def zero_span(sdr, d):
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
-    if gbPltHeatMap:
+    if d['bPltHeatMap']:
         maxHM = 128
         fftHM = np.zeros((maxHM, d['fftSize']))
         indexHM = 0
@@ -164,14 +164,14 @@ def zero_span(sdr, d):
         fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
-        if gbPltHeatMap:
+        if d['bPltHeatMap']:
             plt.figure(PLTFIG_HEATMAP)
             fftHM[indexHM,:] = fftPr
             hm.set_data(fftHM)
             hm.autoscale()
             plt.pause(0.001)
             indexHM = (indexHM + 1) % maxHM
-        if gbPltLevels:
+        if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
             plt.cla()
             plt.plot(freqs, fftPr)
@@ -194,7 +194,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
         fftAll = np.zeros(totalEntries)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
-        if gbPltHeatMap:
+        if d['bPltHeatMap']:
             d['fftCursMax'] = 128
             d['fftCursIndex'] = 0
             d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
@@ -210,14 +210,15 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
-        if gbPltHeatMap:
+        if d['bPltHeatMap']:
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur
         fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
-        plt.cla()
-        plt.plot(freqsAll, fftPr)
-        plt.pause(0.001)
+        if d['bPltLevels']:
+            plt.cla()
+            plt.plot(freqsAll, fftPr)
+            plt.pause(0.001)
         curFreq += freqSpan
         i += 1
     return freqsAll, fftAll
@@ -226,13 +227,13 @@ def _scan_range(sdr, d, freqsAll, fftAll):
 def scan_range(sdr, d):
     freqs = None
     ffts = None
-    if gbPltHeatMap:
+    if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
         hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
     while True:
         print_info(d)
         freqs, ffts = _scan_range(sdr, d, freqs, ffts)
-        if gbPltHeatMap:
+        if d['bPltHeatMap']:
             plt.figure(PLTFIG_HEATMAP)
             hm.set_data(d['fftCurs'])
             hm.autoscale()
@@ -250,6 +251,8 @@ def handle_args(d):
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
     d['cumuMode'] = gCumuMode
+    d['bPltHeatMap'] = gbPltHeatMap
+    d['bPltLevels'] = gbPltLevels
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -288,6 +291,18 @@ def handle_args(d):
                 d['window'] = True
             else:
                 d['window'] = False
+        elif (curArg == 'BPLTHEATMAP'):
+            iArg += 1
+            if sys.argv[iArg].upper() == 'TRUE':
+                d['bPltHeatMap'] = True
+            else:
+                d['bPltHeatMap'] = False
+        elif (curArg == 'BPLTLEVELS'):
+            iArg += 1
+            if sys.argv[iArg].upper() == 'TRUE':
+                d['bPltLevels'] = True
+            else:
+                d['bPltLevels'] = False
         iArg += 1
     if d['prgMode'] == 'SCAN':
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
@@ -302,6 +317,7 @@ def print_info(d):
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
     print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['nonOverlap'], d['window']))
     print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(d['minAmp4Clip'], d['cumuMode']))
+    print("INFO: bPltLevels[{}],  bPltHeatMap[{}]".format(d['bPltLevels'], d['bPltHeatMap']))
 
 
 def prg_quit(d, msg = None):
