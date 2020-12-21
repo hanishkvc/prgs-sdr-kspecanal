@@ -101,12 +101,17 @@ def sdr_setup(sdr, fC, fS, gain):
     Setup rtlsdr.
     Also skip few samples to avoid any junk, when it is settling.
     '''
-    print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
-    sdr.sample_rate = fS
-    sdr.center_freq = fC
-    sdr.gain = gain
+    print("SetupSDR:En: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
+    try:
+        sdr.sample_rate = fS
+        sdr.center_freq = fC
+        sdr.gain = gain
+    except:
+        sdr.close()
+        sdr = rtlsdr.RtlSdr()
     samples = sdr.read_samples(16*1024)
-    print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
+    print("SetupSDR:Ex: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
+    return sdr
 
 
 gSdrReadUnit = 2**18
@@ -131,7 +136,7 @@ def sdr_read(sdr, length):
     return samples
 
 
-def sdr_curscan(sdr, d):
+def sdr_curscan(d):
     '''
     Scan the currently set freq band (upto max sampling rate supported).
     Inturn normalise the fft on captured samples.
@@ -150,7 +155,7 @@ def sdr_curscan(sdr, d):
     '''
     numLoops = int(d['fullSize']/(d['fftSize']*d['nonOverlap']))
     #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
-    samples = sdr_read(sdr, d['fullSize'])
+    samples = sdr_read(d['sdr'], d['fullSize'])
     fftAll = np.zeros(d['fftSize'])
     if gWindow:
         win = np.hanning(d['fftSize'])
@@ -169,7 +174,7 @@ def sdr_curscan(sdr, d):
     return fftAll
 
 
-def zero_span(sdr, d):
+def zero_span(d):
     '''
     Repeatadly keep scanning a specified freq band, which is configured
     by default to be the max sampling rate supported by the hardware.
@@ -177,7 +182,7 @@ def zero_span(sdr, d):
     Display the instanteneous signal levels as well as
     history of signal levels as a heat map.
     '''
-    sdr_setup(sdr, d['centerFreq'], d['samplingRate'], d['gain'])
+    d['sdr'] = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
@@ -195,7 +200,7 @@ def zero_span(sdr, d):
         curTime = time.time()
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
-        fftCur = sdr_curscan(sdr, d)
+        fftCur = sdr_curscan(d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         if d['bPltHeatMap']:
@@ -214,7 +219,7 @@ def zero_span(sdr, d):
             plt.pause(0.0001)
 
 
-def _scan_range(sdr, d, freqsAll, fftAll):
+def _scan_range(d, freqsAll, fftAll):
     '''
     Scan a specified range, this can be larger than the freq band
     that can be sampled/scanned by the hardware in one go, in which
@@ -248,7 +253,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         else:
             sEnd = iEnd - iStart
         try:
-            sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
+            d['sdr'] = sdr_setup(d['sdr'], curFreq, d['samplingRate'], d['gain'])
             bSdrSetup = True
         except:
             print("WARN:_scanRange: sdr_setup failed for {}".format(curFreq))
@@ -258,7 +263,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
         freqsAll[iStart:iEnd] = freqs[sStart:sEnd]
         if bSdrSetup:
-            fftCur = sdr_curscan(sdr, d)
+            fftCur = sdr_curscan(d)
         else:
             print("WARN:_scanRange: Dummy data for {} to {}".format(startFreq, startFreq+freqSpan))
             fftCur = np.ones(d['fftSize'])
@@ -280,7 +285,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
     return freqsAll, fftAll
 
 
-def scan_range(sdr, d):
+def scan_range(d):
     freqs = None
     ffts = None
     # Adjust endFreq such that start-end is a multiple of samplingRate, if required
@@ -295,7 +300,7 @@ def scan_range(sdr, d):
         hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
     for i in range(d['prgLoopCnt']):
         print_info(d)
-        freqs, ffts = _scan_range(sdr, d, freqs, ffts)
+        freqs, ffts = _scan_range(d, freqs, ffts)
         if d['bPltHeatMap']:
             plt.figure(PLTFIG_HEATMAP)
             hm.set_data(d['fftCurs'])
@@ -434,12 +439,12 @@ handle_args(gD)
 print_info(gD)
 handle_signals(gD)
 plt_figures(gD)
-sdr = rtlsdr.RtlSdr()
+gD['sdr'] = rtlsdr.RtlSdr()
 if gD['prgMode'] == PRGMODE_SCAN:
-    scan_range(sdr, gD)
+    scan_range(gD)
 else:
-    zero_span(sdr, gD)
-sdr.close()
+    zero_span(gD)
+gD['sdr'].close()
 
 
 
