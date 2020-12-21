@@ -224,6 +224,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         msg = "ERROR: freqSpan [{}] or fftSize[{}] x scanRangeNonOverlap [{}] is not int".format(freqSpan, d['fftSize'], d['scanRangeNonOverlap'])
         prg_quit(d, msg)
     curFreq = d['startFreq'] + freqSpan/2
+    startFreq = curFreq - freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
     totalFreqs = d['endFreq'] - d['startFreq']
     numGroups = int(totalFreqs/freqSpan)
@@ -237,7 +238,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             d['fftCursIndex'] = 0
             d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
     i = 0
-    while curFreq < d['endFreq']:
+    while startFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
         iEnd = iStart+d['fftSize']
         sStart = 0
@@ -264,6 +265,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             plt.plot(freqsAll, fftPr)
             plt.pause(0.001)
         curFreq += freqSpan*d['scanRangeNonOverlap']
+        startFreq = curFreq - freqSpan/2
         i += 1
     return freqsAll, fftAll
 
