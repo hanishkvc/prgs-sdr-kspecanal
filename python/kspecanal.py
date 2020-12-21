@@ -60,7 +60,10 @@ def data_proc(d, vals, dataProc, infTo = None):
         if infTo != None:
             vals[np.isinf(vals)] = infTo
     elif dataProc == 'LogNoGain':
+        #print("min", np.min(vals), "max", np.max(vals))
+        #print("DBUG: Zeros", np.argwhere(vals == 0))
         vals = 10*np.log10(vals)-d['gain']
+        #print("DBUG: -Inf", np.argwhere(vals == - np.Inf))
         if infTo != None:
             vals[np.isinf(vals)] = infTo
     return vals
@@ -247,7 +250,7 @@ def _scan_range(d, freqsAll, fftAll):
     totalEntries = numGroups * d['fftSize']
     print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
-        fftAll = np.zeros(totalEntries)
+        fftAll = np.ones(totalEntries) * d['minAmp4Clip']
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
             d['fftCursMax'] = 128
