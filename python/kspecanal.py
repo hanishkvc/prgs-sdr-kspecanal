@@ -41,7 +41,7 @@ PLTFIG_HEATMAP = "Heatmap"
 
 
 
-def data_proc(d, vals, dataProc):
+def data_proc(d, vals, dataProc, infTo = None):
     '''
     Process the passed array of values in different ways.
 
@@ -57,8 +57,12 @@ def data_proc(d, vals, dataProc):
         vals = np.clip(vals, d['minAmp4Clip'], None)
     elif dataProc == 'Log':
         vals = 10*np.log10(vals)
+        if infTo != None:
+            vals[np.isinf(vals)] = infTo
     elif dataProc == 'LogNoGain':
         vals = 10*np.log10(vals)-d['gain']
+        if infTo != None:
+            vals[np.isinf(vals)] = infTo
     return vals
 
 
@@ -83,7 +87,7 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
     return curVals
 
 
-def fftvals_dispproc(d, vals, fftDispProcMode):
+def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
     '''
     Process fft value wrt displaying it.
     '''
@@ -92,7 +96,7 @@ def fftvals_dispproc(d, vals, fftDispProcMode):
     if fftDispProcMode.startswith('LogNoGain'):
         if fftDispProcMode == 'LogNoGainHistLowClip':
             vals = data_proc(d, vals, 'HistLowClip')
-        valLogs = data_proc(d, vals, 'LogNoGain')
+        valLogs = data_proc(d, vals, 'LogNoGain', infTo)
     return valLogs
 
 
@@ -110,12 +114,12 @@ def sdr_setup(sdr, fC, fS, gain):
         sdr.center_freq = fC
         sdr.gain = gain
         bOk = True
+        samples = sdr.read_samples(16*1024)
     except:
         print("WARN:SetupSDR:FAILED: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
         sdr.close()
         sdr = rtlsdr.RtlSdr()
         bOk = False
-    samples = sdr.read_samples(16*1024)
     print("SetupSDR:{}: fC[{}] fS[{}] gain[{}]".format(bOk, fC, fS, gain))
     return sdr, bOk
 
@@ -261,7 +265,7 @@ def _scan_range(d, freqsAll, fftAll):
         d['sdr'], bSdrSetup = sdr_setup(d['sdr'], curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
-        print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
+        #print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
         freqsAll[iStart:iEnd] = freqs[sStart:sEnd]
         if bSdrSetup:
             fftCur = sdr_curscan(d)
@@ -273,8 +277,7 @@ def _scan_range(d, freqsAll, fftAll):
         if d['bPltHeatMap']:
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
         fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
-        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
-        fftPr[np.isinf(fftPr)] = 0
+        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
             plt.cla()
