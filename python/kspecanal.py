@@ -6,6 +6,7 @@
 
 import sys
 import time
+import signal
 import numpy as np
 import matplotlib.pyplot as plt
 import rtlsdr
@@ -371,10 +372,19 @@ def plt_figures(d):
         plt.figure(PLTFIG_HEATMAP)
 
 
+def handle_sigint(signum, stack):
+    prg_quit(gD, "INFO:sigint: quiting on user request...")
+
+
+def handle_signals(d):
+    signal.signal(signal.SIGINT, handle_sigint)
+
+
 
 gD = {}
 handle_args(gD)
 print_info(gD)
+handle_signals(gD)
 plt_figures(gD)
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
