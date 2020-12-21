@@ -100,18 +100,24 @@ def sdr_setup(sdr, fC, fS, gain):
     '''
     Setup rtlsdr.
     Also skip few samples to avoid any junk, when it is settling.
+
+    If there is a failure in setting up the rtlsdr, then it closes
+    and reopens a new instance of rtlsdr. The same is returned to
+    the caller, along with a success or failure boolean.
     '''
-    print("SetupSDR:En: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
     try:
         sdr.sample_rate = fS
         sdr.center_freq = fC
         sdr.gain = gain
+        bOk = True
     except:
+        print("WARN:SetupSDR:FAILED: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
         sdr.close()
         sdr = rtlsdr.RtlSdr()
+        bOk = False
     samples = sdr.read_samples(16*1024)
-    print("SetupSDR:Ex: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
-    return sdr
+    print("SetupSDR:{}: fC[{}] fS[{}] gain[{}]".format(bOk, fC, fS, gain))
+    return sdr, bOk
 
 
 gSdrReadUnit = 2**18
@@ -182,7 +188,7 @@ def zero_span(d):
     Display the instanteneous signal levels as well as
     history of signal levels as a heat map.
     '''
-    d['sdr'] = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
+    d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
@@ -252,12 +258,7 @@ def _scan_range(d, freqsAll, fftAll):
             sEnd = iEnd - iStart - (iEnd - totalEntries)
         else:
             sEnd = iEnd - iStart
-        try:
-            d['sdr'] = sdr_setup(d['sdr'], curFreq, d['samplingRate'], d['gain'])
-            bSdrSetup = True
-        except:
-            print("WARN:_scanRange: sdr_setup failed for {}".format(curFreq))
-            bSdrSetup = False
+        d['sdr'], bSdrSetup = sdr_setup(d['sdr'], curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
         print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
