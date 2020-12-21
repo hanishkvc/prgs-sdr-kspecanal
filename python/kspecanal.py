@@ -101,6 +101,7 @@ def sdr_setup(sdr, fC, fS, gain):
     Setup rtlsdr.
     Also skip few samples to avoid any junk, when it is settling.
     '''
+    print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
     sdr.sample_rate = fS
     sdr.center_freq = fC
     sdr.gain = gain
@@ -246,12 +247,21 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             sEnd = iEnd - iStart - (iEnd - totalEntries)
         else:
             sEnd = iEnd - iStart
-        sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
+        try:
+            sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
+            bSdrSetup = True
+        except:
+            print("WARN:_scanRange: sdr_setup failed for {}".format(curFreq))
+            bSdrSetup = False
         freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
         freqs = np.fft.fftshift(freqs)
         print("_scanRange: iStart {}-{}, iEnd {}-{}, freqsMin {}, freqsMax {}, freqsLen {}".format(iStart, sStart, iEnd, sEnd, np.min(freqs), np.max(freqs), len(freqs)))
         freqsAll[iStart:iEnd] = freqs[sStart:sEnd]
-        fftCur = sdr_curscan(sdr, d)
+        if bSdrSetup:
+            fftCur = sdr_curscan(sdr, d)
+        else:
+            print("WARN:_scanRange: Dummy data for {} to {}".format(startFreq, startFreq+freqSpan))
+            fftCur = np.ones(d['fftSize'])
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
         if d['bPltHeatMap']:
