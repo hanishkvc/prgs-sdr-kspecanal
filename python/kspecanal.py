@@ -22,7 +22,7 @@ gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
-gCumuMode = 'Avg'
+gCumuMode = 'AVG'
 
 
 
@@ -55,13 +55,16 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
     Avg: average the values between curVals and newVals buffer and store into curVals.
     Max: copy the larger value between curVals and newVals into curVals.
     '''
-    if mode == 'Copy':
+    if mode == 'COPY':
         curVals[cStart:cEnd] = newVals[nStart:nEnd]
-    elif mode == 'Avg':
+    elif mode == 'AVG':
         curVals[cStart:cEnd] += newVals[nStart:nEnd]
         curVals[cStart:cEnd] /= 2
-    elif mode == 'Max':
+    elif mode == 'MAX':
         curVals[cStart:cEnd] = np.max([newVals[nStart:nEnd], curVals[cStart:cEnd]], axis=0)
+    else:
+        msg = "ERROR: Unknown cumuMode [{}], Quiting...".format(mode)
+        prg_quit(d, msg)
     return curVals
 
 
@@ -188,6 +191,7 @@ def scan_range(sdr, d):
     freqs = None
     ffts = None
     while True:
+        print_info(d)
         freqs, ffts = _scan_range(sdr, d, freqs, ffts)
 
 
@@ -232,7 +236,7 @@ def handle_args(d):
             d['fftSize'] = int(sys.argv[iArg])
         elif (curArg == 'CUMUMODE'):
             iArg += 1
-            d['cumuMode'] = sys.argv[iArg]
+            d['cumuMode'] = sys.argv[iArg].upper()
         elif (curArg == 'WINDOW'):
             iArg += 1
             if sys.argv[iArg].upper() == 'TRUE':
@@ -248,13 +252,23 @@ def handle_args(d):
     d['fullSize'] = d['fftSize'] * gFft2FullMult
 
 
+def print_info(d):
+    print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
+    print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
+    print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['nonOverlap'], d['window']))
+    print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(d['minAmp4Clip'], d['cumuMode']))
+
+
+def prg_quit(d, msg = None):
+    if type(msg) != type(None):
+        print(msg)
+    quit()
+
+
 
 gD = {}
 handle_args(gD)
-print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(gD['startFreq'], gD['centerFreq'], gD['endFreq']))
-print("INFO: samplingRate[{}], gain[{}]".format(gD['samplingRate'], gD['gain']))
-print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(gD['fullSize'], gD['fftSize'], gD['nonOverlap'], gD['window']))
-print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(gD['minAmp4Clip'], gD['cumuMode']))
+print_info(gD)
 plt.show(block=False)
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
