@@ -29,6 +29,7 @@ gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
 gCumuMode = 'AVG'
+gScanRangeNonOverlap = 0.75
 
 
 PRGMODE_SCAN = 'SCAN'
@@ -218,6 +219,9 @@ def _scan_range(sdr, d, freqsAll, fftAll):
     case it will do multiple scans to cover the full specified range.
     '''
     freqSpan = d['samplingRate']
+    if (((freqSpan*d['scanRangeNonOverlap'])%1) != 0) or ((d['fftSize']*d['scanRangeNonOverlap'])%1 != 0):
+        msg = "ERROR: freqSpan [{}] or fftSize[{}] x scanRangeNonOverlap [{}] is not int".format(freqSpan, d['fftSize'], d['scanRangeNonOverlap'])
+        prg_quit(d, msg)
     curFreq = d['startFreq'] + freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
     if type(freqsAll) == type(None):
@@ -233,7 +237,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
     i = 0
     while curFreq < d['endFreq']:
-        iStart = i*d['fftSize']
+        iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
         iEnd = iStart+d['fftSize']
         sdr_setup(sdr, curFreq, d['samplingRate'], d['gain'])
         freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + curFreq
@@ -252,7 +256,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             plt.cla()
             plt.plot(freqsAll, fftPr)
             plt.pause(0.001)
-        curFreq += freqSpan
+        curFreq += freqSpan*d['scanRangeNonOverlap']
         i += 1
     return freqsAll, fftAll
 
@@ -286,6 +290,7 @@ def handle_args(d):
     d['cumuMode'] = gCumuMode
     d['bPltHeatMap'] = gbPltHeatMap
     d['bPltLevels'] = gbPltLevels
+    d['scanRangeNonOverlap'] = gScanRangeNonOverlap
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -317,6 +322,9 @@ def handle_args(d):
         elif (curArg == 'NONOVERLAP'):
             iArg += 1
             d['nonOverlap'] = float(sys.argv[iArg])
+        elif (curArg == 'SCANRANGENONOVERLAP'):
+            iArg += 1
+            d['scanRangeNonOverlap'] = float(sys.argv[iArg])
         elif (curArg == 'FFTSIZE'):
             iArg += 1
             d['fftSize'] = int(sys.argv[iArg])
@@ -361,8 +369,8 @@ def handle_args(d):
 def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
-    print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['nonOverlap'], d['window']))
-    print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(d['minAmp4Clip'], d['cumuMode']))
+    print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window']))
+    print("INFO: minAmp4Clip[{}], nonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['nonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['bPltLevels'], d['bPltHeatMap']))
 
 
