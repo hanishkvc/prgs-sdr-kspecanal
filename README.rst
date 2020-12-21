@@ -57,6 +57,9 @@ again and again.
 
 It shows the normalised fft result magnitudes of the scan on a Log scale.
 
+It also shows a heatmap | waterfall of the signal levels over a period of
+time till then.
+
 
 Scan
 =======

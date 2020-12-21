@@ -151,6 +151,8 @@ def zero_span(sdr, d):
         maxHM = 128
         fftHM = np.zeros((maxHM, d['fftSize']))
         indexHM = 0
+        plt.figure(PLTFIG_HEATMAP)
+        hm = plt.imshow(fftHM, extent=(0,1, 0,1))
     while True:
         print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,100])
         fftCur = sdr_curscan(sdr, d)
@@ -159,7 +161,8 @@ def zero_span(sdr, d):
         if gbPltHeatMap:
             plt.figure(PLTFIG_HEATMAP)
             fftHM[indexHM,:] = fftPr
-            plt.imshow(fftHM, extent=(0,1,0,1))
+            hm.set_data(fftHM)
+            hm.autoscale()
             plt.pause(0.001)
             indexHM = (indexHM + 1) % maxHM
         if gbPltLevels:
