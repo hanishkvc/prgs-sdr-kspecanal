@@ -5,6 +5,7 @@
 
 
 import sys
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 import rtlsdr
@@ -159,7 +160,11 @@ def zero_span(sdr, d):
         plt.xticks([0, 0.5, 1], [d['startFreq'], d['centerFreq'], d['endFreq']])
         plt.xlabel("Freqs")
         plt.ylabel("ScanNum")
+    prevTime = time.time()
     while True:
+        curTime = time.time()
+        print("ZeroSpan:{}".format(curTime-prevTime))
+        prevTime = curTime
         fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
@@ -168,14 +173,15 @@ def zero_span(sdr, d):
             fftHM[indexHM,:] = fftPr
             hm.set_data(fftHM)
             hm.autoscale()
-            plt.pause(0.001)
-            print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,1])
+            plt.draw()
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
             plt.cla()
             plt.plot(freqs, fftPr)
-            plt.pause(0.001)
+            plt.draw()
+        if d['bPltHeatMap'] or d['bPltLevels']:
+            plt.pause(0.0001)
 
 
 def _scan_range(sdr, d, freqsAll, fftAll):
