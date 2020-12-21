@@ -103,15 +103,15 @@ def sdr_setup(sdr, fC, fS, gain):
     print("SetupSDR: fC[{}] fS[{}] gain[{}]".format(fC, fS, gain))
 
 
-gSdrReadUnit = 2**16
+gSdrReadUnit = 2**18
 def sdr_read(sdr, length):
     '''
     Read from the rtlsdr.
-    If the given length is very large, then it is broken down into
-    multiple smaller reads, to avoid libusb io errors.
+    If the given length is larger than gSdrReadUnit, then it is broken down
+    into multiple smaller reads, to avoid libusb io errors.
 
-    If the length to be read is larger than 2**16, then it requires
-    to be a multiple of 2**16.
+    If the length to be read is larger than gSdrReadUnit, then it requires
+    to be a multiple of gSdrReadUnit.
     '''
     if length > gSdrReadUnit:
         loopCnt = length//gSdrReadUnit
