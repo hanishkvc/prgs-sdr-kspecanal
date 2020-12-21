@@ -160,7 +160,6 @@ def zero_span(sdr, d):
         plt.xlabel("Freqs")
         plt.ylabel("ScanNum")
     while True:
-        print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,100])
         fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
@@ -170,6 +169,7 @@ def zero_span(sdr, d):
             hm.set_data(fftHM)
             hm.autoscale()
             plt.pause(0.001)
+            print("INFO:ZeroSpan:", indexHM, fftHM[indexHM,1])
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
@@ -199,7 +199,6 @@ def _scan_range(sdr, d, freqsAll, fftAll):
             d['fftCursIndex'] = 0
             d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
     i = 0
-    plt.figure(PLTFIG_LEVELS)
     while curFreq < d['endFreq']:
         iStart = i*d['fftSize']
         iEnd = iStart+d['fftSize']
@@ -216,6 +215,7 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
         if d['bPltLevels']:
+            plt.figure(PLTFIG_LEVELS)
             plt.cla()
             plt.plot(freqsAll, fftPr)
             plt.pause(0.001)
@@ -303,6 +303,9 @@ def handle_args(d):
                 d['bPltLevels'] = True
             else:
                 d['bPltLevels'] = False
+        else:
+            msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
+            prg_quit(d, msg)
         iArg += 1
     if d['prgMode'] == 'SCAN':
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
@@ -326,17 +329,19 @@ def prg_quit(d, msg = None):
     quit()
 
 
-def plt_figures():
+def plt_figures(d):
     plt.ion()
-    plt.figure(PLTFIG_LEVELS)
-    plt.figure(PLTFIG_HEATMAP)
+    if d['bPltLevels']:
+        plt.figure(PLTFIG_LEVELS)
+    if d['bPltHeatMap']:
+        plt.figure(PLTFIG_HEATMAP)
 
 
 
 gD = {}
 handle_args(gD)
 print_info(gD)
-plt_figures()
+plt_figures(gD)
 sdr = rtlsdr.RtlSdr()
 if gD['prgMode'] == 'SCAN':
     scan_range(sdr, gD)
