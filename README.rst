@@ -113,6 +113,9 @@ band) at any given time only a freq band equivalent to samplingRate is
 what is being monitored, so any signals occuring in any other bands at
 that time will not be captured.
 
+If there is a error in setting up the sdr, then the value of that freq
+band gets set to all 1s.
+
 Other Args
 -----------
 
@@ -213,5 +216,8 @@ Overlap across scan bands [Done].
 
 Use pygame or cairo or .. to do the plots. Heatmap with large freq bands and
 default or large fftSize, could bring the program and the system to its knees.
-And or parallely save into image with sufficient resolution.
+And or parallely save into image with sufficient resolution. Also the imshow,
+losses signal info, if the signal is surrounded by very weak or no signal in
+the adjacent frequencies. Need to use implement my own logic, with max instead
+of averaging when mapping multiple data points into individual pixels.
 
