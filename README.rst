@@ -19,9 +19,10 @@ While design of a product, one is interested in understanding
 
 
 So using a full-samplingrate-width window based overlapped sliding with
-max amplitude captured over multisec data in each freq band being scanned,
-potentially using rectangle window function, can give a picture of what
-frequencies are at play. And potentially to what max amplitude levels.
+max mode amplitude capture over multisecond data in each freq band being
+scanned, potentially using rectangle window function, can give a picture
+of what frequencies are at play. And potentially to what max amplitude
+levels.
 
 While running the same with a reduced fft window size and sliding, will
 allow one to scan through with less fidelity in a fast way.
@@ -39,6 +40,9 @@ simple level. It doesnt go into nitty gritties beyond it.
 
 It is a study in rough relatives and not absolutes,
 and that is good enough / sufficiently useful, many a times ;-)
+
+One can mix and match the options supported by the program to try and
+explore the emissions/signals in a suitable way.
 
 
 Use
@@ -63,6 +67,9 @@ time till then.
 
 Scan
 =======
+
+Scan over a large freq range, in steps and show the results both as a
+normal signal level plot as well as a heat map with historic data.
 
 Normal
 --------
@@ -94,36 +101,111 @@ NOTE
 Currently the logic is setup to apply fft on 2**14 samples at a time,
 this gives a fft bin width / RBW of around 150Hz for 2.4e6 sampling rate.
 
+There is processing and plotting delay between the repeating scans, so
+any signal occuring at that time will be lost. Similarly when using scan
+to scan through a large freq range (especially when doing beyond 2.4MHz
+band) at any given time only a freq band equivalent to samplingRate is
+what is being monitored, so any signals occuring in any other bands at
+that time will not be captured.
+
 Other Args
 -----------
 
 samplingRate <samplingRateFloat>
+
+        Default 2.4e6; this is a good value for rtlsdr. If you want,
+        you can reduce it.
+
 minAmp4Clip <float>
+
+        Default (1/256)*0.33; Change it to control the forced noise floor.
+        Any measured signal level below this in the freq domain will be
+        set to this value.
+
 gain <gainFloat>
+
+        Default 19.1; Increase or reduce this depending on the strength
+        of the signals being studied.
+
 cumuMode <Avg|Max|Copy>
+
+        Default Avg; Change to Max, if one wants to know the max value
+        noticed at any time during the scan.
+
 window <true|false>
+
+        Default: False; Controls whether a windowing function (hanning)
+        is applied to the time domain samples, before fft is done. Helps
+        get a better sense about the signals in a scan. Useful if only
+        a limited scan is being done. However for small fft window size,
+        overlapped sliding may be more useful.
+
 fftSize <integer>
+
+        Default: 2**14; The number of samples that is run through the fft
+        in one go. This also decides the resolution bandwidth of the logic.
+        Larger the fftSize, finer the freq resolution.
+
 nonOverlap <float>
+
+        Default: 0.1; As the small size fft window is slide over a larger
+        signal sample dataset, this controls how much of the data is
+        skipped during the overlapping. 0.1 means 90% overlapping 1.0
+        means 0% overlapping. Overlapping normally helps get a better feel of
+        the signal level, even thou only a fraction of a second worth of data
+        is run through fft at a time.
+
 bPltLevels <true|false>
+
+        Default: True; Control whether the current internal scan signal level
+        is plotted or not. Disabling this will speed up the scan interval a bit.
+
 bPltHeatMap <true|false>
+
+        Default: True; Control whether the signal level history | heat map is
+        plotted or not. Disabling this will speed up the scan interval a bit.
+
 nonOverlapScanRange <float>
+
+        Default: 0.75; Change to control how much of the freq band is overlapped
+        as the scan range logic scans/steps through a given range of frequencies.
+        Set it to 1.0 to avoid overlapping, or set it to 0.5 to overlap 50% of the
+        freq band, as the logic tunes to the next center freq to scan the next
+        adjacent freq band. Could help overcome any non linearity in measuring
+        within a freq band, to an extent.
+
 prgLoopCnt <int>
 
+        Default: A large value; Change to a smaller value, if you want to scan
+        for a short amount of time like few minutes or so. As zooming or panning
+        the plot, when the program is running and updating the plot is not easy
+        and consistent, so one can scan for a short time, and then once the scan
+        is finished look into the scan plot in detail, or else one will have to
+        wait till the program stops after a long time.
+
+Remember
+----------
+
+Do look into the source to get the latest | current default setting for the
+different options, and or to change as one sees fit.
 
 
 TODO
 #######
 
-Account -ve freqs of complex iq fft. [almost]
+Account -ve freqs of complex iq fft. [Done]
 
 Put something similar to old dwelltime, but controlled using rbw
 rather than dwell time. Along with windowing and some amount of limited
 sliding. [5050]
 
 Add Max based cumulation of fft result and provide option to switch
-between average and Max.
+between average and Max [Done].
 
-Add the running heatmap/waterfall view.
+Add the running heatmap/waterfall view [Done].
 
-Overlap across scan bands.
+Overlap across scan bands [Done].
+
+Use pygame or cairo or .. to do the plots. Heatmap with large freq bands and
+default or large fftSize, could bring the program and the system to its knees.
 
