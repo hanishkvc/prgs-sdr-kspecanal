@@ -346,7 +346,7 @@ def handle_args(d):
         d['fullSize'] = d['fftSize'] * gFft2FullMult4Less
     else:
         d['fullSize'] = d['fftSize'] * gFft2FullMult4More
-    if d['fullSize'] % gSdrReadUnit != 0:
+    if (d['fullSize'] > gSdrReadUnit) and ((d['fullSize'] % gSdrReadUnit) != 0):
         prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
 
 
@@ -355,13 +355,13 @@ def print_info(d):
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
     print("INFO: fullSize[{}], fftSize[{}], nonOverlap[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['nonOverlap'], d['window']))
     print("INFO: minAmp4Clip[{}], cumuMode[{}]".format(d['minAmp4Clip'], d['cumuMode']))
-    print("INFO: bPltLevels[{}],  bPltHeatMap[{}]".format(d['bPltLevels'], d['bPltHeatMap']))
+    print("INFO: prgMode [{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['bPltLevels'], d['bPltHeatMap']))
 
 
 def prg_quit(d, msg = None):
     if type(msg) != type(None):
         print(msg)
-    quit()
+    sys.exit()
 
 
 def plt_figures(d):
