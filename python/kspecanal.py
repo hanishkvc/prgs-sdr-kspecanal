@@ -30,6 +30,7 @@ gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
 gCumuMode = 'AVG'
 gScanRangeNonOverlap = 0.75
+gPrgLoopCnt = 8192
 
 
 PRGMODE_SCAN = 'SCAN'
@@ -189,9 +190,9 @@ def zero_span(sdr, d):
         plt.xlabel("Freqs")
         plt.ylabel("ScanNum")
     prevTime = time.time()
-    while True:
+    for i in range(d['prgLoopCnt']):
         curTime = time.time()
-        print("ZeroSpan:{}".format(curTime-prevTime))
+        print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         fftCur = sdr_curscan(sdr, d)
         fftCur = np.fft.fftshift(fftCur)
@@ -267,7 +268,7 @@ def scan_range(sdr, d):
     if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
         hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
-    while True:
+    for i in range(d['prgLoopCnt']):
         print_info(d)
         freqs, ffts = _scan_range(sdr, d, freqs, ffts)
         if d['bPltHeatMap']:
@@ -291,6 +292,7 @@ def handle_args(d):
     d['bPltHeatMap'] = gbPltHeatMap
     d['bPltLevels'] = gbPltLevels
     d['scanRangeNonOverlap'] = gScanRangeNonOverlap
+    d['prgLoopCnt'] = gPrgLoopCnt
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -349,6 +351,9 @@ def handle_args(d):
                 d['bPltLevels'] = True
             else:
                 d['bPltLevels'] = False
+        elif (curArg == 'PRGLOOPCNT'):
+            iArg += 1
+            d['prgLoopCnt'] = int(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -371,7 +376,7 @@ def print_info(d):
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
     print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window']))
     print("INFO: minAmp4Clip[{}], nonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['nonOverlap'], d['scanRangeNonOverlap']))
-    print("INFO: prgMode [{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['bPltLevels'], d['bPltHeatMap']))
+    print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
 
 
 def prg_quit(d, msg = None):

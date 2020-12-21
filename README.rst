@@ -106,7 +106,8 @@ fftSize <integer>
 nonOverlap <float>
 bPltLevels <true|false>
 bPltHeatMap <true|false>
-
+nonOverlapScanRange <float>
+prgLoopCnt <int>
 
 
 
