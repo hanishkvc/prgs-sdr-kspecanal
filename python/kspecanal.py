@@ -194,6 +194,10 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
         fftAll = np.zeros(totalEntries)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
+        if gbPltHeatMap:
+            d['fftCursMax'] = 128
+            d['fftCursIndex'] = 0
+            d['fftCurs'] = np.zeros([d['fftCursMax'], totalEntries])
     i = 0
     plt.figure(PLTFIG_LEVELS)
     while curFreq < d['endFreq']:
@@ -206,6 +210,8 @@ def _scan_range(sdr, d, freqsAll, fftAll):
         fftCur = sdr_curscan(sdr, d)
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
+        if gbPltHeatMap:
+            d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur
         fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, 0, len(fftCur))
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode)
         fftPr[np.isinf(fftPr)] = 0
@@ -220,9 +226,18 @@ def _scan_range(sdr, d, freqsAll, fftAll):
 def scan_range(sdr, d):
     freqs = None
     ffts = None
+    if gbPltHeatMap:
+        plt.figure(PLTFIG_HEATMAP)
+        hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
     while True:
         print_info(d)
         freqs, ffts = _scan_range(sdr, d, freqs, ffts)
+        if gbPltHeatMap:
+            plt.figure(PLTFIG_HEATMAP)
+            hm.set_data(d['fftCurs'])
+            hm.autoscale()
+            plt.pause(0.001)
+            d['fftCursIndex'] = (d['fftCursIndex'] + 1) % d['fftCursMax']
 
 
 def handle_args(d):
