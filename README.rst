@@ -103,8 +103,12 @@ i.e this triggers a quick scan from 30e6 to 1.5e9 with fftSize of 256
 NOTE
 =======
 
-Currently the logic is setup to apply fft on 2**14 samples at a time,
-this gives a fft bin width / RBW of around 150Hz for 2.4e6 sampling rate.
+The logic is setup to apply fft on fftSize samples at a time, which is
+independent of the samplingRate specified. This in turn controls the fft
+bin width | RBW to be around samplingRate/fftSize. Inturn what is shown
+on the screen is also controlled by xRes, larger the xRes more finegrained
+the amount of data shown on screen, provided the screen resolution is also
+equally good.
 
 There is processing and plotting delay between the repeating scans, so
 any signal occuring at that time will be lost. Similarly when using scan
@@ -114,7 +118,8 @@ what is being monitored, so any signals occuring in any other bands at
 that time will not be captured.
 
 If there is a error in setting up the sdr, then the value of that freq
-band gets set to all 1s.
+band gets set to all 1s, this inturn leads to a level of around -25 or
+so in the levels plot.
 
 Other Args
 -----------
@@ -152,7 +157,8 @@ fftSize <integer>
 
         Default: 2**14; The number of samples that is run through the fft
         in one go. This also decides the resolution bandwidth of the logic.
-        Larger the fftSize, finer the freq resolution.
+        Larger the fftSize, finer the freq resolution. Needs to be a power
+        of two value, or else multiple of xRes.
 
 nonOverlap <float>
 
@@ -191,6 +197,21 @@ prgLoopCnt <int>
         is finished look into the scan plot in detail, or else one will have to
         wait till the program stops after a long time.
 
+pltCompress <Raw|Avg|Max>
+
+        Default: Average; This allows one to control how finegrained or not is
+        the signal levels across adjacent freqs that are shown. This along with
+        fftSize and xRes, decides how finegrained is the freq resolution you see
+        on the screen.
+
+xRes <int_poweroftwovalue>
+
+        Default: 2048; This controls the horizontal resolution (number of data
+        points related to frequencies or groups of adjacent frequencies) of the
+        data passed to the plotting logic. This needs to be a power of two value,
+        or else a sub multiple of fftSize.
+
+
 Remember
 ----------
 
@@ -219,5 +240,6 @@ default or large fftSize, could bring the program and the system to its knees.
 And or parallely save into image with sufficient resolution. Also the imshow,
 losses signal info, if the signal is surrounded by very weak or no signal in
 the adjacent frequencies. Need to use implement my own logic, with max instead
-of averaging when mapping multiple data points into individual pixels.
+of averaging when mapping multiple data points into individual pixels. [Done
+Rather process the data by merging adjacent data points, before plotting them]
 
