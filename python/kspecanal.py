@@ -131,21 +131,26 @@ def data_plotcompress(d, xData, yData):
 
 
 def data_2d_plotcompress(d, data):
+    '''
+    Reduce the number of elements in a 2D data set,
+    by merging adjacent cols of each row, into a smaller subset of cols.
+    '''
     if d['pltCompress'] == PLTCOMPRESS_RAW:
         return data
-    xLen = data[1]
+    yLen,xLen = data.shape
     xReduce = int(xLen/d['xRes'])
     rows = int(xLen/xReduce)
     cols = xReduce
-    for y in range(data.shape[0]):
+    newData = np.zeros((yLen, rows))
+    for y in range(yLen):
         xData = data[y,:]
         xTData = xData.reshape(rows, cols)
         if d['pltCompress'] == PLTCOMPRESS_MAX:
             xVals = np.max(xTData, axis=1)
         else:
             xVals = np.average(xTData, axis=1)
-        data[y,:] = xVals
-    return data
+        newData[y,:] = xVals
+    return newData
 
 
 def sdr_setup(sdr, fC, fS, gain):
