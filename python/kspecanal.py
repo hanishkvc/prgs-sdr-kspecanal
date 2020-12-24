@@ -12,9 +12,19 @@ import matplotlib.pyplot as plt
 import rtlsdr
 
 
+
+PRGMODE_SCAN = 'SCAN'
+PRGMODE_ZEROSPAN = 'ZEROSPAN'
+PLTFIG_LEVELS = "Levels"
+PLTFIG_HEATMAP = "Heatmap"
+PLTCOMPRESS_MAX = 'Max'
+PLTCOMPRESS_AVG = 'Avg'
+PLTCOMPRESS_RAW = 'Raw'
+
+
+
 gbPltHeatMap = True
 gbPltLevels = True
-
 gNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
@@ -31,13 +41,8 @@ gScanRangeClipProcMode = 'Clip2MinAmp'
 gCumuMode = 'AVG'
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
-
-
-PRGMODE_SCAN = 'SCAN'
-PRGMODE_ZEROSPAN = 'ZEROSPAN'
-
-PLTFIG_LEVELS = "Levels"
-PLTFIG_HEATMAP = "Heatmap"
+gXRes = 2048
+gPltCompress = PLTCOMPRESS_AVG
 
 
 
@@ -101,6 +106,28 @@ def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
             vals = data_proc(d, vals, 'HistLowClip')
         valLogs = data_proc(d, vals, 'LogNoGain', infTo)
     return valLogs
+
+
+def data_plotcompress(d, xData, yData):
+    '''
+    Reduce the amount of data, while still maintaining any significant values in the data.
+    Length and XRes are assumed to belong to the powers of 2 series.
+    '''
+    if d['pltCompress'] == PLTCOMPRESS_RAW:
+        return xData, yData
+    xLen = len(xData)
+    #xReduce = np.ceil(xLen / d['xRes'])
+    xReduce = int(xLen / d['xRes'])
+    rows = int(xLen/xReduce)
+    cols = xReduce
+    xTData = xData.reshape(rows, cols)
+    xVals = np.average(xTData, axis=1)
+    yTData = yData.reshape(rows, cols)
+    if d['pltCompress'] == PLTCOMPRESS_MAX:
+        yVals = np.max(yTData, axis=1)
+    else:
+        yVals = np.average(yTData, axis=1)
+    return xVals, yVals
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -228,7 +255,9 @@ def zero_span(d):
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
             plt.cla()
-            plt.plot(freqs, fftPr)
+            #plt.plot(freqs, fftPr)
+            xFreqs, yLvls = data_plotcompress(d, freqs, fftPr)
+            plt.plot(xFreqs, yLvls)
             plt.draw()
         if d['bPltHeatMap'] or d['bPltLevels']:
             plt.pause(0.0001)
@@ -286,7 +315,8 @@ def _scan_range(d, freqsAll, fftAll):
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
             plt.cla()
-            plt.plot(freqsAll, fftPr)
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+            plt.plot(xFreqs, yLvls)
             plt.pause(0.001)
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
@@ -343,6 +373,8 @@ def handle_args(d):
     d['bPltLevels'] = gbPltLevels
     d['scanRangeNonOverlap'] = gScanRangeNonOverlap
     d['prgLoopCnt'] = gPrgLoopCnt
+    d['xRes'] = gXRes
+    d['pltCompress'] = gPltCompress
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
