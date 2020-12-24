@@ -17,9 +17,9 @@ PRGMODE_SCAN = 'SCAN'
 PRGMODE_ZEROSPAN = 'ZEROSPAN'
 PLTFIG_LEVELS = "Levels"
 PLTFIG_HEATMAP = "Heatmap"
-PLTCOMPRESS_MAX = 'Max'
-PLTCOMPRESS_AVG = 'Avg'
-PLTCOMPRESS_RAW = 'Raw'
+PLTCOMPRESS_MAX = 'MAX'
+PLTCOMPRESS_AVG = 'AVG'
+PLTCOMPRESS_RAW = 'RAW'
 
 
 
@@ -128,6 +128,24 @@ def data_plotcompress(d, xData, yData):
     else:
         yVals = np.average(yTData, axis=1)
     return xVals, yVals
+
+
+def data_2d_plotcompress(d, data):
+    if d['pltCompress'] == PLTCOMPRESS_RAW:
+        return data
+    xLen = data[1]
+    xReduce = int(xLen/d['xRes'])
+    rows = int(xLen/xReduce)
+    cols = xReduce
+    for y in range(data.shape[0]):
+        xData = data[y,:]
+        xTData = xData.reshape(rows, cols)
+        if d['pltCompress'] == PLTCOMPRESS_MAX:
+            xVals = np.max(xTData, axis=1)
+        else:
+            xVals = np.average(xTData, axis=1)
+        data[y,:] = xVals
+    return data
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -268,6 +286,9 @@ def _scan_range(d, freqsAll, fftAll):
     Scan a specified range, this can be larger than the freq band
     that can be sampled/scanned by the hardware in one go, in which
     case it will do multiple scans to cover the full specified range.
+
+    It uses cumuMode to decide how to merge data from across multiple
+    scans of the same freq band.
     '''
     freqSpan = d['samplingRate']
     if (((freqSpan*d['scanRangeNonOverlap'])%1) != 0) or ((d['fftSize']*d['scanRangeNonOverlap'])%1 != 0):
@@ -353,7 +374,8 @@ def scan_range(d):
         if d['bPltHeatMap']:
             #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
             plt.figure(PLTFIG_HEATMAP)
-            hm.set_data(d['fftCurs'])
+            hmData = data_2d_plotcompress(d, d['fftCurs'])
+            hm.set_data(hmData)
             hm.autoscale()
             plt.pause(0.001)
             d['fftCursIndex'] = (d['fftCursIndex'] + 1) % d['fftCursMax']
@@ -412,9 +434,15 @@ def handle_args(d):
         elif (curArg == 'FFTSIZE'):
             iArg += 1
             d['fftSize'] = int(sys.argv[iArg])
+        elif (curArg == 'XRES'):
+            iArg += 1
+            d['xRes'] = int(sys.argv[iArg])
         elif (curArg == 'CUMUMODE'):
             iArg += 1
             d['cumuMode'] = sys.argv[iArg].upper()
+        elif (curArg == 'PLTCOMPRESS'):
+            iArg += 1
+            d['pltCompress'] = sys.argv[iArg].upper()
         elif (curArg == 'WINDOW'):
             iArg += 1
             if sys.argv[iArg].upper() == 'TRUE':
