@@ -154,19 +154,26 @@ def data_2d_plotcompress(d, data):
 
 
 def plot_highs(d, freqs, levels):
-    print("PlotHighs:Freqs: {} to {}".format(freqs[0], freqs[-1]))
     freqRange = freqs[-1] - freqs[0]
+    delta4Marking = 0.05*freqRange
+    print("PlotHighs: Freqs {} to {} : delta4Marking {}".format(freqs[0], freqs[-1], delta4Marking))
     ordered = levels.argsort()
-    prevFreq = -999
-    for i in np.arange(-1,-5,-1):
+    marked = np.array([])
+    cntMarked = 0
+    for i in np.arange(-1,-len(freqs),-1):
+        print("PlotHighs:MarkedList:", marked)
         curFreq = freqs[ordered[i]]
         curLevel = levels[ordered[i]]
-        print("plotHighs: {}, {}".format(curFreq, curLevel))
-        delta = abs(curFreq - prevFreq)
-        if delta > 0.05*freqRange:
-            #plt.plot(curFreq, curLevel, "M")
+        matched = marked[abs(marked - curFreq) < delta4Marking]
+        if len(matched) == 0:
+            print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
             plt.plot(curFreq, -40, "o")
-            prevFreq = curFreq
+            marked = np.append(marked, curFreq)
+            cntMarked += 1
+            if cntMarked > 5:
+                break
+        else:
+            print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
     input("Press any key...")
 
 
