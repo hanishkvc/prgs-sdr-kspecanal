@@ -167,13 +167,14 @@ def plot_highs(d, freqs, levels):
         matched = marked[abs(marked - curFreq) < delta4Marking]
         if len(matched) == 0:
             print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
-            plt.plot(curFreq, -40, "o")
+            plt.plot(curFreq, curLevel, "o", label=curFreq)
             marked = np.append(marked, curFreq)
             cntMarked += 1
             if cntMarked > 5:
                 break
         else:
             print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
+    plt.legend()
     input("Press any key...")
 
 
@@ -371,7 +372,8 @@ def _scan_range(d, freqsAll, fftAll):
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         i += 1
-    xFreqs, yLvls = data_plotcompress(d, freqsAll, fftAll)
+    fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
+    xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
     plot_highs(d, xFreqs, yLvls)
     return freqsAll, fftAll
 
