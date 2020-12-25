@@ -153,6 +153,23 @@ def data_2d_plotcompress(d, data):
     return newData
 
 
+def plot_highs(d, freqs, levels):
+    print("PlotHighs:Freqs: {} to {}".format(freqs[0], freqs[-1]))
+    freqRange = freqs[-1] - freqs[0]
+    ordered = levels.argsort()
+    prevFreq = -999
+    for i in np.arange(-1,-5,-1):
+        curFreq = freqs[ordered[i]]
+        curLevel = levels[ordered[i]]
+        print("plotHighs: {}, {}".format(curFreq, curLevel))
+        delta = abs(curFreq - prevFreq)
+        if delta > 0.05*freqRange:
+            #plt.plot(curFreq, curLevel, "M")
+            plt.plot(curFreq, -40, "o")
+            prevFreq = curFreq
+    input("Press any key...")
+
+
 def sdr_setup(sdr, fC, fS, gain):
     '''
     Setup rtlsdr.
@@ -347,6 +364,8 @@ def _scan_range(d, freqsAll, fftAll):
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         i += 1
+    xFreqs, yLvls = data_plotcompress(d, freqsAll, fftAll)
+    plot_highs(d, xFreqs, yLvls)
     return freqsAll, fftAll
 
 
