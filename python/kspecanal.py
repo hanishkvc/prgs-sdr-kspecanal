@@ -155,6 +155,7 @@ def data_2d_plotcompress(d, data):
 
 gPltHighsDelta4Marking = 0.025
 gPltHighsNumMarkers = 5
+gPltHighsPause = False
 def plot_highs(d, freqs, levels):
     freqRange = freqs[-1] - freqs[0]
     delta4Marking = d['pltHighsDelta4Marking']*freqRange
@@ -163,7 +164,7 @@ def plot_highs(d, freqs, levels):
     marked = np.array([])
     cntMarked = 0
     for i in np.arange(-1,-len(freqs),-1):
-        print("PlotHighs:MarkedList:", marked)
+        #print("PlotHighs:MarkedList:", marked)
         curFreq = freqs[ordered[i]]
         curLevel = levels[ordered[i]]
         matched = marked[abs(marked - curFreq) < delta4Marking]
@@ -175,9 +176,11 @@ def plot_highs(d, freqs, levels):
             if cntMarked >= d['pltHighsNumMarkers']:
                 break
         else:
-            print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
+            #print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
+            pass
     plt.legend()
-    input("Press any key...")
+    if d['pltHighsPause']:
+        input("Press any key...")
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -416,6 +419,13 @@ def scan_range(d):
             d['fftCursIndex'] = (d['fftCursIndex'] + 1) % d['fftCursMax']
 
 
+def _arg_boolean(value):
+    if value.upper() == "TRUE":
+        return True
+    else:
+        return False
+
+
 def handle_args(d):
     d['prgMode'] = 'ZEROSPAN'
     d['samplingRate'] = gSamplingRate
@@ -434,6 +444,7 @@ def handle_args(d):
     d['pltCompress'] = gPltCompress
     d['pltHighsNumMarkers'] = gPltHighsNumMarkers
     d['pltHighsDelta4Marking'] = gPltHighsDelta4Marking
+    d['pltHighsPause'] = gPltHighsPause
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -482,22 +493,13 @@ def handle_args(d):
             d['pltCompress'] = sys.argv[iArg].upper()
         elif (curArg == 'WINDOW'):
             iArg += 1
-            if sys.argv[iArg].upper() == 'TRUE':
-                d['window'] = True
-            else:
-                d['window'] = False
+            d['window'] = _arg_boolean(sys.argv[iArg])
         elif (curArg == 'BPLTHEATMAP'):
             iArg += 1
-            if sys.argv[iArg].upper() == 'TRUE':
-                d['bPltHeatMap'] = True
-            else:
-                d['bPltHeatMap'] = False
+            d['bPltHeatMap'] = _arg_boolean(sys.argv[iArg])
         elif (curArg == 'BPLTLEVELS'):
             iArg += 1
-            if sys.argv[iArg].upper() == 'TRUE':
-                d['bPltLevels'] = True
-            else:
-                d['bPltLevels'] = False
+            d['bPltLevels'] = _arg_boolean(sys.argv[iArg])
         elif (curArg == 'PRGLOOPCNT'):
             iArg += 1
             d['prgLoopCnt'] = int(sys.argv[iArg])
@@ -507,6 +509,9 @@ def handle_args(d):
         elif (curArg == 'PLTHIGHSDELTA4MARKING'):
             iArg += 1
             d['pltHighsDelta4Marking'] = float(sys.argv[iArg])
+        elif (curArg == 'PLTHIGHSPAUSE'):
+            iArg += 1
+            d['pltHighsPause'] = _arg_boolean(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -530,7 +535,7 @@ def print_info(d):
     print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window'], d['xRes'], d['pltCompress']))
     print("INFO: minAmp4Clip[{}], nonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['nonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
-    print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking']))
+    print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
 
 
 def prg_quit(d, msg = None):

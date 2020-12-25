@@ -222,6 +222,14 @@ pltHighsDelta4Marking <float>
         is used as the delta needed between marked frequencies, when deciding
         whether to mark the high signal level freq on the plot or not.
 
+pltHighsPause <boolean>
+
+        Default: False; Specify whether the scan range plot should pause after
+        each scan of the specified range of frequencies. THis allows the user
+        to see the list of high signal level frequencies, on the plot.
+        Independent of above, the list of high siglevel freqs is also printed
+        on the console.
+
 
 
 Remember
