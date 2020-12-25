@@ -377,9 +377,10 @@ def _scan_range(d, freqsAll, fftAll):
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         i += 1
-    fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
-    xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
-    plot_highs(d, xFreqs, yLvls)
+    if d['bPltLevels']:
+        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
+        xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+        plot_highs(d, xFreqs, yLvls)
     return freqsAll, fftAll
 
 
