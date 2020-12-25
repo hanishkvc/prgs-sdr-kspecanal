@@ -153,9 +153,11 @@ def data_2d_plotcompress(d, data):
     return newData
 
 
+gPltHighsDelta4Marking = 0.025
+gPltHighsNumMarkers = 5
 def plot_highs(d, freqs, levels):
     freqRange = freqs[-1] - freqs[0]
-    delta4Marking = 0.05*freqRange
+    delta4Marking = d['pltHighsDelta4Marking']*freqRange
     print("PlotHighs: Freqs {} to {} : delta4Marking {}".format(freqs[0], freqs[-1], delta4Marking))
     ordered = levels.argsort()
     marked = np.array([])
@@ -170,7 +172,7 @@ def plot_highs(d, freqs, levels):
             plt.plot(curFreq, curLevel, "o", label=curFreq)
             marked = np.append(marked, curFreq)
             cntMarked += 1
-            if cntMarked > 5:
+            if cntMarked >= d['pltHighsNumMarkers']:
                 break
         else:
             print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
@@ -430,6 +432,8 @@ def handle_args(d):
     d['prgLoopCnt'] = gPrgLoopCnt
     d['xRes'] = gXRes
     d['pltCompress'] = gPltCompress
+    d['pltHighsNumMarkers'] = gPltHighsNumMarkers
+    d['pltHighsDelta4Marking'] = gPltHighsDelta4Marking
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -497,6 +501,12 @@ def handle_args(d):
         elif (curArg == 'PRGLOOPCNT'):
             iArg += 1
             d['prgLoopCnt'] = int(sys.argv[iArg])
+        elif (curArg == 'PLTHIGHSNUMMARKERS'):
+            iArg += 1
+            d['pltHighsNumMarkers'] = int(sys.argv[iArg])
+        elif (curArg == 'PLTHIGHSDELTA4MARKING'):
+            iArg += 1
+            d['pltHighsDelta4Marking'] = float(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -520,6 +530,7 @@ def print_info(d):
     print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window'], d['xRes'], d['pltCompress']))
     print("INFO: minAmp4Clip[{}], nonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['nonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
+    print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking']))
 
 
 def prg_quit(d, msg = None):

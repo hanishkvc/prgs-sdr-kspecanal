@@ -211,6 +211,18 @@ xRes <int_poweroftwovalue>
         data passed to the plotting logic. This needs to be a power of two value,
         or else a sub multiple of fftSize.
 
+pltHighsNumMarkers <int>
+
+        Default: 5; Control how many markers should be shown in the plot, wrt
+        the high signal levels.
+
+pltHighsDelta4Marking <float>
+
+        Default: 0.025; Specify how much fraction of the plot's full freq range,
+        is used as the delta needed between marked frequencies, when deciding
+        whether to mark the high signal level freq on the plot or not.
+
+
 
 Remember
 ----------
