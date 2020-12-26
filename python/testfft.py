@@ -32,9 +32,11 @@ class RtlSdr():
         sT = []
         f = [ f1, f2, f3 ]
         print("INFO:testfft_rtlsdr: freqs [{}], sampRate [{}], dur [{}], len [{}]".format(f, self.sample_rate, dur, len(tTimes)))
-        s = np.zeros(len(tTimes))
+        s = np.zeros(len(tTimes), dtype=complex)
         for i in range(len(f)):
-            sT.append(np.sin(2*np.pi*f[i]*tTimes))
+            sS = np.sin(2*np.pi*f[i]*tTimes)
+            sC = np.cos(2*np.pi*f[i]*tTimes)
+            sT.append(sS + sC*1j)
             s += sT[i]
         return s
 
