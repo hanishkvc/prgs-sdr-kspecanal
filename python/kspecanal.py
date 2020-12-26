@@ -157,6 +157,7 @@ gPltHighsDelta4Marking = 0.025
 gPltHighsNumMarkers = 5
 gPltHighsPause = False
 def plot_highs(d, freqs, levels):
+    d['AxFreqs'].cla()
     freqRange = freqs[-1] - freqs[0]
     delta4Marking = d['pltHighsDelta4Marking']*freqRange
     print("PlotHighs: Freqs {} to {} : delta4Marking {}".format(freqs[0], freqs[-1], delta4Marking))
@@ -170,7 +171,8 @@ def plot_highs(d, freqs, levels):
         matched = marked[abs(marked - curFreq) < delta4Marking]
         if len(matched) == 0:
             print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
-            plt.plot(curFreq, curLevel, "o", label=curFreq)
+            d['AxLevels'].plot(curFreq, curLevel, "o", label=curFreq)
+            d['AxFreqs'].plot(curFreq, curLevel, "o", label=curFreq)
             marked = np.append(marked, curFreq)
             cntMarked += 1
             if cntMarked >= d['pltHighsNumMarkers']:
@@ -370,9 +372,8 @@ def _scan_range(d, freqsAll, fftAll):
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
             plt.figure(PLTFIG_LEVELS)
-            plt.cla()
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
-            plt.plot(xFreqs, yLvls)
+            d['AxLevels'].plot(xFreqs, yLvls)
             plt.pause(0.001)
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
@@ -409,6 +410,8 @@ def scan_range(d):
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         #print_info(d)
+        if (i % 2) == 0:
+            d['AxLevels'].cla()
         freqs, ffts = _scan_range(d, freqs, ffts)
         if d['bPltHeatMap']:
             #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
@@ -551,7 +554,10 @@ def plt_figures(d):
     if d['bPltLevels']:
         freqBlocks = (d['endFreq'] - d['startFreq'])/d['samplingRate']
         freqBlocks = 12
-        plt.figure(PLTFIG_LEVELS, figsize=(freqBlocks*6, 6))
+        f = plt.figure(PLTFIG_LEVELS, figsize=(freqBlocks*6, 6))
+        gs = f.add_gridspec(nrows=1, ncols=2, width_ratios = [4,1])
+        d['AxLevels'] = f.add_subplot(gs[0,0])
+        d['AxFreqs'] = f.add_subplot(gs[0,1])
     if d['bPltHeatMap']:
         plt.figure(PLTFIG_HEATMAP)
 
