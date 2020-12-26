@@ -285,11 +285,10 @@ def zero_span(d):
         maxHM = 128
         fftHM = np.zeros((maxHM, d['fftSize']))
         indexHM = 0
-        plt.figure(PLTFIG_HEATMAP)
-        hm = plt.imshow(fftHM, extent=(0,1, 0,1))
-        plt.xticks([0, 0.5, 1], [d['startFreq'], d['centerFreq'], d['endFreq']])
-        plt.xlabel("Freqs")
-        plt.ylabel("ScanNum")
+        hm = d['AxHeatMap'].imshow(fftHM, extent=(0,1, 0,1), aspect='auto')
+        d['AxHeatMap'].set_xticks([0, 0.5, 1], [d['startFreq'], d['centerFreq'], d['endFreq']])
+        d['AxHeatMap'].set_xlabel("Freqs")
+        d['AxHeatMap'].set_ylabel("ScanHistory")
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
         if d['cmd.stop']:
@@ -301,18 +300,15 @@ def zero_span(d):
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         if d['bPltHeatMap']:
-            plt.figure(PLTFIG_HEATMAP)
             fftHM[indexHM,:] = fftPr
             hm.set_data(fftHM)
             hm.autoscale()
             plt.draw()
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
-            plt.figure(PLTFIG_LEVELS)
-            plt.cla()
-            #plt.plot(freqs, fftPr)
+            d['AxLevels'].cla()
             xFreqs, yLvls = data_plotcompress(d, freqs, fftPr)
-            plt.plot(xFreqs, yLvls)
+            d['AxLevels'].plot(xFreqs, yLvls)
             plt.draw()
         if d['bPltHeatMap'] or d['bPltLevels']:
             plt.pause(0.0001)
