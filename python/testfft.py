@@ -25,6 +25,7 @@ class RtlSdr():
         Actual rtlsdr returns iq data in complex notation.
         This currently returns real data
         '''
+        gainMult = 10**(self.gain/10)
         f1 = self.sample_rate/4
         f2 = 1
         f3 = -self.sample_rate/4
@@ -36,8 +37,8 @@ class RtlSdr():
         print("INFO:testfft_rtlsdr: freqs [{}], sampRate [{}], tStart [{}], dur [{}], len [{}]".format(self.center_freq - f, self.sample_rate, tStart, dur, len(tTimes)))
         s = np.zeros(len(tTimes), dtype=complex)
         for i in range(len(f)):
-            sS = np.sin(2*np.pi*f[i]*tTimes)
-            sC = np.cos(2*np.pi*f[i]*tTimes)
+            sS = gainMult * np.sin(2*np.pi*f[i]*tTimes)
+            sC = gainMult * np.cos(2*np.pi*f[i]*tTimes)
             sT.append(sS + sC*1j)
             s += sT[i]
         return s
