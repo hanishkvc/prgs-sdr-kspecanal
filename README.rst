@@ -95,9 +95,22 @@ kspecanal.py quickFullScan
 
 is a alias for
 
-        kspecanal.py scan startFreq 30e6 endFreq 1.5e9 fftSize 256
+        kspecanal.py scan startFreq 30e6 endFreq 1.5e9
 
-i.e this triggers a quick scan from 30e6 to 1.5e9 with fftSize of 256
+i.e this triggers a quick scan from 30e6 to 1.5e9
+
+FMScan
+--------
+
+kspecanal.py fmScan
+
+is a alias for
+
+        kspecanaly.py scan startFreq 88e6 endFreq 108e6
+
+If user doesnt specify any arguments, then the program defaults to this
+mode.
+
 
 
 UI Buttons

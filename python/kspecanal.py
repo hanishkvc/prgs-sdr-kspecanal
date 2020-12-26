@@ -15,6 +15,8 @@ import rtlsdr
 
 PRGMODE_SCAN = 'SCAN'
 PRGMODE_ZEROSPAN = 'ZEROSPAN'
+PRGMODE_ALIAS_FMSCAN = 'FMSCAN'
+PRGMODE_ALIAS_QUICKFULLSCAN = 'QUICKFULLSCAN'
 PLTFIG_LEVELS = "Levels"
 PLTFIG_HEATMAP = "Heatmap"
 PLTCOMPRESS_MAX = 'MAX'
@@ -23,6 +25,7 @@ PLTCOMPRESS_RAW = 'RAW'
 
 
 
+gPrgModeDefault = PRGMODE_ALIAS_FMSCAN
 gbPltHeatMap = True
 gbPltLevels = True
 gNonOverlap = 0.1
@@ -158,6 +161,7 @@ gPltHighsNumMarkers = 5
 gPltHighsPause = False
 def plot_highs(d, freqs, levels):
     d['AxFreqs'].clear()
+    d['AxFreqs'].set_xlabel("Freqs - HighSigLvl")
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
     freqRange = freqs[-1] - freqs[0]
@@ -393,7 +397,7 @@ def scan_range(d):
         d['orig.EndFreq'] = d['endFreq']
         d['endFreq'] = d['startFreq'] + np.ceil(freqBands)*d['samplingRate']
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
-        input("Press any key to continue...")
+        #input("Press any key to continue...")
     if d['bPltHeatMap']:
         hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto')
         centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
@@ -429,7 +433,7 @@ def _arg_boolean(value):
 
 
 def handle_args(d):
-    d['prgMode'] = 'ZEROSPAN'
+    d['prgMode'] = gPrgModeDefault
     d['samplingRate'] = gSamplingRate
     d['gain'] = gGain
     d['centerFreq'] = gCenterFreq
@@ -450,13 +454,8 @@ def handle_args(d):
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
-        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_SCAN):
+        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_SCAN) or (curArg == PRGMODE_ALIAS_FMSCAN) or (curArg == PRGMODE_ALIAS_QUICKFULLSCAN):
             d['prgMode'] = curArg
-        elif (curArg == 'QUICKFULLSCAN'):
-            d['prgMode'] = PRGMODE_SCAN
-            d['startFreq'] = 30e6
-            d['endFreq'] = 1.5e9
-            #d['fftSize'] = 256
         elif (curArg == 'CENTERFREQ'):
             iArg += 1
             d['centerFreq'] = float(sys.argv[iArg])
@@ -518,6 +517,15 @@ def handle_args(d):
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
         iArg += 1
+    if (d['prgMode'] == PRGMODE_ALIAS_FMSCAN):
+        d['prgMode'] = PRGMODE_SCAN
+        d['startFreq'] = 88e6
+        d['endFreq'] = 108e6
+    elif (d['prgMode'] == PRGMODE_ALIAS_QUICKFULLSCAN):
+        d['prgMode'] = PRGMODE_SCAN
+        d['startFreq'] = 30e6
+        d['endFreq'] = 1.5e9
+        #d['fftSize'] = 256
     if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
     else:
@@ -589,6 +597,7 @@ def plt_figures(d):
     gs = f.add_gridspec(nrows=8, ncols=5)
     d['AxLevels'] = f.add_subplot(gs[:4,:4])
     d['AxFreqs'] = f.add_subplot(gs[:4,4])
+    d['AxFreqs'].set_xlabel("Freqs - HighSigLvl")
     d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
     d['AxBtnPause'] = f.add_subplot(gs[4,4])
     d['AxBtnLevels'] = f.add_subplot(gs[5,4])
