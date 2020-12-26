@@ -425,7 +425,7 @@ def scan_range(d):
         if d['cmd.stop']:
             break
         curTime = time.time()
-        print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
+        print("scanRange:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         #print_info(d)
         if (i % 2) == 0:

@@ -4,6 +4,7 @@
 #
 
 
+import sys
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,20 +21,52 @@ class RtlSdr():
         self.gain = gain
 
 
+    def rel_freqs(self):
+        '''
+        Generate frequencies which are fixed relative to the configured
+        center frequency.
+        Avoids generating freq which falls into 0th fft bin.
+        '''
+        f1 = self.sample_rate/4
+        f2 = 1
+        f3 = -self.sample_rate/4
+        return [ f1, f2, f3 ]
+
+
+    def abs_freqs(self):
+        '''
+        Generate frequencies which are fixed in a absolute term, independent
+        of the configured center frequency.
+
+        It generates signals at each megahz.
+        Generates freq, even if it falls in the 0th fft bin/position.
+        '''
+        startF = self.center_freq - self.sample_rate/2
+        endF = self.center_freq + self.sample_rate/2
+        sR = int(np.ceil(startF/1e6)*1e6)
+        eR = int((endF//1e6)*1e6)+1
+        f = []
+        for cur in range(sR, eR, int(1e6)):
+            fCur = self.center_freq - cur
+            if fCur == 0:
+                fCur = 0
+            print("DBUG:absFreqs:{}={}".format(cur,fCur))
+            f.append(fCur)
+        return f
+
+
     def read_samples(self, size):
         '''
         Actual rtlsdr returns iq data in complex notation.
         This currently returns real data
         '''
         gainMult = 10**(self.gain/10)
-        f1 = self.sample_rate/4
-        f2 = 1
-        f3 = -self.sample_rate/4
         dur = size/self.sample_rate
         tStart = random.random()
         tTimes = np.linspace(tStart, tStart+dur, self.sample_rate*dur)
         sT = []
-        f = np.array([ f1, f2, f3 ])
+        f = np.array(self.rel_freqs())
+        f = np.array(self.abs_freqs())
         print("INFO:testfft_rtlsdr: freqs [{}], sampRate [{}], tStart [{}], dur [{}], len [{}]".format(self.center_freq - f, self.sample_rate, tStart, dur, len(tTimes)))
         s = np.zeros(len(tTimes), dtype=complex)
         for i in range(len(f)):
@@ -62,7 +95,11 @@ class RtlSdr():
 
 
 if __name__ == "__main__":
-    sdr = RtlSdr()
+    if len(sys.argv) > 1:
+        centerFreq = int(sys.argv[1])
+    else:
+        centerFreq = 92e6
+    sdr = RtlSdr(fC=centerFreq)
     sdr.test()
 
 
