@@ -154,6 +154,12 @@ If there is a error in setting up the sdr, then the value of that freq
 band gets set to all 1s, this inturn leads to a level of around -25 or
 so in the levels plot.
 
+For real signal the curscan flow maintains the signal levels; while for
+complex iq signal data, curscan flow adds 3dB to signal levels. Also
+dont forget that the default pltCompress of Avg, eats into the siglevels
+in general.
+
+
 Other Args
 -----------
 

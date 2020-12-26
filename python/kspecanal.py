@@ -263,9 +263,9 @@ def sdr_curscan(d):
     are used to get the embedded signals in the sample data.
     '''
     numLoops = int(d['fullSize']/(d['fftSize']*d['curScanNonOverlap']))
-    print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
+    #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr_read(d['sdr'], d['fullSize'])
-    fftAll = np.zeros(d['fftSize'])
+    fftAll = None
     if gWindow:
         win = np.hanning(d['fftSize'])
     else:
@@ -280,7 +280,10 @@ def sdr_curscan(d):
         fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
         d['AxLevels'].plot(fftN)
         print("DBUG:curScan:fftN:", fftN[0])
-        fftAll = (fftAll + fftN)/2
+        if i == 0:
+            fftAll = fftN
+        else:
+            fftAll = (fftAll + fftN)/2
         d['AxLevels'].plot(fftAll)
         print("DBUG:curScan:fftAll:", fftAll[0])
         input("Press any key ...")
