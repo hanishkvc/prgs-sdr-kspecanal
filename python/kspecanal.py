@@ -286,7 +286,8 @@ def zero_span(d):
         fftHM = np.zeros((maxHM, d['fftSize']))
         indexHM = 0
         hm = d['AxHeatMap'].imshow(fftHM, extent=(0,1, 0,1), aspect='auto')
-        d['AxHeatMap'].set_xticks([0, 0.5, 1], [d['startFreq'], d['centerFreq'], d['endFreq']])
+        d['AxHeatMap'].set_xticks([0, 0.5, 1])
+        d['AxHeatMap'].set_xticklabels([d['startFreq'], d['centerFreq'], d['endFreq']])
         d['AxHeatMap'].set_xlabel("Freqs")
         d['AxHeatMap'].set_ylabel("ScanHistory")
     prevTime = time.time()
@@ -393,7 +394,8 @@ def scan_range(d):
     if d['bPltHeatMap']:
         hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto')
         centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
-        d['AxHeatMap'].set_xticks([0, 0.5, 1], [d['startFreq'], centerFreq, d['endFreq']])
+        d['AxHeatMap'].set_xticks([0, 0.5, 1])
+        d['AxHeatMap'].set_xticklabels([d['startFreq'], centerFreq, d['endFreq']])
         d['AxHeatMap'].set_xlabel("Freqs")
         d['AxHeatMap'].set_ylabel("ScanHistory")
     prevTime = time.time()
@@ -547,12 +549,12 @@ def plt_figures(d):
     # 4,5 => [[2,4],[2,1]], [[2,5]]
     # 4,5 => [[4,4],[4,1]]
     # 4,5 => [[4,5]]
-    f = plt.figure(figsize=(12, 8))
-    gs = f.add_gridspec(nrows=9, ncols=5)
+    f = plt.figure(figsize=(12, 8), constrained_layout=True)
+    gs = f.add_gridspec(nrows=8, ncols=5)
     d['AxLevels'] = f.add_subplot(gs[:4,:4])
     d['AxFreqs'] = f.add_subplot(gs[:4,4])
-    d['AxHeatMap'] = f.add_subplot(gs[4:8,:])
-    d['AxButtons'] = f.add_subplot(gs[8,:])
+    d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
+    d['AxButtons'] = f.add_subplot(gs[4:8,4])
 
 
 def handle_sigint(signum, stack):
