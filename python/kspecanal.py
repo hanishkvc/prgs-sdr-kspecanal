@@ -9,7 +9,8 @@ import time
 import signal
 import numpy as np
 import matplotlib.pyplot as plt
-import rtlsdr
+#import rtlsdr
+import testfft as rtlsdr
 
 
 
