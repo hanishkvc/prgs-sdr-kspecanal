@@ -371,7 +371,6 @@ def _scan_range(d, freqsAll, fftAll):
         fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
-            plt.figure(PLTFIG_LEVELS)
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
             d['AxLevels'].plot(xFreqs, yLvls)
             plt.pause(0.001)
@@ -396,12 +395,11 @@ def scan_range(d):
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
         input("Press any key to continue...")
     if d['bPltHeatMap']:
-        plt.figure(PLTFIG_HEATMAP)
-        hm = plt.imshow(np.zeros([3,3]), extent=(0,1, 0,1))
+        hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto')
         centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
-        plt.xticks([0, 0.5, 1], [d['startFreq'], centerFreq, d['endFreq']])
-        plt.xlabel("Freqs")
-        plt.ylabel("ScanHistory")
+        d['AxHeatMap'].set_xticks([0, 0.5, 1], [d['startFreq'], centerFreq, d['endFreq']])
+        d['AxHeatMap'].set_xlabel("Freqs")
+        d['AxHeatMap'].set_ylabel("ScanHistory")
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
         if d['cmd.stop']:
@@ -415,7 +413,6 @@ def scan_range(d):
         freqs, ffts = _scan_range(d, freqs, ffts)
         if d['bPltHeatMap']:
             #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
-            plt.figure(PLTFIG_HEATMAP)
             hmData = data_2d_plotcompress(d, d['fftCurs'])
             hm.set_data(hmData)
             hm.autoscale()
@@ -551,15 +548,15 @@ def prg_quit(d, msg = None):
 
 def plt_figures(d):
     plt.ion()
-    if d['bPltLevels']:
-        freqBlocks = (d['endFreq'] - d['startFreq'])/d['samplingRate']
-        freqBlocks = 12
-        f = plt.figure(PLTFIG_LEVELS, figsize=(freqBlocks*6, 6))
-        gs = f.add_gridspec(nrows=1, ncols=2, width_ratios = [4,1])
-        d['AxLevels'] = f.add_subplot(gs[0,0])
-        d['AxFreqs'] = f.add_subplot(gs[0,1])
-    if d['bPltHeatMap']:
-        plt.figure(PLTFIG_HEATMAP)
+    # 4,5 => [[2,4],[2,1]], [[2,5]]
+    # 4,5 => [[4,4],[4,1]]
+    # 4,5 => [[4,5]]
+    f = plt.figure(figsize=(12, 8))
+    gs = f.add_gridspec(nrows=9, ncols=5)
+    d['AxLevels'] = f.add_subplot(gs[:4,:4])
+    d['AxFreqs'] = f.add_subplot(gs[:4,4])
+    d['AxHeatMap'] = f.add_subplot(gs[4:8,:])
+    d['AxButtons'] = f.add_subplot(gs[8,:])
 
 
 def handle_sigint(signum, stack):
