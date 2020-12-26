@@ -541,11 +541,16 @@ def print_info(d):
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
 
 
-def prg_quit(d, msg = None):
+def prg_quit(d, msg = None, tryExit=True):
     if type(msg) != type(None):
         print(msg)
     d['cmd.stop'] = True
-    sys.exit()
+    if tryExit:
+        sys.exit()
+
+
+def handle_quit(event):
+    prg_quit(gD, "INFO:QuitClick: Quiting on user request...", False)
 
 
 def plt_figures(d):
@@ -567,7 +572,9 @@ def plt_figures(d):
     plt.Button(d['AxBtnPause'], "Pause")
     plt.Button(d['AxBtnLvls'], "Levels")
     plt.Button(d['AxBtnHM'], "HeatMap")
-    plt.Button(d['AxBtnQuit'], "Quit")
+    btn = plt.Button(d['AxBtnQuit'], "Quit")
+    btn.on_clicked(handle_quit)
+    #btn.set_active(True)
 
 
 def handle_sigint(signum, stack):
