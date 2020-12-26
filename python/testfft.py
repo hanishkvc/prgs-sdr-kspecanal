@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Generate samples for testing FFT logic of kspecanal
 # HanishKVC, v20201226
 #
@@ -5,6 +6,7 @@
 
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class RtlSdr():
@@ -43,5 +45,23 @@ class RtlSdr():
 
     def close(self):
         pass
+
+
+    def test(self):
+        dataBuf = self.read_samples(random.randint(1,10)*2**16)
+        freqs = np.fft.fftshift(np.fft.fftfreq(len(dataBuf),1/self.sample_rate)) + self.center_freq
+        print("INFO:testfft_rtlsdr: freqs [{}] - [{}], fftSize [{}]".format(min(freqs), max(freqs), len(dataBuf)))
+        fftCur = np.abs(np.fft.fft(dataBuf))/len(dataBuf)
+        fftCur = np.fft.fftshift(fftCur)
+        plt.subplot(2,1,1)
+        plt.plot(freqs, fftCur)
+        plt.subplot(2,1,2)
+        plt.plot(freqs, 10*np.log10(fftCur))
+        plt.show()
+
+
+if __name__ == "__main__":
+    sdr = RtlSdr()
+    sdr.test()
 
 
