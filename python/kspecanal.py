@@ -557,6 +557,24 @@ def event_pause(event):
         gD['BtnPause'].label.set_text("Pause[x]")
 
 
+def event_levels(event):
+    if gD['bPltLevels']:
+        gD['bPltLevels'] = False
+        gD['BtnLevels'].label.set_text("Levels[ ]")
+    else:
+        gD['bPltLevels'] = True
+        gD['BtnLevels'].label.set_text("Levels[x]")
+
+
+def event_heatmap(event):
+    if gD['bPltHeatMap']:
+        gD['bPltHeatMap'] = False
+        gD['BtnHeatMap'].label.set_text("HeatMap[ ]")
+    else:
+        gD['bPltHeatMap'] = True
+        gD['BtnHeatMap'].label.set_text("HeatMap[x]")
+
+
 def event_quit(event):
     gD['BtnQuit'].label.set_text("QuitWait")
     prg_quit(gD, "INFO:QuitClick: Quiting on user request...", False)
@@ -574,14 +592,16 @@ def plt_figures(d):
     d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
     d['AxBtnPause'] = f.add_subplot(gs[4,4])
     d['AxBtnLevels'] = f.add_subplot(gs[5,4])
-    d['AxBtnHM'] = f.add_subplot(gs[6,4])
+    d['AxBtnHeatMap'] = f.add_subplot(gs[6,4])
     d['AxBtnQuit'] = f.add_subplot(gs[7,4])
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
     d['BtnPause'] = plt.Button(d['AxBtnPause'], "Pause")
     d['BtnPause'].on_clicked(event_pause)
     d['BtnLevels'] = plt.Button(d['AxBtnLevels'], "Levels")
-    d['BtnHM'] = plt.Button(d['AxBtnHM'], "HeatMap")
+    d['BtnLevels'].on_clicked(event_levels)
+    d['BtnHeatMap'] = plt.Button(d['AxBtnHeatMap'], "HeatMap")
+    d['BtnHeatMap'].on_clicked(event_heatmap)
     d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
     d['BtnQuit'].on_clicked(event_quit)
 

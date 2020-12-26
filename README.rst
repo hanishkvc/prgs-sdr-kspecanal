@@ -100,6 +100,23 @@ is a alias for
 i.e this triggers a quick scan from 30e6 to 1.5e9 with fftSize of 256
 
 
+UI Buttons
+============
+
+Quit - On pressing the Quit button, the btn label changes to QuitWait,
+inturn the program finishes the current freq band scan and then exits
+the scan loop and changes btn label to QuitPress. User can now either
+explore the plots using the pan and zoom buttons in the gui, if they
+so desire. Then on pressing any key in the console from where the prg
+was started, the program will quit.
+
+Pause - This toggles the pltHighsPause between enable and disable.
+
+Levels - This toggles the bPltLevels between enable and disable.
+
+HeatMap - This toggles the bPltHeatMap between enable and disable.
+
+
 NOTE
 =======
 
