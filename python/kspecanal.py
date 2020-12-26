@@ -279,15 +279,10 @@ def sdr_curscan(d):
         if len(tSamples) < d['fftSize']:
             break
         fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
-        d['AxLevels'].plot(fftN)
-        print("DBUG:curScan:fftN:", fftN[0])
         if i == 0:
             fftAll = fftN
         else:
             fftAll = data_cumu(d, d['curScanCumuMode'], fftAll, 0, len(fftAll), fftN, 0, len(fftN))
-        d['AxLevels'].plot(fftAll)
-        print("DBUG:curScan:fftAll:", fftAll[0])
-        input("Press any key ...")
     #fftAll[0] = 0
     return fftAll
 

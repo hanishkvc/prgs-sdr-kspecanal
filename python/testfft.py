@@ -33,7 +33,7 @@ class RtlSdr():
         tTimes = np.linspace(tStart, tStart+dur, self.sample_rate*dur)
         sT = []
         f = np.array([ f1, f2, f3 ])
-        print("INFO:testfft_rtlsdr: freqs [{}], sampRate [{}], dur [{}], len [{}]".format(self.center_freq - f, self.sample_rate, dur, len(tTimes)))
+        print("INFO:testfft_rtlsdr: freqs [{}], sampRate [{}], tStart [{}], dur [{}], len [{}]".format(self.center_freq - f, self.sample_rate, tStart, dur, len(tTimes)))
         s = np.zeros(len(tTimes), dtype=complex)
         for i in range(len(f)):
             sS = np.sin(2*np.pi*f[i]*tTimes)
