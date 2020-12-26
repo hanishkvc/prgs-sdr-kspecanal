@@ -263,7 +263,7 @@ def sdr_curscan(d):
     are used to get the embedded signals in the sample data.
     '''
     numLoops = int(d['fullSize']/(d['fftSize']*d['curScanNonOverlap']))
-    #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
+    print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr_read(d['sdr'], d['fullSize'])
     fftAll = np.zeros(d['fftSize'])
     if gWindow:
@@ -278,7 +278,12 @@ def sdr_curscan(d):
         if len(tSamples) < d['fftSize']:
             break
         fftN = winAdj*2*abs(np.fft.fft(tSamples*win))/len(tSamples)
+        d['AxLevels'].plot(fftN)
+        print("DBUG:curScan:fftN:", fftN[0])
         fftAll = (fftAll + fftN)/2
+        d['AxLevels'].plot(fftAll)
+        print("DBUG:curScan:fftAll:", fftAll[0])
+        input("Press any key ...")
     #fftAll[0] = 0
     return fftAll
 
@@ -312,8 +317,11 @@ def zero_span(d):
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         fftCur = sdr_curscan(d)
+        print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftCur = np.fft.fftshift(fftCur)
+        print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
+        print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
         if d['bPltHeatMap']:
             fftHM[indexHM,:] = fftPr
             hm.set_data(fftHM)
