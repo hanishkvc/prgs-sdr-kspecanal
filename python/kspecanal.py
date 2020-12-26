@@ -183,9 +183,8 @@ def plot_highs(d, freqs, levels):
             #print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
             pass
     d['AxLevels'].legend()
-    d['AxFreqs'].legend()
     if d['pltHighsPause']:
-        input("Press any key...")
+        input("PltHighsPause: Press any key to continue...")
 
 
 def sdr_setup(sdr, fC, fS, gain):
@@ -549,6 +548,15 @@ def prg_quit(d, msg = None, tryExit=True):
         sys.exit()
 
 
+def event_pause(event):
+    if gD['pltHighsPause']:
+        gD['pltHighsPause'] = False
+        gD['BtnPause'].label.set_text("Pause[ ]")
+    else:
+        gD['pltHighsPause'] = True
+        gD['BtnPause'].label.set_text("Pause[x]")
+
+
 def event_quit(event):
     gD['BtnQuit'].label.set_text("QuitWait")
     prg_quit(gD, "INFO:QuitClick: Quiting on user request...", False)
@@ -571,6 +579,7 @@ def plt_figures(d):
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
     d['BtnPause'] = plt.Button(d['AxBtnPause'], "Pause")
+    d['BtnPause'].on_clicked(event_pause)
     d['BtnLevels'] = plt.Button(d['AxBtnLevels'], "Levels")
     d['BtnHM'] = plt.Button(d['AxBtnHM'], "HeatMap")
     d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
