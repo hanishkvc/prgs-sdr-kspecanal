@@ -251,10 +251,17 @@ pltCompress <Raw|Avg|Max>
 
 xRes <int_poweroftwovalue>
 
-        Default: 2048; This controls the horizontal resolution (number of data
+        Default: 512; This controls the horizontal resolution (number of data
         points related to frequencies or groups of adjacent frequencies) of the
         data passed to the plotting logic. This needs to be a power of two value,
         or else a sub multiple of fftSize.
+
+        To ensure that any signal data is not lost wrt the heatmap display, set
+        this to match the actual display resolution of the heatmap on your screen.
+        Or even a value which is smaller than the actual screen resolution of the
+        heatmap will also do, but you will lose some amount of freq resolution wrt
+        display. Based on your situation, you may be able to increase this value,
+        and still not lose any value.
 
 pltHighsNumMarkers <int>
 
@@ -275,6 +282,24 @@ pltHighsPause <boolean>
         Independent of above, the list of high siglevel freqs is also printed
         on the console.
 
+
+Signal level display
+------------------------
+
+For more representative signal level display, use the following property values
+
+ZeroSpan mode
+
+        pltCompress raw OR pltCompress max
+
+Scan mode
+
+        pltCompress max
+
+        scanRangeNonOverlap 1.0
+
+To ensure that heatmap doesnt eat up any signal data, set the xRes to match the
+actual screen resolution of the heatmap and or lesser than it.
 
 
 Remember

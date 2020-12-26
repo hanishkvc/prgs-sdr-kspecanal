@@ -48,7 +48,7 @@ gScanRangeClipProcMode = 'Clip2MinAmp'
 gScanRangeCumuMode = CUMUMODE_AVG
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
-gXRes = 2048
+gXRes = 512
 gPltCompress = PLTCOMPRESS_AVG
 gCurScanCumuMode = CUMUMODE_AVG
 
