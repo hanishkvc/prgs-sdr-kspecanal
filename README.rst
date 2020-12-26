@@ -179,7 +179,7 @@ gain <gainFloat>
         Default 19.1; Increase or reduce this depending on the strength
         of the signals being studied.
 
-cumuMode <Avg|Max|Raw>
+scanRangeCumuMode <Avg|Max|Raw>
 
         Default Avg; Change to Max, if one wants to know the max value
         noticed at any time during the scan.

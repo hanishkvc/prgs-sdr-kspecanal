@@ -45,7 +45,7 @@ gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
-gCumuMode = 'AVG'
+gScanRangeCumuMode = CUMUMODE_AVG
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
 gXRes = 2048
@@ -346,8 +346,8 @@ def _scan_range(d, freqsAll, fftAll):
     that can be sampled/scanned by the hardware in one go, in which
     case it will do multiple scans to cover the full specified range.
 
-    It uses cumuMode to decide how to merge data from across multiple
-    scans of the same freq band.
+    It uses scanRangeCumuMode to decide how to merge data from across
+    multiple scans of the same freq band.
     '''
     freqSpan = d['samplingRate']
     if (((freqSpan*d['scanRangeNonOverlap'])%1) != 0) or ((d['fftSize']*d['scanRangeNonOverlap'])%1 != 0):
@@ -390,7 +390,7 @@ def _scan_range(d, freqsAll, fftAll):
         fftCur = np.fft.fftshift(fftCur)
         if d['bPltHeatMap']:
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
-        fftAll = data_cumu(d, d['cumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
+        fftAll = data_cumu(d, d['scanRangeCumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
@@ -460,7 +460,7 @@ def handle_args(d):
     d['curScanNonOverlap'] = gCurScanNonOverlap
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
-    d['cumuMode'] = gCumuMode
+    d['scanRangeCumuMode'] = gScanRangeCumuMode
     d['bPltHeatMap'] = gbPltHeatMap
     d['bPltLevels'] = gbPltLevels
     d['scanRangeNonOverlap'] = gScanRangeNonOverlap
@@ -505,9 +505,9 @@ def handle_args(d):
         elif (curArg == 'XRES'):
             iArg += 1
             d['xRes'] = int(sys.argv[iArg])
-        elif (curArg == 'CUMUMODE'):
+        elif (curArg == 'SCANRANGECUMUMODE'):
             iArg += 1
-            d['cumuMode'] = sys.argv[iArg].upper()
+            d['scanRangeCumuMode'] = sys.argv[iArg].upper()
         elif (curArg == 'PLTCOMPRESS'):
             iArg += 1
             d['pltCompress'] = sys.argv[iArg].upper()
@@ -561,7 +561,7 @@ def handle_args(d):
 def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
-    print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window'], d['xRes'], d['pltCompress']))
+    print("INFO: fullSize[{}], fftSize[{}], scanRangeCumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['scanRangeCumuMode'], d['window'], d['xRes'], d['pltCompress']))
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
