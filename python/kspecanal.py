@@ -157,7 +157,9 @@ gPltHighsDelta4Marking = 0.025
 gPltHighsNumMarkers = 5
 gPltHighsPause = False
 def plot_highs(d, freqs, levels):
-    d['AxFreqs'].cla()
+    d['AxFreqs'].clear()
+    d['AxFreqs'].set_xticks([])
+    d['AxFreqs'].set_yticks([])
     freqRange = freqs[-1] - freqs[0]
     delta4Marking = d['pltHighsDelta4Marking']*freqRange
     print("PlotHighs: Freqs {} to {} : delta4Marking {}".format(freqs[0], freqs[-1], delta4Marking))
@@ -172,7 +174,7 @@ def plot_highs(d, freqs, levels):
         if len(matched) == 0:
             print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
             d['AxLevels'].plot(curFreq, curLevel, "o", label=curFreq)
-            d['AxFreqs'].plot(curFreq, curLevel, "o", label=curFreq)
+            d['AxFreqs'].text(0.1,1.0-0.1*(cntMarked+1),curFreq)
             marked = np.append(marked, curFreq)
             cntMarked += 1
             if cntMarked >= d['pltHighsNumMarkers']:
@@ -180,7 +182,8 @@ def plot_highs(d, freqs, levels):
         else:
             #print("plotHighs:Skipped: {}, {}".format(curFreq, curLevel))
             pass
-    plt.legend()
+    d['AxLevels'].legend()
+    d['AxFreqs'].legend()
     if d['pltHighsPause']:
         input("Press any key...")
 
@@ -369,6 +372,7 @@ def _scan_range(d, freqsAll, fftAll):
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+            d['AxLevels'].clear()
             d['AxLevels'].plot(xFreqs, yLvls)
             plt.pause(0.001)
         curFreq += freqSpan*d['scanRangeNonOverlap']
@@ -549,12 +553,21 @@ def plt_figures(d):
     # 4,5 => [[2,4],[2,1]], [[2,5]]
     # 4,5 => [[4,4],[4,1]]
     # 4,5 => [[4,5]]
-    f = plt.figure(figsize=(12, 8), constrained_layout=True)
+    f = plt.figure("kSpecAnal", figsize=(12, 8), constrained_layout=True)
     gs = f.add_gridspec(nrows=8, ncols=5)
     d['AxLevels'] = f.add_subplot(gs[:4,:4])
     d['AxFreqs'] = f.add_subplot(gs[:4,4])
     d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
-    d['AxButtons'] = f.add_subplot(gs[4:8,4])
+    d['AxBtnPause'] = f.add_subplot(gs[4,4])
+    d['AxBtnLvls'] = f.add_subplot(gs[5,4])
+    d['AxBtnHM'] = f.add_subplot(gs[6,4])
+    d['AxBtnQuit'] = f.add_subplot(gs[7,4])
+    d['AxFreqs'].set_xticks([])
+    d['AxFreqs'].set_yticks([])
+    plt.Button(d['AxBtnPause'], "Pause")
+    plt.Button(d['AxBtnLvls'], "Levels")
+    plt.Button(d['AxBtnHM'], "HeatMap")
+    plt.Button(d['AxBtnQuit'], "Quit")
 
 
 def handle_sigint(signum, stack):
