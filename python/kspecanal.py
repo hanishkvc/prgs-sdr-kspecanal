@@ -161,7 +161,7 @@ gPltHighsNumMarkers = 5
 gPltHighsPause = False
 def plot_highs(d, freqs, levels):
     d['AxFreqs'].clear()
-    d['AxFreqs'].set_xlabel("Freqs - HighSigLvl")
+    d['AxFreqs'].set_xlabel("Freqs[MHz] - HighSigLvl")
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
     freqRange = freqs[-1] - freqs[0]
@@ -178,7 +178,7 @@ def plot_highs(d, freqs, levels):
         if len(matched) == 0:
             print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
             d['AxLevels'].plot(curFreq, curLevel, "o", label=curFreq)
-            d['AxFreqs'].text(0.1,1.0-0.1*(cntMarked+1),curFreq)
+            d['AxFreqs'].text(0.1,1.0-0.1*(cntMarked+1),curFreq/1e6)
             marked = np.append(marked, curFreq)
             cntMarked += 1
             if cntMarked >= d['pltHighsNumMarkers']:
