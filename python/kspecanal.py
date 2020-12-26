@@ -50,6 +50,7 @@ gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
 gXRes = 2048
 gPltCompress = PLTCOMPRESS_AVG
+gCurScanCumuMode = CUMUMODE_AVG
 
 
 
@@ -283,7 +284,7 @@ def sdr_curscan(d):
         if i == 0:
             fftAll = fftN
         else:
-            fftAll = (fftAll + fftN)/2
+            fftAll = data_cumu(d, d['curScanCumuMode'], fftAll, 0, len(fftAll), fftN, 0, len(fftN))
         d['AxLevels'].plot(fftAll)
         print("DBUG:curScan:fftAll:", fftAll[0])
         input("Press any key ...")
@@ -458,6 +459,7 @@ def handle_args(d):
     d['centerFreq'] = gCenterFreq
     d['fftSize'] = gFftSize
     d['curScanNonOverlap'] = gCurScanNonOverlap
+    d['curScanCumuMode'] = gCurScanCumuMode
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
     d['scanRangeCumuMode'] = gScanRangeCumuMode
@@ -496,6 +498,9 @@ def handle_args(d):
         elif (curArg == 'CURSCANNONOVERLAP'):
             iArg += 1
             d['curScanNonOverlap'] = float(sys.argv[iArg])
+        elif (curArg == 'CURSCANCUMUMODE'):
+            iArg += 1
+            d['curScanCumuMode'] = sys.argv[iArg].upper()
         elif (curArg == 'SCANRANGENONOVERLAP'):
             iArg += 1
             d['scanRangeNonOverlap'] = float(sys.argv[iArg])

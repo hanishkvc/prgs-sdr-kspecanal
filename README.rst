@@ -208,6 +208,11 @@ curScanNonOverlap <float>
         the signal level, even thou only a fraction of a second worth of data
         is run through fft at a time.
 
+curScanCumuMode <Avg|Max|Raw>
+
+        Default Avg; Change to Max, if one wants to know the max value
+        noticed at any time during the scan.
+
 bPltLevels <true|false>
 
         Default: True; Control whether the current internal scan signal level
