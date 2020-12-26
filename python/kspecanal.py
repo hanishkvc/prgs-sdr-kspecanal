@@ -549,7 +549,8 @@ def prg_quit(d, msg = None, tryExit=True):
         sys.exit()
 
 
-def handle_quit(event):
+def event_quit(event):
+    gD['BtnQuit'].label.set_text("QuitWait")
     prg_quit(gD, "INFO:QuitClick: Quiting on user request...", False)
 
 
@@ -564,17 +565,16 @@ def plt_figures(d):
     d['AxFreqs'] = f.add_subplot(gs[:4,4])
     d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
     d['AxBtnPause'] = f.add_subplot(gs[4,4])
-    d['AxBtnLvls'] = f.add_subplot(gs[5,4])
+    d['AxBtnLevels'] = f.add_subplot(gs[5,4])
     d['AxBtnHM'] = f.add_subplot(gs[6,4])
     d['AxBtnQuit'] = f.add_subplot(gs[7,4])
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
-    plt.Button(d['AxBtnPause'], "Pause")
-    plt.Button(d['AxBtnLvls'], "Levels")
-    plt.Button(d['AxBtnHM'], "HeatMap")
-    btn = plt.Button(d['AxBtnQuit'], "Quit")
-    btn.on_clicked(handle_quit)
-    #btn.set_active(True)
+    d['BtnPause'] = plt.Button(d['AxBtnPause'], "Pause")
+    d['BtnLevels'] = plt.Button(d['AxBtnLevels'], "Levels")
+    d['BtnHM'] = plt.Button(d['AxBtnHM'], "HeatMap")
+    d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
+    d['BtnQuit'].on_clicked(event_quit)
 
 
 def handle_sigint(signum, stack):
@@ -601,5 +601,6 @@ gD['sdr'].close()
 
 
 
+gD['BtnQuit'].label.set_text("QuitPress")
 input("Press any key to quit...")
 
