@@ -336,7 +336,7 @@ def zero_span(d):
         plt.pause(0.0001)
 
 
-def _scan_range(d, freqsAll, fftAll):
+def _scan_range(d, freqsAll, fftAll, runCount=-1):
     '''
     Scan a specified range, this can be larger than the freq band
     that can be sampled/scanned by the hardware in one go, in which
@@ -363,6 +363,10 @@ def _scan_range(d, freqsAll, fftAll):
             d['fftCursMax'] = 128
             d['fftCursIndex'] = 0
             d['fftCurs'] = np.ones([d['fftCursMax'], totalEntries]) * d['minAmp4Clip']
+    if runCount == 0:
+        cumuMode = CUMUMODE_RAW
+    else:
+        cumuMode = d['scanRangeCumuMode']
     i = 0
     while startFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
@@ -386,7 +390,7 @@ def _scan_range(d, freqsAll, fftAll):
         fftCur = np.fft.fftshift(fftCur)
         if d['bPltHeatMap']:
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
-        fftAll = data_cumu(d, d['scanRangeCumuMode'], fftAll, iStart, iEnd, fftCur, sStart, sEnd)
+        fftAll = data_cumu(d, cumuMode, fftAll, iStart, iEnd, fftCur, sStart, sEnd)
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
@@ -428,9 +432,7 @@ def scan_range(d):
         print("scanRange:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         #print_info(d)
-        if (i % 2) == 0:
-            d['AxLevels'].cla()
-        freqs, ffts = _scan_range(d, freqs, ffts)
+        freqs, ffts = _scan_range(d, freqs, ffts, i)
         if d['bPltHeatMap']:
             #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
             hmData = data_2d_plotcompress(d, d['fftCurs'])
