@@ -32,7 +32,7 @@ CUMUMODE_RAW = 'RAW'
 gPrgModeDefault = PRGMODE_ALIAS_FMSCAN
 gbPltHeatMap = True
 gbPltLevels = True
-gNonOverlap = 0.1
+gCurScanNonOverlap = 0.1
 gCenterFreq = 92e6
 gSamplingRate = 2.4e6
 gFftSize = 2**14
@@ -262,7 +262,7 @@ def sdr_curscan(d):
     As IQ data is what is got from the hardware, so both +ve and -ve freqs
     are used to get the embedded signals in the sample data.
     '''
-    numLoops = int(d['fullSize']/(d['fftSize']*d['nonOverlap']))
+    numLoops = int(d['fullSize']/(d['fftSize']*d['curScanNonOverlap']))
     #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr_read(d['sdr'], d['fullSize'])
     fftAll = np.zeros(d['fftSize'])
@@ -272,7 +272,7 @@ def sdr_curscan(d):
         win = np.ones(d['fftSize'])
     winAdj = len(win)/np.sum(win)
     for i in range(numLoops):
-        iStart = int(i*d['fftSize']*d['nonOverlap'])
+        iStart = int(i*d['fftSize']*d['curScanNonOverlap'])
         iEnd = iStart + d['fftSize']
         tSamples = samples[iStart:iEnd]
         if len(tSamples) < d['fftSize']:
@@ -446,7 +446,7 @@ def handle_args(d):
     d['gain'] = gGain
     d['centerFreq'] = gCenterFreq
     d['fftSize'] = gFftSize
-    d['nonOverlap'] = gNonOverlap
+    d['curScanNonOverlap'] = gCurScanNonOverlap
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
     d['cumuMode'] = gCumuMode
@@ -482,9 +482,9 @@ def handle_args(d):
         elif (curArg == 'MINAMP4CLIP'):
             iArg += 1
             d['minAmp4Clip'] = float(sys.argv[iArg])
-        elif (curArg == 'NONOVERLAP'):
+        elif (curArg == 'CURSCANNONOVERLAP'):
             iArg += 1
-            d['nonOverlap'] = float(sys.argv[iArg])
+            d['curScanNonOverlap'] = float(sys.argv[iArg])
         elif (curArg == 'SCANRANGENONOVERLAP'):
             iArg += 1
             d['scanRangeNonOverlap'] = float(sys.argv[iArg])
@@ -551,7 +551,7 @@ def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
     print("INFO: fullSize[{}], fftSize[{}], cumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['cumuMode'], d['window'], d['xRes'], d['pltCompress']))
-    print("INFO: minAmp4Clip[{}], nonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['nonOverlap'], d['scanRangeNonOverlap']))
+    print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
 

@@ -193,7 +193,7 @@ fftSize <integer>
         Larger the fftSize, finer the freq resolution. Needs to be a power
         of two value, or else multiple of xRes.
 
-nonOverlap <float>
+curScanNonOverlap <float>
 
         Default: 0.1; As the small size fft window is slide over a larger
         signal sample dataset, this controls how much of the data is
@@ -212,7 +212,7 @@ bPltHeatMap <true|false>
         Default: True; Control whether the signal level history | heat map is
         plotted or not. Disabling this will speed up the scan interval a bit.
 
-nonOverlapScanRange <float>
+scanRangeNonOverlap <float>
 
         Default: 0.75; Change to control how much of the freq band is overlapped
         as the scan range logic scans/steps through a given range of frequencies.
