@@ -83,20 +83,28 @@ class RtlSdr():
 
     def test(self):
         dataBuf = self.read_samples(random.randint(1,10)*2**16)
+        win = np.kaiser(len(dataBuf), 15)
+        win = np.hanning(len(dataBuf))
         freqs = np.fft.fftshift(np.fft.fftfreq(len(dataBuf),1/self.sample_rate)) + self.center_freq
         print("INFO:testfft_rtlsdr: freqs [{}] - [{}], fftSize [{}]".format(min(freqs), max(freqs), len(dataBuf)))
         fftCur = np.abs(np.fft.fft(dataBuf))/len(dataBuf)
         fftCur = np.fft.fftshift(fftCur)
-        plt.subplot(2,1,1)
+        fftCurWin = np.abs(np.fft.fft(dataBuf*win))/len(dataBuf)
+        fftCurWin = np.fft.fftshift(fftCurWin)
+        plt.subplot(2,2,1)
         plt.plot(freqs, fftCur)
-        plt.subplot(2,1,2)
+        plt.subplot(2,2,2)
         plt.plot(freqs, 10*np.log10(fftCur))
+        plt.subplot(2,2,3)
+        plt.plot(freqs, fftCurWin)
+        plt.subplot(2,2,4)
+        plt.plot(freqs, 10*np.log10(fftCurWin))
         plt.show()
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        centerFreq = int(sys.argv[1])
+        centerFreq = float(sys.argv[1])
     else:
         centerFreq = 92e6
     sdr = RtlSdr(fC=centerFreq)
