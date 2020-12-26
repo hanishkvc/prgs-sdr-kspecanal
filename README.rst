@@ -1,7 +1,7 @@
 #####################################
 Playing with Looking at EM spectrum
 #####################################
-HanishKVC, 20201216
+HanishKVC, 20201226
 
 Gist: this logic, rtlsdr ...
 ################################
@@ -110,7 +110,10 @@ explore the plots using the pan and zoom buttons in the gui, if they
 so desire. Then on pressing any key in the console from where the prg
 was started, the program will quit.
 
-Pause - This toggles the pltHighsPause between enable and disable.
+Pause - This toggles the pltHighsPause between enable and disable. If
+enabled, then user requires to press any key in the console, to step
+into next round of scan. Parallely the user can explore the plots
+before pressing any key in the console.
 
 Levels - This toggles the bPltLevels between enable and disable.
 

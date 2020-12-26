@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # kSpecAnal - A simple spectrum analyser using RtlSdr
-# HanishKVC, v20201218IST1054
+# HanishKVC, v20201226IST1854
 #
 
 
@@ -314,8 +314,7 @@ def zero_span(d):
             d['AxLevels'].plot(xFreqs, yLvls)
             plt.draw()
             plot_highs(d, xFreqs, yLvls)
-        if d['bPltHeatMap'] or d['bPltLevels']:
-            plt.pause(0.0001)
+        plt.pause(0.0001)
 
 
 def _scan_range(d, freqsAll, fftAll):
@@ -374,9 +373,9 @@ def _scan_range(d, freqsAll, fftAll):
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
             d['AxLevels'].clear()
             d['AxLevels'].plot(xFreqs, yLvls)
-            plt.pause(0.001)
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
+        plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
