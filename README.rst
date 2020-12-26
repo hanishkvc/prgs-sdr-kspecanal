@@ -173,7 +173,7 @@ gain <gainFloat>
         Default 19.1; Increase or reduce this depending on the strength
         of the signals being studied.
 
-cumuMode <Avg|Max|Copy>
+cumuMode <Avg|Max|Raw>
 
         Default Avg; Change to Max, if one wants to know the max value
         noticed at any time during the scan.
@@ -235,7 +235,8 @@ pltCompress <Raw|Avg|Max>
         Default: Average; This allows one to control how finegrained or not is
         the signal levels across adjacent freqs that are shown. This along with
         fftSize and xRes, decides how finegrained is the freq resolution you see
-        on the screen.
+        on the screen. NOTE: Using Avg will smooth the display, but will impact
+        the signal levels seen.
 
 xRes <int_poweroftwovalue>
 

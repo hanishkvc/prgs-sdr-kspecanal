@@ -23,6 +23,9 @@ PLTFIG_HEATMAP = "Heatmap"
 PLTCOMPRESS_MAX = 'MAX'
 PLTCOMPRESS_AVG = 'AVG'
 PLTCOMPRESS_RAW = 'RAW'
+CUMUMODE_MAX = 'MAX'
+CUMUMODE_AVG = 'AVG'
+CUMUMODE_RAW = 'RAW'
 
 
 
@@ -82,16 +85,16 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
     '''
     Cumulate data from different buffers using one of possible logics
 
-    Copy: copy values in newVals buffer into curVals buffer at specified offsets.
+    Raw: copy values in newVals buffer into curVals buffer at specified offsets.
     Avg: average the values between curVals and newVals buffer and store into curVals.
     Max: copy the larger value between curVals and newVals into curVals.
     '''
-    if mode == 'COPY':
+    if mode == CUMUMODE_RAW:
         curVals[cStart:cEnd] = newVals[nStart:nEnd]
-    elif mode == 'AVG':
+    elif mode == CUMUMODE_AVG:
         curVals[cStart:cEnd] += newVals[nStart:nEnd]
         curVals[cStart:cEnd] /= 2
-    elif mode == 'MAX':
+    elif mode == CUMUMODE_MAX:
         curVals[cStart:cEnd] = np.max([newVals[nStart:nEnd], curVals[cStart:cEnd]], axis=0)
     else:
         msg = "ERROR: Unknown cumuMode [{}], Quiting...".format(mode)
@@ -129,8 +132,10 @@ def data_plotcompress(d, xData, yData):
     yTData = yData.reshape(rows, cols)
     if d['pltCompress'] == PLTCOMPRESS_MAX:
         yVals = np.max(yTData, axis=1)
-    else:
+    elif d['pltCompress'] == PLTCOMPRESS_AVG:
         yVals = np.average(yTData, axis=1)
+    else:
+        prg_quit(d, "ERROR:pltCompress:1D: Unknown mode [{}]".format(d['pltCompress']))
     return xVals, yVals
 
 
@@ -151,8 +156,10 @@ def data_2d_plotcompress(d, data):
         xTData = xData.reshape(rows, cols)
         if d['pltCompress'] == PLTCOMPRESS_MAX:
             xVals = np.max(xTData, axis=1)
-        else:
+        elif d['pltCompress'] == PLTCOMPRESS_AVG:
             xVals = np.average(xTData, axis=1)
+        else:
+            prg_quit(d, "ERROR:pltCompress:2D: Unknown mode [{}]".format(d['pltCompress']))
         newData[y,:] = xVals
     return newData
 
