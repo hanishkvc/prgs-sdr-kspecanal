@@ -313,6 +313,7 @@ def zero_span(d):
             xFreqs, yLvls = data_plotcompress(d, freqs, fftPr)
             d['AxLevels'].plot(xFreqs, yLvls)
             plt.draw()
+            plot_highs(d, xFreqs, yLvls)
         if d['bPltHeatMap'] or d['bPltLevels']:
             plt.pause(0.0001)
 
