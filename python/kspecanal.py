@@ -130,7 +130,7 @@ def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
     return vals
 
 
-def data_plotcompress(d, xData, yData):
+def data_plotcompress(d, xData, yData, mode=None):
     '''
     Process and or Reduce the amount of data, while still trying to maintain any
     significant values in the data, if that is what user wants.
@@ -139,9 +139,11 @@ def data_plotcompress(d, xData, yData):
 
     xData is blindly averaged, while yData is processed as specified by user.
     '''
-    if d['pltCompress'] == PLTCOMPRESS_RAW:
+    if type(mode) == type(None):
+        mode = d['pltCompress']
+    if mode == PLTCOMPRESS_RAW:
         return xData, yData
-    if d['pltCompress'] == PLTCOMPRESS_CONV:
+    if mode == PLTCOMPRESS_CONV:
         conv = [0.25, 0.5, 0.25]
         conv = [0.1, 0.2, 0.4, 0.2, 0.1]
         yData = np.convolve(yData, conv, mode='same')
@@ -156,12 +158,12 @@ def data_plotcompress(d, xData, yData):
     xTData = xData.reshape(rows, cols)
     xVals = np.average(xTData, axis=1)
     yTData = yData.reshape(rows, cols)
-    if d['pltCompress'] == PLTCOMPRESS_MAX:
+    if mode == PLTCOMPRESS_MAX:
         yVals = np.max(yTData, axis=1)
-    elif d['pltCompress'] == PLTCOMPRESS_AVG:
+    elif mode == PLTCOMPRESS_AVG:
         yVals = np.average(yTData, axis=1)
     else:
-        prg_quit(d, "ERROR:pltCompress:1D: Unknown mode [{}]".format(d['pltCompress']))
+        prg_quit(d, "ERROR:pltCompress:1D: Unknown mode [{}]".format(mode))
     return xVals, yVals
 
 
