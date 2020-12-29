@@ -29,7 +29,7 @@ CUMUMODE_AVG = 'AVG'
 CUMUMODE_RAW = 'RAW'
 
 
-
+## User controllable from commandline
 gPrgModeDefault = PRGMODE_ALIAS_FMSCAN
 gbPltHeatMap = True
 gbPltLevels = True
@@ -42,10 +42,6 @@ gFft2FullMult4More = 2
 gGain = 19.1
 gWindow = False
 gMinAmp4Clip = (1/256)*0.33
-gZeroSpanFftDispProcMode = 'LogNoGain'
-gScanRangeFftDispProcMode = 'LogNoGain'
-gScanRangeClipProcMode = 'HistLowClip'
-gScanRangeClipProcMode = 'Clip2MinAmp'
 gScanRangeCumuMode = CUMUMODE_AVG
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
@@ -54,6 +50,11 @@ gPltCompress = PLTCOMPRESS_AVG
 gCurScanCumuMode = CUMUMODE_AVG
 
 
+## Needs to be edited directly below, if need to change
+gZeroSpanFftDispProcMode = 'LogNoGain'
+gScanRangeFftDispProcMode = 'LogNoGain'
+gScanRangeClipProcMode = 'HistLowClip'
+gScanRangeClipProcMode = 'Clip2MinAmp'
 # Controls scan_range heatmap: raw fft results or dispproc'd
 gbPltHeatMapSRLogPlus = True
 # Force pltCompress Max for heatmaps
@@ -86,6 +87,12 @@ def data_proc(d, vals, dataProc, infTo = None):
         #print("DBUG: -Inf", np.argwhere(vals == - np.Inf))
         if infTo != None:
             vals[np.isinf(vals)] = infTo
+    elif dataProc == 'Conv':
+        conv = [0.25, 0.5, 0.25]
+        conv = [0.1, 0.2, 0.4, 0.2, 0.1]
+        vals = np.convolve(vals, conv, mode='same')
+        vals[0] *= 1.5
+        vals[-1] *= 1.5
     return vals
 
 
@@ -144,11 +151,7 @@ def data_plotcompress(d, xData, yData, mode=None):
     if mode == PLTCOMPRESS_RAW:
         return xData, yData
     if mode == PLTCOMPRESS_CONV:
-        conv = [0.25, 0.5, 0.25]
-        conv = [0.1, 0.2, 0.4, 0.2, 0.1]
-        yData = np.convolve(yData, conv, mode='same')
-        yData[0] *= 1.5
-        yData[-1] *= 1.5
+        yData = data_proc(d, yData, 'Conv')
         return xData, yData
     xLen = len(xData)
     #xReduce = np.ceil(xLen / d['xRes'])
