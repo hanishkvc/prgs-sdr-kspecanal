@@ -88,6 +88,7 @@ def data_proc(d, vals, dataProc, infTo = None):
             vals[np.isinf(vals)] = infTo
     elif dataProc == 'Conv':
         conv = [0.25, 0.5, 0.25]
+        conv = [0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]
         conv = [0.1, 0.2, 0.4, 0.2, 0.1]
         vals = np.convolve(vals, conv, mode='same')
         vals[0] *= 1.5
@@ -323,6 +324,16 @@ def sdr_curscan(d):
     return fftAll
 
 
+def _heatmap_create(d, data):
+    hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
+    #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
+    d['AxHeatMap'].set_xticks([0, 0.5, 1])
+    d['AxHeatMap'].set_xticklabels([d['startFreq'], d['centerFreq'], d['endFreq']])
+    d['AxHeatMap'].set_xlabel("Freqs")
+    d['AxHeatMap'].set_ylabel("ScanHistory")
+    return hm
+
+
 def zero_span(d):
     '''
     Repeatadly keep scanning a specified freq band, which is configured
@@ -345,11 +356,7 @@ def zero_span(d):
             d['PltHeatMapWidth'] = d['fftSize']
         fftHM = np.zeros((maxHM, d['PltHeatMapWidth']))
         indexHM = 0
-        hm = d['AxHeatMap'].imshow(fftHM, extent=(0,1, 0,1), aspect='auto')
-        d['AxHeatMap'].set_xticks([0, 0.5, 1])
-        d['AxHeatMap'].set_xticklabels([d['startFreq'], d['centerFreq'], d['endFreq']])
-        d['AxHeatMap'].set_xlabel("Freqs")
-        d['AxHeatMap'].set_ylabel("ScanHistory")
+        hm = _heatmap_create(d, fftHM)
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
         if d['cmd.stop']:
@@ -476,12 +483,7 @@ def scan_range(d):
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
         #input("Press any key to continue...")
     if d['bPltHeatMap']:
-        hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
-        centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
-        d['AxHeatMap'].set_xticks([0, 0.5, 1])
-        d['AxHeatMap'].set_xticklabels([d['startFreq'], centerFreq, d['endFreq']])
-        d['AxHeatMap'].set_xlabel("Freqs")
-        d['AxHeatMap'].set_ylabel("ScanHistory")
+        hm = _heatmap_create(d, np.zeros([3,3]))
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
         if d['cmd.stop']:
