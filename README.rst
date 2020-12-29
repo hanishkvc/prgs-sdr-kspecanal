@@ -78,6 +78,9 @@ Scan
 Scan over a large freq range, in steps and show the results both as a
 normal signal level plot as well as a heat map with historic data.
 
+The signal level plot contains the Max level seen till then and the
+average level seen till then, by default.
+
 Normal
 --------
 

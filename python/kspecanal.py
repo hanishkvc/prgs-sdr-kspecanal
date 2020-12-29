@@ -378,6 +378,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     that can be sampled/scanned by the hardware in one go, in which
     case it will do multiple scans to cover the full specified range.
 
+    These multiple scans to cover the full range, in turn can be either
+    overlapped or not, as decided by scanRangeNonOverlap.
+
     It uses scanRangeCumuMode to decide how to merge data from across
     multiple scans of the same freq band.
     '''
@@ -394,6 +397,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
         fftAll = np.ones(totalEntries) * d['minAmp4Clip']
+        d['Fft.Max'] = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
             d['fftCursMax'] = 128
@@ -426,12 +430,16 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftCur = np.fft.fftshift(fftCur)
         if d['bPltHeatMap']:
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
+        fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
+        d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
         fftAll = data_cumu(d, cumuMode, fftAll, iStart, iEnd, fftCur, sStart, sEnd)
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         if d['bPltLevels']:
-            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
             d['AxLevels'].clear()
-            d['AxLevels'].plot(xFreqs, yLvls)
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Max'])
+            d['AxLevels'].plot(xFreqs, yLvls, 'r')
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+            d['AxLevels'].plot(xFreqs, yLvls, 'b')
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         plt.pause(0.0001)
