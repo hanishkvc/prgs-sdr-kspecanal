@@ -114,13 +114,18 @@ def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
     '''
     Process fft value wrt displaying it.
     '''
-    if fftDispProcMode == 'Raw':
-        return vals
-    if fftDispProcMode.startswith('LogNoGain'):
-        if fftDispProcMode == 'LogNoGainHistLowClip':
+    modes = fftDispProcMode.split('.')
+    for mode in modes:
+        if mode == 'Raw':
+            continue
+        elif mode == 'LogNoGain':
+            vals = data_proc(d, vals, 'LogNoGain', infTo)
+        elif mode == 'HistLowClip':
             vals = data_proc(d, vals, 'HistLowClip')
-        valLogs = data_proc(d, vals, 'LogNoGain', infTo)
-    return valLogs
+        else:
+            msg = "ERROR: Unknown DispProcMode [{}], Quitting...".format(mode)
+            prg_quit(d, msg)
+    return vals
 
 
 def data_plotcompress(d, xData, yData):
