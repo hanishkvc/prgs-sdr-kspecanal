@@ -327,8 +327,10 @@ def sdr_curscan(d):
 def _heatmap_create(d, data):
     hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
     #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
-    d['AxHeatMap'].set_xticks([0, 0.5, 1])
-    d['AxHeatMap'].set_xticklabels([d['startFreq'], d['centerFreq'], d['endFreq']])
+    d['AxHeatMap'].set_xticks([0, 0.25, 0.5, 0.75, 1])
+    f25 = d['startFreq'] + (d['centerFreq'] - d['startFreq'])/2
+    f75 = d['centerFreq'] + (d['endFreq'] - d['centerFreq'])/2
+    d['AxHeatMap'].set_xticklabels([d['startFreq'], f25, d['centerFreq'], f75, d['endFreq']])
     d['AxHeatMap'].set_xlabel("Freqs")
     d['AxHeatMap'].set_ylabel("ScanHistory")
     return hm
@@ -480,6 +482,7 @@ def scan_range(d):
     if (freqBands % 1) != 0:
         d['orig.EndFreq'] = d['endFreq']
         d['endFreq'] = d['startFreq'] + np.ceil(freqBands)*d['samplingRate']
+        d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
         #input("Press any key to continue...")
     if d['bPltHeatMap']:
