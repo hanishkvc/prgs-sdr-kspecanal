@@ -57,8 +57,7 @@ gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
 # Controls scan_range heatmap: raw fft results or dispproc'd
 gbPltHeatMapSRLogPlus = True
-# Force pltCompress Max for heatmaps
-gb2DPltCompressForceMax = True
+gPltCompressHM = PLTCOMPRESS_MAX
 
 
 
@@ -186,14 +185,13 @@ def data_plotcompress(d, xData, yData, mode=None):
     return xData, yData
 
 
-def data_2d_plotcompress(d, data):
+def data_2d_plotcompress(d, data, mode=None):
     '''
     If requested, then reduce the number of elements in a 2D data set,
     by merging adjacent cols of each row, into a smaller subset of cols.
     '''
-    mode = d['pltCompress']
-    if gb2DPltCompressForceMax:
-        mode = PLTCOMPRESS_MAX
+    if type(mode) == type(None):
+        mode = d['pltCompressHM']
     if mode == PLTCOMPRESS_RAW:
         return data
     rows,cols = data.shape
@@ -341,7 +339,11 @@ def zero_span(d):
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
     if d['bPltHeatMap']:
         maxHM = 128
-        fftHM = np.zeros((maxHM, d['fftSize']))
+        if (d['pltCompressHM'] in [ PLTCOMPRESS_MAX, PLTCOMPRESS_AVG]):
+            d['PltHeatMapWidth'] = d['xRes']
+        else:
+            d['PltHeatMapWidth'] = d['fftSize']
+        fftHM = np.zeros((maxHM, d['PltHeatMapWidth']))
         indexHM = 0
         hm = d['AxHeatMap'].imshow(fftHM, extent=(0,1, 0,1), aspect='auto')
         d['AxHeatMap'].set_xticks([0, 0.5, 1])
@@ -364,7 +366,7 @@ def zero_span(d):
         d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
         #print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
         if d['bPltHeatMap']:
-            fftHM[indexHM,:] = fftPr
+            fftHM[indexHM,:] = _data_plotcompress(d, fftPr, d['pltCompressHM'])
             hm.set_data(fftHM)
             hm.autoscale()
             plt.draw()
@@ -491,7 +493,7 @@ def scan_range(d):
         freqs, ffts = _scan_range(d, freqs, ffts, i)
         if d['bPltHeatMap']:
             #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
-            hmData = data_2d_plotcompress(d, d['fftCurs'])
+            hmData = data_2d_plotcompress(d, d['fftCurs'], d['pltCompressHM'])
             hm.set_data(hmData)
             hm.autoscale()
             plt.pause(0.001)
@@ -525,6 +527,7 @@ def handle_args(d):
     d['pltHighsNumMarkers'] = gPltHighsNumMarkers
     d['pltHighsDelta4Marking'] = gPltHighsDelta4Marking
     d['pltHighsPause'] = gPltHighsPause
+    d['pltCompressHM'] = gPltCompressHM
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -623,10 +626,7 @@ def print_info(d):
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
-    if gb2DPltCompressForceMax:
-        print("FORCED: HeatMap pltCompress Max")
-    if gbPltHeatMapSRLogPlus:
-        print("INFO: HeatMap ScanRange shows GainAdjustedLogData")
+    print("INFO: pltCompressHM [{}], pltHeatMapSRLogPlus [{}]".format(d['pltCompressHM'], gbPltHeatMapSRLogPlus))
 
 
 def prg_quit(d, msg = None, tryExit=True):

@@ -328,8 +328,8 @@ Scan mode
 To ensure that heatmap doesnt eat up any signal data, set the xRes to match the
 actual screen resolution of the heatmap and or lesser than it.
 
-NOTE: HeatMap by default uses pltCompress Max logic for its data and is Not user
-controlled.
+NOTE: HeatMap by default uses pltCompressHM mapped to Max logic for its data and
+is Not user controllable from commandline.
 
 
 
