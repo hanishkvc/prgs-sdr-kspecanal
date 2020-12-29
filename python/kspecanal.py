@@ -9,8 +9,8 @@ import time
 import signal
 import numpy as np
 import matplotlib.pyplot as plt
-#import rtlsdr
-import testfft as rtlsdr
+import rtlsdr
+#import testfft as rtlsdr
 
 
 
@@ -23,6 +23,7 @@ PLTFIG_HEATMAP = "Heatmap"
 PLTCOMPRESS_MAX = 'MAX'
 PLTCOMPRESS_AVG = 'AVG'
 PLTCOMPRESS_RAW = 'RAW'
+PLTCOMPRESS_CONV = 'CONV'
 CUMUMODE_MAX = 'MAX'
 CUMUMODE_AVG = 'AVG'
 CUMUMODE_RAW = 'RAW'
@@ -124,10 +125,21 @@ def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
 
 def data_plotcompress(d, xData, yData):
     '''
-    Reduce the amount of data, while still maintaining any significant values in the data.
+    Process and or Reduce the amount of data, while still trying to maintain any
+    significant values in the data, if that is what user wants.
+
     Length and XRes are assumed to belong to the powers of 2 series.
+
+    xData is blindly averaged, while yData is processed as specified by user.
     '''
     if d['pltCompress'] == PLTCOMPRESS_RAW:
+        return xData, yData
+    if d['pltCompress'] == PLTCOMPRESS_CONV:
+        conv = [0.25, 0.5, 0.25]
+        conv = [0.1, 0.2, 0.4, 0.2, 0.1]
+        yData = np.convolve(yData, conv, mode='same')
+        yData[0] *= 1.5
+        yData[-1] *= 1.5
         return xData, yData
     xLen = len(xData)
     #xReduce = np.ceil(xLen / d['xRes'])
@@ -169,7 +181,7 @@ def data_2d_plotcompress(d, data):
         elif mode == PLTCOMPRESS_AVG:
             xVals = np.average(xTData, axis=1)
         else:
-            prg_quit(d, "ERROR:pltCompress:2D: Unknown mode [{}]".format(d['pltCompress']))
+            prg_quit(d, "ERROR:pltCompress:2D: Unknown mode [{}]".format(mode))
         newData[y,:] = xVals
     return newData
 

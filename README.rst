@@ -283,6 +283,11 @@ pltHighsPause <boolean>
         on the console.
 
 
+NOTE: Do look into the source to get the latest | current default setting for the
+different options, and or to change as one sees fit.
+
+
+
 Signal level display
 ------------------------
 
@@ -290,23 +295,32 @@ For more representative signal level display, use the following property values
 
 ZeroSpan mode
 
-        pltCompress raw OR pltCompress max
+        pltCompress raw <OR ELSE> pltCompress max
 
 Scan mode
 
-        pltCompress max
+        # Start with avg to get a rough overview
+
+        pltCompress avg
+
+        # Switch to conv to get a more representative view
+
+        pltCompress conv
+
+        # Then use max or raw to get the more practical view
+
+        pltCompress raw <OR ELSE> pltCompress max
+
+        # U can also add scanRangeNonOverlap to the mix
 
         scanRangeNonOverlap 1.0
 
 To ensure that heatmap doesnt eat up any signal data, set the xRes to match the
 actual screen resolution of the heatmap and or lesser than it.
 
+NOTE: HeatMap by default uses pltCompress Max logic for its data and is Not user
+controlled.
 
-Remember
-----------
-
-Do look into the source to get the latest | current default setting for the
-different options, and or to change as one sees fit.
 
 
 TODO
