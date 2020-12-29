@@ -97,6 +97,8 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
     Avg: average the values between curVals and newVals buffer and store into curVals.
     Max: copy the larger value between curVals and newVals into curVals.
     '''
+    if type(curVals) == type(None):
+        return np.copy(newVals)
     if mode == CUMUMODE_RAW:
         curVals[cStart:cEnd] = newVals[nStart:nEnd]
     elif mode == CUMUMODE_AVG:
@@ -321,6 +323,8 @@ def zero_span(d):
     Display the instanteneous signal levels as well as
     history of signal levels as a heat map.
     '''
+    d['Fft.Max'] = None
+    d['Fft.Avg'] = None
     d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
@@ -342,11 +346,13 @@ def zero_span(d):
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         fftCur = sdr_curscan(d)
-        print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
+        #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftCur = np.fft.fftshift(fftCur)
-        print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
+        #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
-        print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
+        d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        #print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
         if d['bPltHeatMap']:
             fftHM[indexHM,:] = fftPr
             hm.set_data(fftHM)
@@ -355,8 +361,12 @@ def zero_span(d):
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             d['AxLevels'].cla()
+            xFreqs, yLvls = data_plotcompress(d, freqs, d['Fft.Max'])
+            d['AxLevels'].plot(xFreqs, yLvls, 'r')
+            xFreqs, yLvls = data_plotcompress(d, freqs, d['Fft.Avg'])
+            d['AxLevels'].plot(xFreqs, yLvls, 'g')
             xFreqs, yLvls = data_plotcompress(d, freqs, fftPr)
-            d['AxLevels'].plot(xFreqs, yLvls)
+            d['AxLevels'].plot(xFreqs, yLvls, 'b')
             plt.draw()
             plot_highs(d, xFreqs, yLvls)
         plt.pause(0.0001)

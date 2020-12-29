@@ -60,6 +60,13 @@ band width of 2.4MHz (decided based on the sampling rate limit of rtlsdr),
 again and again.
 
 It shows the normalised fft result magnitudes of the scan on a Log scale.
+These are shown as 3 curves
+
+        The Red curve which is the max values seen till then.
+
+        The Green curve, which is the average of values seen till then.
+
+        The Blue curve, which is the current scan's values.
 
 It also shows a heatmap | waterfall of the signal levels over a period of
 time till then.
