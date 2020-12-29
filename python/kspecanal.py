@@ -422,9 +422,10 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         d['Fft.Max'] = np.copy(d['Fft.Mode'])
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
-            d['fftCursMax'] = 128
-            d['fftCursIndex'] = 0
-            d['fftCurs'] = np.ones([d['fftCursMax'], totalEntries]) * d['minAmp4Clip']
+            d['fftHMMax'] = 128
+            d['fftHMIndex'] = 0
+            hmData = np.ones([d['fftHMMax'], totalEntries]) * d['minAmp4Clip']
+            d['fftHM'] = data_2d_plotcompress(d, hmData, d['pltCompressHM'])
     if runCount == 0:
         cumuMode = CUMUMODE_RAW
     else:
@@ -450,8 +451,6 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             fftCur = np.ones(d['fftSize'])
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftCur = np.fft.fftshift(fftCur)
-        if d['bPltHeatMap']:
-            d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
         d['Fft.Mode'] = data_cumu(d, cumuMode, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
@@ -468,8 +467,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     if d['bPltLevels']:
         xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Mode'])
         plot_highs(d, xFreqs, yLvls)
-    if d['bPltHeatMap'] and gbPltHeatMapSRLogPlus:
-        d['fftCurs'][d['fftCursIndex'], :] = d['Fft.Mode']
+    if d['bPltHeatMap']:
+        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, d['Fft.Mode'], d['pltCompressHM'])
     return freqsAll, fftAll
 
 
@@ -496,12 +495,11 @@ def scan_range(d):
         #print_info(d)
         freqs, ffts = _scan_range(d, freqs, ffts, i)
         if d['bPltHeatMap']:
-            #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftCurs']), np.max(d['fftCurs'])))
-            hmData = data_2d_plotcompress(d, d['fftCurs'], d['pltCompressHM'])
-            hm.set_data(hmData)
+            #print("DBUG:scanRange: min[{}] max[{}]".format(np.min(d['fftHM']), np.max(d['fftHM'])))
+            hm.set_data(d['fftHM'])
             hm.autoscale()
             plt.pause(0.001)
-            d['fftCursIndex'] = (d['fftCursIndex'] + 1) % d['fftCursMax']
+            d['fftHMIndex'] = (d['fftHMIndex'] + 1) % d['fftHMMax']
 
 
 def _arg_boolean(value):
