@@ -54,7 +54,9 @@ gCurScanCumuMode = CUMUMODE_AVG
 
 
 # Controls scan_range heatmap: raw fft results or dispproc'd
-gbPltHeatMapLogPlus = True
+gbPltHeatMapSRLogPlus = True
+# Force pltCompress Max for heatmaps
+gb2DPltCompressForceMax = True
 
 
 
@@ -149,7 +151,10 @@ def data_2d_plotcompress(d, data):
     Reduce the number of elements in a 2D data set,
     by merging adjacent cols of each row, into a smaller subset of cols.
     '''
-    if d['pltCompress'] == PLTCOMPRESS_RAW:
+    mode = d['pltCompress']
+    if gb2DPltCompressForceMax:
+        mode = PLTCOMPRESS_MAX
+    if mode == PLTCOMPRESS_RAW:
         return data
     yLen,xLen = data.shape
     xReduce = int(xLen/d['xRes'])
@@ -159,9 +164,9 @@ def data_2d_plotcompress(d, data):
     for y in range(yLen):
         xData = data[y,:]
         xTData = xData.reshape(rows, cols)
-        if d['pltCompress'] == PLTCOMPRESS_MAX:
+        if mode == PLTCOMPRESS_MAX:
             xVals = np.max(xTData, axis=1)
-        elif d['pltCompress'] == PLTCOMPRESS_AVG:
+        elif mode == PLTCOMPRESS_AVG:
             xVals = np.average(xTData, axis=1)
         else:
             prg_quit(d, "ERROR:pltCompress:2D: Unknown mode [{}]".format(d['pltCompress']))
@@ -408,7 +413,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
         plot_highs(d, xFreqs, yLvls)
-    if d['bPltHeatMap'] and gbPltHeatMapLogPlus:
+    if d['bPltHeatMap'] and gbPltHeatMapSRLogPlus:
         d['fftCurs'][d['fftCursIndex'], :] = fftPr
     return freqsAll, fftAll
 
@@ -573,6 +578,10 @@ def print_info(d):
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
+    if gb2DPltCompressForceMax:
+        print("FORCED: HeatMap pltCompress Max")
+    if gbPltHeatMapSRLogPlus:
+        print("INFO: HeatMap ScanRange shows GainAdjustedLogData")
 
 
 def prg_quit(d, msg = None, tryExit=True):
