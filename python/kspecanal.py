@@ -53,6 +53,10 @@ gPltCompress = PLTCOMPRESS_AVG
 gCurScanCumuMode = CUMUMODE_AVG
 
 
+# Controls scan_range heatmap: raw fft results or dispproc'd
+gbPltHeatMapLogPlus = True
+
+
 
 def data_proc(d, vals, dataProc, infTo = None):
     '''
@@ -404,6 +408,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
         xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
         plot_highs(d, xFreqs, yLvls)
+    if d['bPltHeatMap'] and gbPltHeatMapLogPlus:
+        d['fftCurs'][d['fftCursIndex'], :] = fftPr
     return freqsAll, fftAll
 
 
@@ -418,7 +424,7 @@ def scan_range(d):
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
         #input("Press any key to continue...")
     if d['bPltHeatMap']:
-        hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto')
+        hm = d['AxHeatMap'].imshow(np.zeros([3,3]), extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
         centerFreq = d['startFreq'] + (d['endFreq'] - d['startFreq'])/2
         d['AxHeatMap'].set_xticks([0, 0.5, 1])
         d['AxHeatMap'].set_xticklabels([d['startFreq'], centerFreq, d['endFreq']])
