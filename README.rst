@@ -79,7 +79,8 @@ Scan over a large freq range, in steps and show the results both as a
 normal signal level plot as well as a heat map with historic data.
 
 The signal level plot contains the Max level seen till then and the
-average level seen till then, by default.
+average (default, else user selected scanRangeCumuMode) level seen
+till then, by default.
 
 Normal
 --------
@@ -95,8 +96,7 @@ can be clipped to some extent) and then shown on a log scale.
 
 NOTE: If the freq range being scanned isn't a multiple of the sampling
 rate, then endFreq will be adjusted to make it a multiple. User will
-be alerted about the same and they have to press any key to continue,
-in this case.
+be alerted about the same, in this case.
 
 QuickFullScan
 ---------------
@@ -257,7 +257,8 @@ pltCompress <Raw|Avg|Max>
         the signal levels across adjacent freqs that are shown. This along with
         fftSize and xRes, decides how finegrained is the freq resolution you see
         on the screen. NOTE: Using Avg will smooth the display, but will impact
-        the signal levels seen.
+        the signal levels seen. This controls the signal levels plot and doesnt
+        impact the heatmap plot.
 
 xRes <int_poweroftwovalue>
 
@@ -320,6 +321,9 @@ Scan mode
         # Then use max or raw to get the more practical view
 
         pltCompress raw <OR ELSE> pltCompress max
+
+        NOTE: Dont use pltCompress raw, if you are scanning a very large range
+        like 100Mhz or more. Else pyplot will slow down.
 
         # U can also add scanRangeNonOverlap to the mix
 

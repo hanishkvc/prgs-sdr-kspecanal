@@ -55,8 +55,6 @@ gZeroSpanFftDispProcMode = 'LogNoGain'
 gScanRangeFftDispProcMode = 'LogNoGain'
 gScanRangeClipProcMode = 'HistLowClip'
 gScanRangeClipProcMode = 'Clip2MinAmp'
-# Controls scan_range heatmap: raw fft results or dispproc'd
-gbPltHeatMapSRLogPlus = True
 gPltCompressHM = PLTCOMPRESS_MAX
 
 
@@ -624,11 +622,11 @@ def handle_args(d):
 def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
-    print("INFO: fullSize[{}], fftSize[{}], scanRangeCumuMode[{}], window[{}], xRes[{}], pltCompress[{}]".format(d['fullSize'], d['fftSize'], d['scanRangeCumuMode'], d['window'], d['xRes'], d['pltCompress']))
+    print("INFO: fullSize[{}], fftSize[{}], scanRangeCumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['scanRangeCumuMode'], d['window']))
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
-    print("INFO: pltCompressHM [{}], pltHeatMapSRLogPlus [{}]".format(d['pltCompressHM'], gbPltHeatMapSRLogPlus))
+    print("INFO: xRes [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['pltCompress'], d['pltCompressHM']))
 
 
 def prg_quit(d, msg = None, tryExit=True):
