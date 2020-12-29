@@ -418,7 +418,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
         fftAll = np.ones(totalEntries) * d['minAmp4Clip']
-        d['Fft.Max'] = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
+        d['Fft.Mode'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
+        d['Fft.Max'] = np.copy(d['Fft.Mode'])
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
             d['fftCursMax'] = 128
@@ -453,24 +454,22 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             d['fftCurs'][d['fftCursIndex'], iStart:iEnd] = fftCur[sStart:sEnd]
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
-        fftAll = data_cumu(d, cumuMode, fftAll, iStart, iEnd, fftCur, sStart, sEnd)
-        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
+        d['Fft.Mode'] = data_cumu(d, cumuMode, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
         if d['bPltLevels']:
             d['AxLevels'].clear()
             xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Max'])
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
-            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Mode'])
             d['AxLevels'].plot(xFreqs, yLvls, 'b')
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
-        fftPr = fftvals_dispproc(d, np.copy(fftAll), gScanRangeFftDispProcMode, infTo=0)
-        xFreqs, yLvls = data_plotcompress(d, freqsAll, fftPr)
+        xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Mode'])
         plot_highs(d, xFreqs, yLvls)
     if d['bPltHeatMap'] and gbPltHeatMapSRLogPlus:
-        d['fftCurs'][d['fftCursIndex'], :] = fftPr
+        d['fftCurs'][d['fftCursIndex'], :] = d['Fft.Mode']
     return freqsAll, fftAll
 
 
