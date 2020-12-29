@@ -137,12 +137,40 @@ def fftvals_dispproc(d, vals, fftDispProcMode, infTo=None):
     return vals
 
 
+def _data_plotcompress(d, data, mode):
+    '''
+    Process the given data in the specified way.
+
+    Raw: Dont modify the data, return it as it is.
+    Conv: Convolve the data before returning it.
+    Max: Divide the data into d['xRes'] number of groups,
+         and return the max from each group.
+    Avg: Divide the data into d['xRes'] number of groups,
+         and return the avg of each group.
+
+    data length should be divisible into equal size groups using d['xRes']
+    '''
+    if mode == PLTCOMPRESS_RAW:
+        return data
+    elif mode == PLTCOMPRESS_CONV:
+        return data_proc(d, data, 'Conv')
+    elif (mode == PLTCOMPRESS_MAX) or (mode == PLTCOMPRESS_AVG):
+        rows = d['xRes']
+        cols = len(data)//rows
+        tData = data.reshape(rows, cols)
+        if mode == PLTCOMPRESS_MAX:
+            data = np.max(tData, axis=1)
+        elif mode == PLTCOMPRESS_AVG:
+            data = np.average(tData, axis=1)
+        return data
+    else:
+        prg_quit(d, "ERROR:_data_plotcompress: Unknown mode [{}]".format(mode))
+
+
 def data_plotcompress(d, xData, yData, mode=None):
     '''
     Process and or Reduce the amount of data, while still trying to maintain any
     significant values in the data, if that is what user wants.
-
-    Length and XRes are assumed to belong to the powers of 2 series.
 
     xData is blindly averaged, while yData is processed as specified by user.
     '''
@@ -151,28 +179,16 @@ def data_plotcompress(d, xData, yData, mode=None):
     if mode == PLTCOMPRESS_RAW:
         return xData, yData
     if mode == PLTCOMPRESS_CONV:
-        yData = data_proc(d, yData, 'Conv')
+        yData = _data_plotcompress(d, yData, mode)
         return xData, yData
-    xLen = len(xData)
-    #xReduce = np.ceil(xLen / d['xRes'])
-    xReduce = int(xLen / d['xRes'])
-    rows = int(xLen/xReduce)
-    cols = xReduce
-    xTData = xData.reshape(rows, cols)
-    xVals = np.average(xTData, axis=1)
-    yTData = yData.reshape(rows, cols)
-    if mode == PLTCOMPRESS_MAX:
-        yVals = np.max(yTData, axis=1)
-    elif mode == PLTCOMPRESS_AVG:
-        yVals = np.average(yTData, axis=1)
-    else:
-        prg_quit(d, "ERROR:pltCompress:1D: Unknown mode [{}]".format(mode))
-    return xVals, yVals
+    xData = _data_plotcompress(d, xData, PLTCOMPRESS_AVG)
+    yData = _data_plotcompress(d, yData, mode)
+    return xData, yData
 
 
 def data_2d_plotcompress(d, data):
     '''
-    Reduce the number of elements in a 2D data set,
+    If requested, then reduce the number of elements in a 2D data set,
     by merging adjacent cols of each row, into a smaller subset of cols.
     '''
     mode = d['pltCompress']
@@ -180,22 +196,11 @@ def data_2d_plotcompress(d, data):
         mode = PLTCOMPRESS_MAX
     if mode == PLTCOMPRESS_RAW:
         return data
-    yLen,xLen = data.shape
-    xReduce = int(xLen/d['xRes'])
-    rows = int(xLen/xReduce)
-    cols = xReduce
-    newData = np.zeros((yLen, rows))
-    for y in range(yLen):
-        xData = data[y,:]
-        xTData = xData.reshape(rows, cols)
-        if mode == PLTCOMPRESS_MAX:
-            xVals = np.max(xTData, axis=1)
-        elif mode == PLTCOMPRESS_AVG:
-            xVals = np.average(xTData, axis=1)
-        else:
-            prg_quit(d, "ERROR:pltCompress:2D: Unknown mode [{}]".format(mode))
-        newData[y,:] = xVals
-    return newData
+    rows,cols = data.shape
+    newData = []
+    for r in range(rows):
+        newData.append(_data_plotcompress(d, data[r,:], mode))
+    return np.array(newData)
 
 
 gPltHighsDelta4Marking = 0.025
