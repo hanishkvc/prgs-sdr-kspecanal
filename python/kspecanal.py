@@ -9,6 +9,7 @@ import time
 import signal
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 import rtlsdr
 #import testfft as rtlsdr
 
@@ -500,6 +501,24 @@ def scan_range(d):
             d['fftHMIndex'] = (d['fftHMIndex'] + 1) % d['fftHMMax']
 
 
+gSaveSigLvls = "/tmp/ksa_siglvls.bin"
+def _save_siglvls(d):
+    f = open(gSaveSigLvls, "wb+")
+    pickle.dump(d['Fft.Avg'], f)
+    f.close()
+    print("INFO:_save_siglvls: success...")
+
+
+def _load_siglvls(d):
+    try:
+        f = open(gSaveSigLvls, "rb")
+        d['Fft.Clear'] = pickle.load(f)
+        f.close()
+        print("INFO:_load_siglvls: success...")
+    except:
+        print("WARN:_load_siglvls: Failed...")
+
+
 def _arg_boolean(value):
     if value.upper() == "TRUE":
         return True
@@ -708,6 +727,7 @@ def handle_signals(d):
 gD = {}
 gD['cmd.stop'] = False
 handle_args(gD)
+_load_siglvls(gD)
 print_info(gD)
 handle_signals(gD)
 plt_figures(gD)
@@ -720,6 +740,7 @@ gD['sdr'].close()
 
 
 
+_save_siglvls(gD)
 gD['BtnQuit'].label.set_text("QuitPress")
 input("Press any key to quit...")
 
