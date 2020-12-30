@@ -122,6 +122,30 @@ If user doesnt specify any arguments, then the program defaults to this
 mode.
 
 
+HideExistingSignals
+=====================
+
+Sometimes you may want to remove the existing signals from the plot
+and then check for any new signals and or variation wrt existing
+signal levels. To help with same the program supports
+
+saveSigLvls <file_to_save_to>
+
+        This tells the program to save the current Avg signal levels
+        to be saved into the specified file.
+
+adjSigLvls <file_with_siglvls>
+
+        The program loads signal levels from the specified file and
+        inturn substract the same from the current signal levels,
+        before plotting them.
+
+        NOTE: With this the base / pseudo noise floor increases to 0 dB.
+
+NOTE: The signal level stored doesnt have any frequency info. So one
+requires to pass to adjsiglvls a signal levels file, which was saved
+from a equivalent scan range, else the results would be funny ;-)
+
 
 UI Buttons
 ============

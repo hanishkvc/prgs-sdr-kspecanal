@@ -380,7 +380,7 @@ def zero_span(d):
             plt.draw()
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
-            if d['sigLvlsAdjust']:
+            if d['AdjSigLvls'] != '':
                 fftMax = d['Fft.Max'] - d['Fft.Adj']
                 fftAvg = d['Fft.Avg'] - d['Fft.Adj']
                 fftPrTmp = fftPr - d['Fft.Adj']
@@ -508,23 +508,33 @@ def scan_range(d):
             plt.pause(0.001)
             d['fftHMIndex'] = (d['fftHMIndex'] + 1) % d['fftHMMax']
 
-
-gSaveSigLvls = "/tmp/ksa_siglvls.bin"
+gSaveSigLvls = ''
+gAdjSigLvls = ''
 def _save_siglvls(d):
-    f = open(gSaveSigLvls, "wb+")
-    pickle.dump(d['Fft.Avg'], f)
-    f.close()
-    print("INFO:_save_siglvls: success...")
+    try:
+        if d['SaveSigLvls'] != '':
+            f = open(d['SaveSigLvls'], "wb+")
+            pickle.dump(d['Fft.Avg'], f)
+            f.close()
+            print("INFO:_save_siglvls: success...", d['SaveSigLvls'])
+        else:
+            print("INFO:_save_siglvls: ignoring...")
+    except:
+        print("WARN:_save_siglvls: Failed...", d['SaveSigLvls'])
 
 
 def _load_siglvls(d):
     try:
-        f = open(gSaveSigLvls, "rb")
-        d['Fft.Adj'] = pickle.load(f)
-        f.close()
-        print("INFO:_load_siglvls: success...")
+        if d['AdjSigLvls'] != '':
+            f = open(d['AdjSigLvls'], "rb")
+            d['Fft.Adj'] = pickle.load(f)
+            f.close()
+            print("INFO:_load_siglvls: success...", d['AdjSigLvls'])
+        else:
+            print("INFO:_load_siglvls: ignoring...")
     except:
-        print("WARN:_load_siglvls: Failed...")
+        print("WARN:_load_siglvls: Failed...", d['AdjSigLvls'])
+        d['AdjSigLvls'] = ''
 
 
 def _arg_boolean(value):
@@ -555,6 +565,8 @@ def handle_args(d):
     d['pltHighsDelta4Marking'] = gPltHighsDelta4Marking
     d['pltHighsPause'] = gPltHighsPause
     d['pltCompressHM'] = gPltCompressHM
+    d['SaveSigLvls'] = gSaveSigLvls
+    d['AdjSigLvls'] = gAdjSigLvls
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -620,6 +632,12 @@ def handle_args(d):
         elif (curArg == 'PLTHIGHSPAUSE'):
             iArg += 1
             d['pltHighsPause'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'SAVESIGLVLS'):
+            iArg += 1
+            d['SaveSigLvls'] = sys.argv[iArg]
+        elif (curArg == 'ADJSIGLVLS'):
+            iArg += 1
+            d['AdjSigLvls'] = sys.argv[iArg]
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -654,6 +672,7 @@ def print_info(d):
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
     print("INFO: xRes [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['pltCompress'], d['pltCompressHM']))
+    print("INFO: SaveSigLvls [{}], AdjSigLvls [{}]".format(d['SaveSigLvls'], d['AdjSigLvls']))
 
 
 def prg_quit(d, msg = None, tryExit=True):
