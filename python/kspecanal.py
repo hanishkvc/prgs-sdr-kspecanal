@@ -380,12 +380,20 @@ def zero_span(d):
             plt.draw()
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
+            if d['sigLvlsAdjust']:
+                fftMax = d['Fft.Max'] - d['Fft.Adj']
+                fftAvg = d['Fft.Avg'] - d['Fft.Adj']
+                fftPrTmp = fftPr - d['Fft.Adj']
+            else:
+                fftMax = d['Fft.Max']
+                fftAvg = d['Fft.Avg']
+                fftPrTmp = fftPr
             d['AxLevels'].cla()
-            xFreqs, yLvls = data_plotcompress(d, freqs, d['Fft.Max'])
+            xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
-            xFreqs, yLvls = data_plotcompress(d, freqs, d['Fft.Avg'])
+            xFreqs, yLvls = data_plotcompress(d, freqs, fftAvg)
             d['AxLevels'].plot(xFreqs, yLvls, 'g')
-            xFreqs, yLvls = data_plotcompress(d, freqs, fftPr)
+            xFreqs, yLvls = data_plotcompress(d, freqs, fftPrTmp)
             d['AxLevels'].plot(xFreqs, yLvls, 'b')
             plt.draw()
             plot_highs(d, xFreqs, yLvls)
@@ -512,7 +520,7 @@ def _save_siglvls(d):
 def _load_siglvls(d):
     try:
         f = open(gSaveSigLvls, "rb")
-        d['Fft.Clear'] = pickle.load(f)
+        d['Fft.Adj'] = pickle.load(f)
         f.close()
         print("INFO:_load_siglvls: success...")
     except:
