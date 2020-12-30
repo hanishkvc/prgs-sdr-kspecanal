@@ -323,6 +323,18 @@ def sdr_curscan(d):
     return fftAll
 
 
+def _adj_siglvls(d, fftPr):
+    if d['AdjSigLvls'] != '':
+        fftMax = d['Fft.Max'] - d['Fft.Adj']
+        fftAvg = d['Fft.Avg'] - d['Fft.Adj']
+        fftPrTmp = fftPr - d['Fft.Adj']
+    else:
+        fftMax = d['Fft.Max']
+        fftAvg = d['Fft.Avg']
+        fftPrTmp = fftPr
+    return fftMax, fftAvg, fftPrTmp
+
+
 def _heatmap_create(d, data):
     hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
     #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
@@ -373,21 +385,14 @@ def zero_span(d):
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], 0, len(fftPr), fftPr, 0, len(fftPr))
         d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
         #print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
+        fftMax, fftAvg, fftPrTmp = _adj_siglvls(d, fftPr)
         if d['bPltHeatMap']:
-            fftHM[indexHM,:] = _data_plotcompress(d, fftPr, d['pltCompressHM'])
+            fftHM[indexHM,:] = _data_plotcompress(d, fftPrTmp, d['pltCompressHM'])
             hm.set_data(fftHM)
             hm.autoscale()
             plt.draw()
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
-            if d['AdjSigLvls'] != '':
-                fftMax = d['Fft.Max'] - d['Fft.Adj']
-                fftAvg = d['Fft.Avg'] - d['Fft.Adj']
-                fftPrTmp = fftPr - d['Fft.Adj']
-            else:
-                fftMax = d['Fft.Max']
-                fftAvg = d['Fft.Avg']
-                fftPrTmp = fftPr
             d['AxLevels'].cla()
             xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
@@ -427,6 +432,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftAll = np.ones(totalEntries) * d['minAmp4Clip']
         d['Fft.Mode'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = np.copy(d['Fft.Mode'])
+        d['Fft.Avg'] = np.copy(d['Fft.Mode'])
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
             d['fftHMMax'] = 128
@@ -460,22 +466,26 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
+        d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
         d['Fft.Mode'] = data_cumu(d, cumuMode, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
+        fftMax, fftAvg, fftMode = _adj_siglvls(d, d['Fft.Mode'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
-            xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Max'])
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMax)
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
-            xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Mode'])
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftAvg)
+            d['AxLevels'].plot(xFreqs, yLvls, 'g')
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMode)
             d['AxLevels'].plot(xFreqs, yLvls, 'b')
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
-        xFreqs, yLvls = data_plotcompress(d, freqsAll, d['Fft.Mode'])
+        xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMode)
         plot_highs(d, xFreqs, yLvls)
     if d['bPltHeatMap']:
-        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, d['Fft.Mode'], d['pltCompressHM'])
+        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftMode, d['pltCompressHM'])
     return freqsAll, fftAll
 
 
