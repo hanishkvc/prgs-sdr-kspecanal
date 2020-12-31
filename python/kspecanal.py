@@ -751,6 +751,8 @@ def _update_boolbtn(btn, btnBool, text):
 
 
 def update_boolbtns(d):
+    if not (d['bDataMin'] or d['bDataMax'] or d['bDataAvg'] or d['bDataCur']):
+        d['bDataAvg'] = True
     _update_boolbtn(d['BtnLevels'], d['bPltLevels'], 'Levels')
     _update_boolbtn(d['BtnHeatMap'], d['bPltHeatMap'], 'HeatMap')
     _update_boolbtn(d['BtnPause'], d['pltHighsPause'], 'Pause')
@@ -834,8 +836,8 @@ def plt_figures(d):
     d['AxHeatMap'] = f.add_subplot(gs[8:16,:4])
     d['AxBtnLevels'] = f.add_subplot(gs[8,4])
     d['AxBtnHeatMap'] = f.add_subplot(gs[9,4])
-    d['AxBtnMinLvls'] = f.add_subplot(gs[10,4])
-    d['AxBtnMaxLvls'] = f.add_subplot(gs[11,4])
+    d['AxBtnMaxLvls'] = f.add_subplot(gs[10,4])
+    d['AxBtnMinLvls'] = f.add_subplot(gs[11,4])
     d['AxBtnAvgLvls'] = f.add_subplot(gs[12,4])
     d['AxBtnCurLvls'] = f.add_subplot(gs[13,4])
     d['AxBtnPause'] = f.add_subplot(gs[14,4])
