@@ -464,9 +464,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     print("_scanRange: totalFreqs:{} numGroups:{} totalEntries:{}".format(totalFreqs, numGroups, totalEntries))
     if type(freqsAll) == type(None):
         fftAll = np.ones(totalEntries) * d['minAmp4Clip']
-        d['Fft.Mode'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
-        d['Fft.Max'] = np.copy(d['Fft.Mode'])
-        d['Fft.Avg'] = np.copy(d['Fft.Mode'])
+        d['Fft.Cur'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
+        d['Fft.Max'] = np.copy(d['Fft.Cur'])
+        d['Fft.Avg'] = np.copy(d['Fft.Cur'])
         fftAll = np.ones(totalEntries)
         d['Fft.Min'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
@@ -507,8 +507,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iEnd, fftPr, sStart, sEnd)
         if d['bDataAvg']:
             d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
-        d['Fft.Mode'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
-        fftMax, fftMin, fftAvg, fftMode = _adj_siglvls(d, d['Fft.Mode'])
+        d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iStart, iEnd, fftPr, sStart, sEnd)
+        fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
             if d['bDataMax']:
@@ -521,17 +521,17 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
                 xFreqs, yLvls = data_plotcompress(d, freqsAll, fftAvg)
                 d['AxLevels'].plot(xFreqs, yLvls, 'g')
             if d['bDataCur']:
-                xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMode)
+                xFreqs, yLvls = data_plotcompress(d, freqsAll, fftCurAdj)
                 d['AxLevels'].plot(xFreqs, yLvls, 'b')
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
         plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
-        #xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMode)
+        #xFreqs, yLvls = data_plotcompress(d, freqsAll, fftCurAdj)
         plot_highs(d, xFreqs, yLvls)
     if d['bPltHeatMap']:
-        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftMode, d['pltCompressHM'])
+        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftCurAdj, d['pltCompressHM'])
     return freqsAll, fftAll
 
 
