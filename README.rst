@@ -60,7 +60,7 @@ width of 2.4MHz by default (a relatively safe value, decided based on the
 sampling rate and sig level results of rtlsdr), again and again.
 
 It shows the normalised fft result magnitudes of the scan on a Log scale.
-These are shown as 3 curves
+These are shown as 4 curves
 
         The Red curve which is the max values seen till then.
 
@@ -70,8 +70,8 @@ These are shown as 3 curves
 
         The Blue curve, which is the current scan's values.
 
-It also shows a heatmap | waterfall of the signal levels over a period of
-time till then.
+It also shows a heatmap | waterfall of the instanteneous(cur) signal levels
+over a period of time till then.
 
 
 Scan

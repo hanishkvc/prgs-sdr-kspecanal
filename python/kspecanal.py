@@ -361,14 +361,19 @@ def _heatmap_create(d, data):
 def zero_span(d):
     '''
     Repeatadly keep scanning a specified freq band, which is configured
-    by default to be the max sampling rate supported by the hardware.
+    by default to a relatively safe sampling rate supported by the hardware.
 
-    Display the instanteneous signal levels as well as
-    history of signal levels as a heat map.
+    Inturn the scanned result is processed into Max, Min, Avg and Cur buckets.
+
+    Next these processed buckets are shown to the user as part of the SigLvls
+    plot, provided the user as requested the same.
+
+    Also a history of instanteneous(Cur) signal levels is shown as a heat map.
     '''
     d['Fft.Max'] = None
     d['Fft.Min'] = None
     d['Fft.Avg'] = None
+    d['Fft.Cur'] = None
     d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
     freqs = np.fft.fftshift(freqs)
@@ -394,9 +399,13 @@ def zero_span(d):
         fftCur = np.fft.fftshift(fftCur)
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
-        d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], 0, len(fftPr), fftPr, 0, len(fftPr))
-        d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], 0, len(fftPr), fftPr, 0, len(fftPr))
-        d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        d['Fft.Cur'] = fftPr
+        if d['bDataMax']:
+            d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        if d['bDataMin']:
+            d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        if d['bDataAvg']:
+            d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
         #print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
         fftMax, fftMin, fftAvg, fftPrTmp = _adj_siglvls(d, fftPr)
         if d['bPltHeatMap']:
@@ -407,14 +416,18 @@ def zero_span(d):
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             d['AxLevels'].cla()
-            xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
-            d['AxLevels'].plot(xFreqs, yLvls, 'r')
-            xFreqs, yLvls = data_plotcompress(d, freqs, fftMin)
-            d['AxLevels'].plot(xFreqs, yLvls, 'y')
-            xFreqs, yLvls = data_plotcompress(d, freqs, fftAvg)
-            d['AxLevels'].plot(xFreqs, yLvls, 'g')
-            xFreqs, yLvls = data_plotcompress(d, freqs, fftPrTmp)
-            d['AxLevels'].plot(xFreqs, yLvls, 'b')
+            if d['bDataMax']:
+                xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
+                d['AxLevels'].plot(xFreqs, yLvls, 'r')
+            if d['bDataMin']:
+                xFreqs, yLvls = data_plotcompress(d, freqs, fftMin)
+                d['AxLevels'].plot(xFreqs, yLvls, 'y')
+            if d['bDataAvg']:
+                xFreqs, yLvls = data_plotcompress(d, freqs, fftAvg)
+                d['AxLevels'].plot(xFreqs, yLvls, 'g')
+            if d['bDataCur']:
+                xFreqs, yLvls = data_plotcompress(d, freqs, fftPrTmp)
+                d['AxLevels'].plot(xFreqs, yLvls, 'b')
             plt.draw()
             plot_highs(d, xFreqs, yLvls)
         plt.pause(0.0001)
