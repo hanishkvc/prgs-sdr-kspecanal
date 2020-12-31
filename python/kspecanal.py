@@ -353,8 +353,8 @@ def _adj_siglvls(d, fftPr):
 
 
 def _heatmap_create(d, data):
-    hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
-    #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
+    #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
+    hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
     d['AxHeatMap'].set_xticks([0, 0.25, 0.5, 0.75, 1])
     f25 = d['startFreq'] + (d['centerFreq'] - d['startFreq'])/2
     f75 = d['centerFreq'] + (d['endFreq'] - d['centerFreq'])/2
