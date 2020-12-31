@@ -45,7 +45,6 @@ gFft2FullMult4More = 2
 gGain = 19.1
 gWindow = False
 gMinAmp4Clip = (1/256)*0.33
-gScanRangeCumuMode = CUMUMODE_AVG
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
 gXRes = 512
@@ -448,8 +447,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     These multiple scans to cover the full range, in turn can be either
     overlapped or not, as decided by scanRangeNonOverlap.
 
-    It uses scanRangeCumuMode to decide how to merge data from across
-    multiple scans of the same freq band.
+    It generates multiple data sets from the scanned signal levels like
+    Max, Min, Avg and Cur.
     '''
     freqSpan = d['samplingRate']
     if (((freqSpan*d['scanRangeNonOverlap'])%1) != 0) or ((d['fftSize']*d['scanRangeNonOverlap'])%1 != 0):
@@ -610,7 +609,6 @@ def handle_args(d):
     d['curScanCumuMode'] = gCurScanCumuMode
     d['window'] = gWindow
     d['minAmp4Clip'] = gMinAmp4Clip
-    d['scanRangeCumuMode'] = gScanRangeCumuMode
     d['bPltHeatMap'] = gbPltHeatMap
     d['bPltLevels'] = gbPltLevels
     d['scanRangeNonOverlap'] = gScanRangeNonOverlap
@@ -665,9 +663,18 @@ def handle_args(d):
         elif (curArg == 'XRES'):
             iArg += 1
             d['xRes'] = int(sys.argv[iArg])
-        elif (curArg == 'SCANRANGECUMUMODE'):
+        elif (curArg == 'BDATAMIN'):
             iArg += 1
-            d['scanRangeCumuMode'] = sys.argv[iArg].upper()
+            d['bDataMin'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'BDATAMAX'):
+            iArg += 1
+            d['bDataMax'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'BDATAAVG'):
+            iArg += 1
+            d['bDataAvg'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'BDATACUR'):
+            iArg += 1
+            d['bDataCur'] = _arg_boolean(sys.argv[iArg])
         elif (curArg == 'PLTCOMPRESS'):
             iArg += 1
             d['pltCompress'] = sys.argv[iArg].upper()
@@ -727,12 +734,13 @@ def handle_args(d):
 def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
-    print("INFO: fullSize[{}], fftSize[{}], scanRangeCumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['scanRangeCumuMode'], d['window']))
+    print("INFO: fullSize[{}], fftSize[{}], curScanCumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['curScanCumuMode'], d['window']))
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
     print("INFO: xRes [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['pltCompress'], d['pltCompressHM']))
     print("INFO: SaveSigLvls [{}], AdjSigLvls [{}]".format(d['SaveSigLvls'], d['AdjSigLvls']))
+    print("INFO: bDataMax [{}], bDataMin [{}], bDataAvg[{}], bDataCur [{}]".format(d['bDataMax'], d['bDataMin'] , d['bDataAvg'], d['bDataCur']))
 
 
 def prg_quit(d, msg = None, tryExit=True):

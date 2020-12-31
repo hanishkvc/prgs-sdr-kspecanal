@@ -88,8 +88,12 @@ The signal level plot contains
 
         Green curve - the average of siglvls seen till then and
 
-        Blue curve - relates to siglvl data processed according to
-        user selected scanRangeCumuMode, which by default is Avg.
+        Blue curve - relates to siglvl data of the current scan.
+        If scanRangeNonOverlap is less than 1.0, then for freqs
+        which are scanned more than once in a overlapped manner,
+        as part of a single full range scan, the value of the
+        last sub scan, is what is retained wrt cur dataset.
+
 
 
 Normal
@@ -182,6 +186,7 @@ MaxLvls - Toggle the display of Maximum SigLevels till now curve.
 
 AvgLvls - Toggle the display of Averaged SigLevels till now curve.
 
+CurLvls - Toggle the display of the current scan signal levels.
 
 
 NOTE
@@ -229,11 +234,6 @@ gain <gainFloat>
 
         Default 19.1; Increase or reduce this depending on the strength
         of the signals being studied.
-
-scanRangeCumuMode <Avg|Max|Raw>
-
-        Default Avg; Change to Max, if one wants to know the max value
-        noticed at any time during the scan.
 
 window <true|false>
 
@@ -319,6 +319,10 @@ pltHighsNumMarkers <int>
 
         Default: 5; Control how many markers should be shown in the plot, wrt
         the high signal levels.
+
+        If multiple curves are enabled for the plot, then the logic shows the
+        markers for one of these curves, as decided based on this priority.
+        High : Cur - Avg - Min - Max : Low
 
 pltHighsDelta4Marking <float>
 
