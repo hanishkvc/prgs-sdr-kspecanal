@@ -176,6 +176,13 @@ Levels - This toggles the bPltLevels between enable and disable.
 
 HeatMap - This toggles the bPltHeatMap between enable and disable.
 
+MinLvls - Toggle the display of Minimum SigLevels till now curve.
+
+MaxLvls - Toggle the display of Maximum SigLevels till now curve.
+
+AvgLvls - Toggle the display of Averaged SigLevels till now curve.
+
+
 
 NOTE
 =======
