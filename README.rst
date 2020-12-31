@@ -56,8 +56,8 @@ Zero Span
 kspecanal.py zeroSpan centerFreq <theFreq>
 
 This scans a frequency band centered at centerFreq, and spread over a
-band width of 2.4MHz (decided based on the sampling rate limit of rtlsdr),
-again and again.
+band width of 2.4MHz by default (a safe value, decided based on the
+sampling rate limits of rtlsdr), again and again.
 
 It shows the normalised fft result magnitudes of the scan on a Log scale.
 These are shown as 3 curves
@@ -78,9 +78,15 @@ Scan
 Scan over a large freq range, in steps and show the results both as a
 normal signal level plot as well as a heat map with historic data.
 
-The signal level plot contains the Max level seen till then and the
-average (default, else user selected scanRangeCumuMode) level seen
-till then, by default.
+The signal level plot contains
+
+        Red curve - the Max level seen till then
+
+        Green curve - the average of siglvls seen till then and
+
+        Blue curve - relates to siglvl data processed according to
+        user selected scanRangeCumuMode, which by default is Avg.
+
 
 Normal
 --------
@@ -275,7 +281,7 @@ prgLoopCnt <int>
         is finished look into the scan plot in detail, or else one will have to
         wait till the program stops after a long time.
 
-pltCompress <Raw|Avg|Max>
+pltCompress <Raw|Avg|Max|Conv>
 
         Default: Average; This allows one to control how finegrained or not is
         the signal levels across adjacent freqs that are shown. This along with
