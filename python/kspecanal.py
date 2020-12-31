@@ -476,9 +476,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             hmData = np.ones([d['fftHMMax'], totalEntries]) * d['minAmp4Clip']
             d['fftHM'] = data_2d_plotcompress(d, hmData, d['pltCompressHM'])
     if runCount == 0:
-        cumuMode = CUMUMODE_RAW
+        cumuMode4Avg = CUMUMODE_RAW
     else:
-        cumuMode = d['scanRangeCumuMode']
+        cumuMode4Avg = CUMUMODE_AVG
     i = 0
     while startFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
@@ -506,8 +506,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         if d['bDataMin']:
             d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iEnd, fftPr, sStart, sEnd)
         if d['bDataAvg']:
-            d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
-        d['Fft.Mode'] = data_cumu(d, cumuMode, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
+            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
+        d['Fft.Mode'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
         fftMax, fftMin, fftAvg, fftMode = _adj_siglvls(d, d['Fft.Mode'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
