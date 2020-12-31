@@ -61,6 +61,12 @@ gScanRangeClipProcMode = 'Clip2MinAmp'
 gPltCompressHM = PLTCOMPRESS_MAX
 
 
+## Controlled from GUI
+gbDataMin = True
+gbDataMax = True
+gbDataAvg = True
+gbDataCur = True
+
 
 def data_proc(d, vals, dataProc, infTo = None):
     '''
@@ -610,6 +616,10 @@ def handle_args(d):
     d['pltCompressHM'] = gPltCompressHM
     d['SaveSigLvls'] = gSaveSigLvls
     d['AdjSigLvls'] = gAdjSigLvls
+    d['bDataMin'] = gbDataMin
+    d['bDataMax'] = gbDataMax
+    d['bDataAvg'] = gbDataAvg
+    d['bDataCur'] = gbDataCur
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -744,6 +754,33 @@ def event_levels(event):
         gD['BtnLevels'].label.set_text("Levels[x]")
 
 
+def event_minlvls(event):
+    if gD['bDataMin']:
+        gD['bDataMin'] = False
+        gD['BtnMinLvls'].label.set_text("MinLvls[ ]")
+    else:
+        gD['bDataMin'] = True
+        gD['BtnMinLvls'].label.set_text("MinLvls[x]")
+
+
+def event_maxlvls(event):
+    if gD['bDataMax']:
+        gD['bDataMax'] = False
+        gD['BtnMaxLvls'].label.set_text("MaxLvls[ ]")
+    else:
+        gD['bDataMax'] = True
+        gD['BtnMaxLvls'].label.set_text("MaxLvls[x]")
+
+
+def event_avglvls(event):
+    if gD['bDataAvg']:
+        gD['bDataAvg'] = False
+        gD['BtnAvgLvls'].label.set_text("AvgLvls[ ]")
+    else:
+        gD['bDataAvg'] = True
+        gD['BtnAvgLvls'].label.set_text("AvgLvls[x]")
+
+
 def event_heatmap(event):
     if gD['bPltHeatMap']:
         gD['bPltHeatMap'] = False
@@ -771,6 +808,9 @@ def plt_figures(d):
     d['AxHeatMap'] = f.add_subplot(gs[8:16,:4])
     d['AxBtnLevels'] = f.add_subplot(gs[8,4])
     d['AxBtnHeatMap'] = f.add_subplot(gs[9,4])
+    d['AxBtnMinLvls'] = f.add_subplot(gs[10,4])
+    d['AxBtnMaxLvls'] = f.add_subplot(gs[11,4])
+    d['AxBtnAvgLvls'] = f.add_subplot(gs[12,4])
     d['AxBtnPause'] = f.add_subplot(gs[14,4])
     d['AxBtnQuit'] = f.add_subplot(gs[15,4])
     d['AxFreqs'].set_xticks([])
@@ -781,6 +821,12 @@ def plt_figures(d):
     d['BtnLevels'].on_clicked(event_levels)
     d['BtnHeatMap'] = plt.Button(d['AxBtnHeatMap'], "HeatMap")
     d['BtnHeatMap'].on_clicked(event_heatmap)
+    d['BtnMinLvls'] = plt.Button(d['AxBtnMinLvls'], "MinLvls")
+    d['BtnMinLvls'].on_clicked(event_minlvls)
+    d['BtnMaxLvls'] = plt.Button(d['AxBtnMaxLvls'], "MaxLvls")
+    d['BtnMaxLvls'].on_clicked(event_maxlvls)
+    d['BtnAvgLvls'] = plt.Button(d['AxBtnAvgLvls'], "AvgLvls")
+    d['BtnAvgLvls'].on_clicked(event_avglvls)
     d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
     d['BtnQuit'].on_clicked(event_quit)
 
