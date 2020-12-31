@@ -237,7 +237,7 @@ def plot_highs(d, freqs, levels):
         if len(matched) == 0:
             print("plotHighs:Marked: {}, {}".format(curFreq, curLevel))
             d['AxLevels'].plot(curFreq, curLevel, "o", label=curFreq)
-            d['AxFreqs'].text(0.1,1.0-0.1*(cntMarked+1),curFreq/1e6)
+            d['AxFreqs'].text(0.1,1.0-0.1*(cntMarked+1), "{}:{}".format(round(curFreq/1e6,8), round(curLevel,2)))
             marked = np.append(marked, curFreq)
             cntMarked += 1
             if cntMarked >= d['pltHighsNumMarkers']:
