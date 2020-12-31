@@ -743,58 +743,77 @@ def prg_quit(d, msg = None, tryExit=True):
         sys.exit()
 
 
+def _update_boolbtn(btn, btnBool, text):
+    if btnBool:
+        btn.label.set_text('{}[x]'.format(text))
+    else:
+        btn.label.set_text('{}[ ]'.format(text))
+
+
+def update_boolbtns(d):
+    _update_boolbtn(d['BtnLevels'], d['bPltLevels'], 'Levels')
+    _update_boolbtn(d['BtnHeatMap'], d['bPltHeatMap'], 'HeatMap')
+    _update_boolbtn(d['BtnPause'], d['pltHighsPause'], 'Pause')
+    _update_boolbtn(d['BtnMinLvls'], d['bDataMin'], 'MinLvls')
+    _update_boolbtn(d['BtnMaxLvls'], d['bDataMax'], 'MaxLvls')
+    _update_boolbtn(d['BtnAvgLvls'], d['bDataAvg'], 'AvgLvls')
+    _update_boolbtn(d['BtnCurLvls'], d['bDataCur'], 'CurLvls')
+
+
 def event_pause(event):
     if gD['pltHighsPause']:
         gD['pltHighsPause'] = False
-        gD['BtnPause'].label.set_text("Pause[ ]")
     else:
         gD['pltHighsPause'] = True
-        gD['BtnPause'].label.set_text("Pause[x]")
+    update_boolbtns(gD)
 
 
 def event_levels(event):
     if gD['bPltLevels']:
         gD['bPltLevels'] = False
-        gD['BtnLevels'].label.set_text("Levels[ ]")
     else:
         gD['bPltLevels'] = True
-        gD['BtnLevels'].label.set_text("Levels[x]")
+    update_boolbtns(gD)
 
 
 def event_minlvls(event):
     if gD['bDataMin']:
         gD['bDataMin'] = False
-        gD['BtnMinLvls'].label.set_text("MinLvls[ ]")
     else:
         gD['bDataMin'] = True
-        gD['BtnMinLvls'].label.set_text("MinLvls[x]")
+    update_boolbtns(gD)
 
 
 def event_maxlvls(event):
     if gD['bDataMax']:
         gD['bDataMax'] = False
-        gD['BtnMaxLvls'].label.set_text("MaxLvls[ ]")
     else:
         gD['bDataMax'] = True
-        gD['BtnMaxLvls'].label.set_text("MaxLvls[x]")
+    update_boolbtns(gD)
 
 
 def event_avglvls(event):
     if gD['bDataAvg']:
         gD['bDataAvg'] = False
-        gD['BtnAvgLvls'].label.set_text("AvgLvls[ ]")
     else:
         gD['bDataAvg'] = True
-        gD['BtnAvgLvls'].label.set_text("AvgLvls[x]")
+    update_boolbtns(gD)
+
+
+def event_curlvls(event):
+    if gD['bDataCur']:
+        gD['bDataCur'] = False
+    else:
+        gD['bDataCur'] = True
+    update_boolbtns(gD)
 
 
 def event_heatmap(event):
     if gD['bPltHeatMap']:
         gD['bPltHeatMap'] = False
-        gD['BtnHeatMap'].label.set_text("HeatMap[ ]")
     else:
         gD['bPltHeatMap'] = True
-        gD['BtnHeatMap'].label.set_text("HeatMap[x]")
+    update_boolbtns(gD)
 
 
 def event_quit(event):
@@ -818,6 +837,7 @@ def plt_figures(d):
     d['AxBtnMinLvls'] = f.add_subplot(gs[10,4])
     d['AxBtnMaxLvls'] = f.add_subplot(gs[11,4])
     d['AxBtnAvgLvls'] = f.add_subplot(gs[12,4])
+    d['AxBtnCurLvls'] = f.add_subplot(gs[13,4])
     d['AxBtnPause'] = f.add_subplot(gs[14,4])
     d['AxBtnQuit'] = f.add_subplot(gs[15,4])
     d['AxFreqs'].set_xticks([])
@@ -834,8 +854,11 @@ def plt_figures(d):
     d['BtnMaxLvls'].on_clicked(event_maxlvls)
     d['BtnAvgLvls'] = plt.Button(d['AxBtnAvgLvls'], "AvgLvls")
     d['BtnAvgLvls'].on_clicked(event_avglvls)
+    d['BtnCurLvls'] = plt.Button(d['AxBtnCurLvls'], "CurLvls")
+    d['BtnCurLvls'].on_clicked(event_curlvls)
     d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
     d['BtnQuit'].on_clicked(event_quit)
+    update_boolbtns(d)
 
 
 def handle_sigint(signum, stack):
