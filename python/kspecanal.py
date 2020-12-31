@@ -505,9 +505,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
         if d['bDataMin']:
             d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iEnd, fftPr, sStart, sEnd)
-        if d['bDataAvg']:
-            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
-        d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iStart, iEnd, fftPr, sStart, sEnd)
+        d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
+        if d['bDataCur']:
+            d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iStart, iEnd, fftPr, sStart, sEnd)
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
@@ -531,7 +531,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         #xFreqs, yLvls = data_plotcompress(d, freqsAll, fftCurAdj)
         plot_highs(d, xFreqs, yLvls)
     if d['bPltHeatMap']:
-        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftCurAdj, d['pltCompressHM'])
+        d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftAvg, d['pltCompressHM'])
     return freqsAll, fftAll
 
 
