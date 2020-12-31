@@ -55,14 +55,16 @@ Zero Span
 
 kspecanal.py zeroSpan centerFreq <theFreq>
 
-This scans a frequency band centered at centerFreq, and spread over a
-band width of 2.4MHz by default (a safe value, decided based on the
-sampling rate limits of rtlsdr), again and again.
+This scans a frequency band centered at centerFreq, and spread over a band
+width of 2.4MHz by default (a relatively safe value, decided based on the
+sampling rate and sig level results of rtlsdr), again and again.
 
 It shows the normalised fft result magnitudes of the scan on a Log scale.
 These are shown as 3 curves
 
         The Red curve which is the max values seen till then.
+
+        The Yellow curve which is the min values seen till then.
 
         The Green curve, which is the average of values seen till then.
 
@@ -81,6 +83,8 @@ normal signal level plot as well as a heat map with historic data.
 The signal level plot contains
 
         Red curve - the Max level seen till then
+
+        Yellow curve - the Min level seen till then
 
         Green curve - the average of siglvls seen till then and
 
@@ -248,7 +252,7 @@ curScanNonOverlap <float>
         the signal level, even thou only a fraction of a second worth of data
         is run through fft at a time.
 
-curScanCumuMode <Avg|Max|Raw>
+curScanCumuMode <Avg|Max|Min|Raw>
 
         Default Avg; Change to Max, if one wants to know the max value
         noticed at any time during the scan.
@@ -281,7 +285,7 @@ prgLoopCnt <int>
         is finished look into the scan plot in detail, or else one will have to
         wait till the program stops after a long time.
 
-pltCompress <Raw|Avg|Max|Conv>
+pltCompress <Raw|Avg|Max|Min|Conv>
 
         Default: Average; This allows one to control how finegrained or not is
         the signal levels across adjacent freqs that are shown. This along with
@@ -336,7 +340,7 @@ For more representative signal level display, use the following property values
 
 ZeroSpan mode
 
-        pltCompress raw <OR ELSE> pltCompress max
+        pltCompress raw <OR ELSE> pltCompress max <OR ELSE> pltCompress min
 
 Scan mode
 
@@ -348,9 +352,9 @@ Scan mode
 
         pltCompress conv
 
-        # Then use max or raw to get the more practical view
+        # Then use max or min or raw to get the more practical view
 
-        pltCompress raw <OR ELSE> pltCompress max
+        pltCompress raw <OR ELSE> pltCompress max <OR ELSE> pltCompress min
 
         NOTE: Dont use pltCompress raw, if you are scanning a very large range
         like 100Mhz or more. Else pyplot will slow down.

@@ -22,10 +22,12 @@ PRGMODE_ALIAS_QUICKFULLSCAN = 'QUICKFULLSCAN'
 PLTFIG_LEVELS = "Levels"
 PLTFIG_HEATMAP = "Heatmap"
 PLTCOMPRESS_MAX = 'MAX'
+PLTCOMPRESS_MIN = 'MIN'
 PLTCOMPRESS_AVG = 'AVG'
 PLTCOMPRESS_RAW = 'RAW'
 PLTCOMPRESS_CONV = 'CONV'
 CUMUMODE_MAX = 'MAX'
+CUMUMODE_MIN = 'MIN'
 CUMUMODE_AVG = 'AVG'
 CUMUMODE_RAW = 'RAW'
 
@@ -102,6 +104,7 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
     Raw: copy values in newVals buffer into curVals buffer at specified offsets.
     Avg: average the values between curVals and newVals buffer and store into curVals.
     Max: copy the larger value between curVals and newVals into curVals.
+    Min: copy the smaller value between curVals and newVals into curVals.
     '''
     if type(curVals) == type(None):
         return np.copy(newVals)
@@ -112,6 +115,8 @@ def data_cumu(d, mode, curVals, cStart, cEnd, newVals, nStart, nEnd):
         curVals[cStart:cEnd] /= 2
     elif mode == CUMUMODE_MAX:
         curVals[cStart:cEnd] = np.max([newVals[nStart:nEnd], curVals[cStart:cEnd]], axis=0)
+    elif mode == CUMUMODE_MIN:
+        curVals[cStart:cEnd] = np.min([newVals[nStart:nEnd], curVals[cStart:cEnd]], axis=0)
     else:
         msg = "ERROR: Unknown cumuMode [{}], Quiting...".format(mode)
         prg_quit(d, msg)
@@ -144,6 +149,8 @@ def _data_plotcompress(d, data, mode):
     Conv: Convolve the data before returning it.
     Max: Divide the data into d['xRes'] number of groups,
          and return the max from each group.
+    Min: Divide the data into d['xRes'] number of groups,
+         and return the min from each group.
     Avg: Divide the data into d['xRes'] number of groups,
          and return the avg of each group.
 
@@ -159,6 +166,8 @@ def _data_plotcompress(d, data, mode):
         tData = data.reshape(rows, cols)
         if mode == PLTCOMPRESS_MAX:
             data = np.max(tData, axis=1)
+        if mode == PLTCOMPRESS_MIN:
+            data = np.min(tData, axis=1)
         elif mode == PLTCOMPRESS_AVG:
             data = np.average(tData, axis=1)
         return data
@@ -326,13 +335,15 @@ def sdr_curscan(d):
 def _adj_siglvls(d, fftPr):
     if d['AdjSigLvls'] != '':
         fftMax = d['Fft.Max'] - d['Fft.Adj']
+        fftMin = d['Fft.Min'] - d['Fft.Adj']
         fftAvg = d['Fft.Avg'] - d['Fft.Adj']
         fftPrTmp = fftPr - d['Fft.Adj']
     else:
         fftMax = d['Fft.Max']
+        fftMin = d['Fft.Min']
         fftAvg = d['Fft.Avg']
         fftPrTmp = fftPr
-    return fftMax, fftAvg, fftPrTmp
+    return fftMax, fftMin, fftAvg, fftPrTmp
 
 
 def _heatmap_create(d, data):
@@ -356,6 +367,7 @@ def zero_span(d):
     history of signal levels as a heat map.
     '''
     d['Fft.Max'] = None
+    d['Fft.Min'] = None
     d['Fft.Avg'] = None
     d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     freqs = np.fft.fftfreq(d['fftSize'],1/d['samplingRate']) + d['centerFreq']
@@ -383,9 +395,10 @@ def zero_span(d):
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], 0, len(fftPr), fftPr, 0, len(fftPr))
+        d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], 0, len(fftPr), fftPr, 0, len(fftPr))
         d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], 0, len(fftPr), fftPr, 0, len(fftPr))
         #print("DBUG:ZeroSpan:fftPr:0:{}:mid:{}".format(fftPr[0], fftPr[(len(fftPr)//2)-1:(len(fftPr)//2)+1]))
-        fftMax, fftAvg, fftPrTmp = _adj_siglvls(d, fftPr)
+        fftMax, fftMin, fftAvg, fftPrTmp = _adj_siglvls(d, fftPr)
         if d['bPltHeatMap']:
             fftHM[indexHM,:] = _data_plotcompress(d, fftPrTmp, d['pltCompressHM'])
             hm.set_data(fftHM)
@@ -396,6 +409,8 @@ def zero_span(d):
             d['AxLevels'].cla()
             xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
+            xFreqs, yLvls = data_plotcompress(d, freqs, fftMin)
+            d['AxLevels'].plot(xFreqs, yLvls, 'y')
             xFreqs, yLvls = data_plotcompress(d, freqs, fftAvg)
             d['AxLevels'].plot(xFreqs, yLvls, 'g')
             xFreqs, yLvls = data_plotcompress(d, freqs, fftPrTmp)
@@ -433,6 +448,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         d['Fft.Mode'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = np.copy(d['Fft.Mode'])
         d['Fft.Avg'] = np.copy(d['Fft.Mode'])
+        fftAll = np.ones(totalEntries)
+        d['Fft.Min'] = fftvals_dispproc(d, fftAll, gScanRangeFftDispProcMode, infTo=0)
         freqsAll = np.fft.fftshift(np.fft.fftfreq(totalEntries, 1/(numGroups*freqSpan)) + d['startFreq'] + (numGroups*freqSpan)/2)
         if d['bPltHeatMap']:
             d['fftHMMax'] = 128
@@ -466,13 +483,16 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
+        d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iEnd, fftPr, sStart, sEnd)
         d['Fft.Avg'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
         d['Fft.Mode'] = data_cumu(d, cumuMode, d['Fft.Mode'], iStart, iEnd, fftPr, sStart, sEnd)
-        fftMax, fftAvg, fftMode = _adj_siglvls(d, d['Fft.Mode'])
+        fftMax, fftMin, fftAvg, fftMode = _adj_siglvls(d, d['Fft.Mode'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMax)
             d['AxLevels'].plot(xFreqs, yLvls, 'r')
+            xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMin)
+            d['AxLevels'].plot(xFreqs, yLvls, 'y')
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftAvg)
             d['AxLevels'].plot(xFreqs, yLvls, 'g')
             xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMode)
