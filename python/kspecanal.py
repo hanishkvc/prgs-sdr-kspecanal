@@ -760,19 +760,19 @@ def event_quit(event):
 
 def plt_figures(d):
     plt.ion()
-    # 4,5 => [[2,4],[2,1]], [[2,5]]
-    # 4,5 => [[4,4],[4,1]]
-    # 4,5 => [[4,5]]
+    # 8,5 => [[2,4],[2,1]], [[2,5]]
+    # 8,5 => [[4,4],[4,1]]
+    # 8,5 => [[4,5]]
     f = plt.figure("kSpecAnal", figsize=(12, 8), constrained_layout=True)
-    gs = f.add_gridspec(nrows=8, ncols=5)
-    d['AxLevels'] = f.add_subplot(gs[:4,:4])
-    d['AxFreqs'] = f.add_subplot(gs[:4,4])
+    gs = f.add_gridspec(nrows=16, ncols=5)
+    d['AxLevels'] = f.add_subplot(gs[:8,:4])
+    d['AxFreqs'] = f.add_subplot(gs[:8,4])
     d['AxFreqs'].set_xlabel("Freqs - HighSigLvl")
-    d['AxHeatMap'] = f.add_subplot(gs[4:8,:4])
-    d['AxBtnPause'] = f.add_subplot(gs[4,4])
-    d['AxBtnLevels'] = f.add_subplot(gs[5,4])
-    d['AxBtnHeatMap'] = f.add_subplot(gs[6,4])
-    d['AxBtnQuit'] = f.add_subplot(gs[7,4])
+    d['AxHeatMap'] = f.add_subplot(gs[8:16,:4])
+    d['AxBtnLevels'] = f.add_subplot(gs[8,4])
+    d['AxBtnHeatMap'] = f.add_subplot(gs[9,4])
+    d['AxBtnPause'] = f.add_subplot(gs[14,4])
+    d['AxBtnQuit'] = f.add_subplot(gs[15,4])
     d['AxFreqs'].set_xticks([])
     d['AxFreqs'].set_yticks([])
     d['BtnPause'] = plt.Button(d['AxBtnPause'], "Pause")
