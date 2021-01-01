@@ -861,7 +861,12 @@ def handle_pick(event):
     freq = gD['startFreq'] + (gD['endFreq']-gD['startFreq'])*me.xdata
     #print(me.x, me.y, me.xdata, me.ydata, freq)
     print("INFO:PickEvent:HeatMap:Freq:", freq)
-    gD['AxHeatMap'].text(0,0, freq)
+    try:
+        if gD['HMFreqText'] != None:
+            gD['HMFreqText'].remove()
+    except:
+        pass
+    gD['HMFreqText'] = gD['AxHeatMap'].text(0,0, freq)
 
 
 def plt_figures(d):
