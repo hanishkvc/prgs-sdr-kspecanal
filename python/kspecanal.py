@@ -422,6 +422,7 @@ def zero_span(d):
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             d['AxLevels'].cla()
+            d['AxLevels'].grid(True)
             if d['bDataMax']:
                 xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
                 d['AxLevels'].plot(xFreqs, yLvls, 'r')
@@ -511,6 +512,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
+            d['AxLevels'].grid(True)
             if d['bDataMax']:
                 xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMax)
                 d['AxLevels'].plot(xFreqs, yLvls, 'r')
