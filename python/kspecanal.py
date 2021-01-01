@@ -859,14 +859,17 @@ def handle_pick(event):
     '''
     me = event.mouseevent
     freq = gD['startFreq'] + (gD['endFreq']-gD['startFreq'])*me.xdata
-    #print(me.x, me.y, me.xdata, me.ydata, freq)
     print("INFO:PickEvent:HeatMap:Freq:", freq)
+    '''
+    #print(me.x, me.y, me.xdata, me.ydata, freq)
     try:
         if gD['HMFreqText'] != None:
             gD['HMFreqText'].remove()
     except:
         pass
     gD['HMFreqText'] = gD['AxHeatMap'].text(0,0, freq)
+    '''
+    gD['AxHeatMap'].set_xlabel("Freqs [ClickedFreq:{}]".format(freq))
 
 
 def plt_figures(d):

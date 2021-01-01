@@ -161,8 +161,11 @@ requires to pass to adjsiglvls a signal levels file, which was saved
 from a equivalent scan range, else the results would be funny ;-)
 
 
-UI Buttons
-============
+UI
+====
+
+Buttons
+---------
 
 Quit - On pressing the Quit button, the btn label changes to QuitWait,
 inturn the program finishes the current freq band scan and then exits
@@ -187,6 +190,13 @@ MaxLvls - Toggle the display of Maximum SigLevels till now curve.
 AvgLvls - Toggle the display of Averaged SigLevels till now curve.
 
 CurLvls - Toggle the display of the current scan signal levels.
+
+
+HeatMap
+---------
+
+Clicking anywhere on the heatmap, shows the freq related to that
+location, as part of the xlabel.
 
 
 NOTE
