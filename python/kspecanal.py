@@ -10,8 +10,8 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-#import rtlsdr
-import testfft as rtlsdr
+import rtlsdr
+#import testfft as rtlsdr
 
 
 
@@ -30,6 +30,10 @@ CUMUMODE_MAX = 'MAX'
 CUMUMODE_MIN = 'MIN'
 CUMUMODE_AVG = 'AVG'
 CUMUMODE_RAW = 'RAW'
+WINDOW_HANNING = 'WIN.HANNING'
+WINDOW_ONES = 'WIN.ONES'
+WINDOW_HAMMING = 'WIN.HAMMING'
+WINDOW_KAISER = 'WIN.KAISER'
 
 
 ## User controllable from commandline
@@ -43,7 +47,7 @@ gFftSize = 2**14
 gFft2FullMult4Less = 8
 gFft2FullMult4More = 2
 gGain = 19.1
-gWindow = False
+gWindow = WINDOW_ONES
 gMinAmp4Clip = (1/256)*0.33
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
@@ -307,8 +311,8 @@ def sdr_curscan(d):
     d['fullSize'] is the amount of data captured over which overlapped sliding
     is done.
 
-    Based on gWindow, hanning window may be applied to the data before fft.
-    The result is compensated wrt windowing related loss of amplitude.
+    Based on d['window'], a user selected window function may be applied to the data
+    before fft. The result is compensated wrt windowing related loss of amplitude.
 
     As IQ data is what is got from the hardware, so both +ve and -ve freqs
     are used to get the embedded signals in the sample data.
@@ -317,7 +321,7 @@ def sdr_curscan(d):
     #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr_read(d['sdr'], d['fullSize'])
     fftAll = None
-    win = d['WinThe']
+    win = d['theWin']
     winAdj = len(win)/np.sum(win)
     for i in range(numLoops):
         iStart = int(i*d['fftSize']*d['curScanNonOverlap'])
@@ -681,7 +685,7 @@ def handle_args(d):
             d['pltCompress'] = sys.argv[iArg].upper()
         elif (curArg == 'WINDOW'):
             iArg += 1
-            d['window'] = _arg_boolean(sys.argv[iArg])
+            d['window'] = "WIN.{}".format(sys.argv[iArg].upper())
         elif (curArg == 'BPLTHEATMAP'):
             iArg += 1
             d['bPltHeatMap'] = _arg_boolean(sys.argv[iArg])
@@ -730,13 +734,11 @@ def handle_args(d):
         d['fullSize'] = d['fftSize'] * gFft2FullMult4More
     if (d['fullSize'] > gSdrReadUnit) and ((d['fullSize'] % gSdrReadUnit) != 0):
         prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
-    d['WinHam'] = np.hamming(d['fftSize'])
-    d['WinHan'] = np.hanning(d['fftSize'])
-    d['WinOne'] = np.ones(d['fftSize'])
-    if d['window']:
-        d['WinThe'] = d['WinHan']
-    else:
-        d['WinThe'] = d['WinOne']
+    d['WIN.HAMMING'] = np.hamming(d['fftSize'])
+    d['WIN.HANNING'] = np.hanning(d['fftSize'])
+    d['WIN.KAISER'] = np.kaiser(d['fftSize'], 15)
+    d['WIN.ONES'] = np.ones(d['fftSize'])
+    d['theWin'] = d[d['window']]
 
 
 def print_info(d):

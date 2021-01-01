@@ -239,13 +239,13 @@ gain <gainFloat>
         Default 19.1; Increase or reduce this depending on the strength
         of the signals being studied.
 
-window <true|false>
+window <ones|hanning|kaiser|hamming>
 
-        Default: False; Controls whether a windowing function (hanning)
-        is applied to the time domain samples, before fft is done. Helps
-        get a better sense about the signals in a scan. Useful if only
-        a limited scan is being done. However for small fft window size,
-        overlapped sliding may be more useful.
+        Default: ones - equivalent to no window; Controls whether a windowing
+        function is applied to the time domain samples, before fft is done.
+        Helps get a better sense about the signals in a scan. Useful if only
+        a limited scan is being done. For small fft window size, overlapped
+        sliding may be more useful.
 
 fftSize <integer>
 
