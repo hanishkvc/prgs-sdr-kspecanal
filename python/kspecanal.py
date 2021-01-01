@@ -10,8 +10,8 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-import rtlsdr
-#import testfft as rtlsdr
+#import rtlsdr
+import testfft as rtlsdr
 
 
 
@@ -317,10 +317,7 @@ def sdr_curscan(d):
     #print("curscan: numLoops[{}] fullSize[{}]".format(numLoops, d['fullSize']))
     samples = sdr_read(d['sdr'], d['fullSize'])
     fftAll = None
-    if gWindow:
-        win = np.hanning(d['fftSize'])
-    else:
-        win = np.ones(d['fftSize'])
+    win = d['WinThe']
     winAdj = len(win)/np.sum(win)
     for i in range(numLoops):
         iStart = int(i*d['fftSize']*d['curScanNonOverlap'])
@@ -600,6 +597,10 @@ def _arg_boolean(value):
 
 
 def handle_args(d):
+    '''
+    Initialise the global dictionary, as well as update it based on
+    the arguments given by the user.
+    '''
     d['prgMode'] = gPrgModeDefault
     d['samplingRate'] = gSamplingRate
     d['gain'] = gGain
@@ -729,6 +730,13 @@ def handle_args(d):
         d['fullSize'] = d['fftSize'] * gFft2FullMult4More
     if (d['fullSize'] > gSdrReadUnit) and ((d['fullSize'] % gSdrReadUnit) != 0):
         prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
+    d['WinHam'] = np.hamming(d['fftSize'])
+    d['WinHan'] = np.hanning(d['fftSize'])
+    d['WinOne'] = np.ones(d['fftSize'])
+    if d['window']:
+        d['WinThe'] = d['WinHan']
+    else:
+        d['WinThe'] = d['WinOne']
 
 
 def print_info(d):

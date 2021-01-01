@@ -215,6 +215,10 @@ complex iq signal data, curscan flow adds 3dB to signal levels. Also
 dont forget that the default pltCompress of Avg, eats into the siglevels
 in general.
 
+Do keep in mind that Signal Levels plot (Avg) and heatmap (Max) use different
+pltCompress modes by default. So the contents may appear not to match one
+another on a quick glance, as avg chops the weakly spread signals more.
+
 
 Other Args
 -----------
