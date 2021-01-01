@@ -342,6 +342,10 @@ pltHighsPause <boolean>
         Independent of above, the list of high siglevel freqs is also printed
         on the console.
 
+bGrid <boolean>
+
+        Default: True; Control whether a grid is shown as part of the levels plot.
+
 
 NOTE: Do look into the source to get the latest | current default setting for the
 different options, and or to change as one sees fit.

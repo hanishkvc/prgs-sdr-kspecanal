@@ -54,6 +54,7 @@ gPrgLoopCnt = 8192
 gXRes = 512
 gPltCompress = PLTCOMPRESS_AVG
 gCurScanCumuMode = CUMUMODE_AVG
+gbGrid = True
 
 
 ## Needs to be edited directly below, if need to change
@@ -422,7 +423,8 @@ def zero_span(d):
             indexHM = (indexHM + 1) % maxHM
         if d['bPltLevels']:
             d['AxLevels'].cla()
-            d['AxLevels'].grid(True)
+            if d['bGrid']:
+                d['AxLevels'].grid(True)
             if d['bDataMax']:
                 xFreqs, yLvls = data_plotcompress(d, freqs, fftMax)
                 d['AxLevels'].plot(xFreqs, yLvls, 'r')
@@ -512,7 +514,8 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
-            d['AxLevels'].grid(True)
+            if d['bGrid']:
+                d['AxLevels'].grid(True)
             if d['bDataMax']:
                 xFreqs, yLvls = data_plotcompress(d, freqsAll, fftMax)
                 d['AxLevels'].plot(xFreqs, yLvls, 'r')
@@ -632,6 +635,7 @@ def handle_args(d):
     d['bDataMax'] = gbDataMax
     d['bDataAvg'] = gbDataAvg
     d['bDataCur'] = gbDataCur
+    d['bGrid'] = gbGrid
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -712,6 +716,9 @@ def handle_args(d):
         elif (curArg == 'ADJSIGLVLS'):
             iArg += 1
             d['AdjSigLvls'] = sys.argv[iArg]
+        elif (curArg == 'BGRID'):
+            iArg += 1
+            d['bGrid'] = _arg_boolean(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -750,7 +757,7 @@ def print_info(d):
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
-    print("INFO: xRes [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['pltCompress'], d['pltCompressHM']))
+    print("INFO: xRes [{}], bGrid [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['bGrid'], d['pltCompress'], d['pltCompressHM']))
     print("INFO: SaveSigLvls [{}], AdjSigLvls [{}]".format(d['SaveSigLvls'], d['AdjSigLvls']))
     print("INFO: bDataMax [{}], bDataMin [{}], bDataAvg[{}], bDataCur [{}]".format(d['bDataMax'], d['bDataMin'] , d['bDataAvg'], d['bDataCur']))
 
