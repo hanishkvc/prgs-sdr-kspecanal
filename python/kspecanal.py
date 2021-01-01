@@ -355,7 +355,7 @@ def _adj_siglvls(d, fftPr):
 
 def _heatmap_create(d, data):
     #hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto')
-    hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic')
+    hm = d['AxHeatMap'].imshow(data, extent=(0,1, 0,1), aspect='auto', interpolation='bicubic', picker=True)
     d['AxHeatMap'].set_xticks([0, 0.25, 0.5, 0.75, 1])
     f25 = d['startFreq'] + (d['centerFreq'] - d['startFreq'])/2
     f75 = d['centerFreq'] + (d['endFreq'] - d['centerFreq'])/2
@@ -850,6 +850,20 @@ def event_quit(event):
     prg_quit(gD, "INFO:QuitClick: Quiting on user request...", False)
 
 
+def handle_pick(event):
+    '''
+    Show the freq corresponding to position clicked on the heatmap.
+
+    BCas, once xticks are set, the default logic to show x and y loc
+    on the figure window, no longer works for x.
+    '''
+    me = event.mouseevent
+    freq = gD['startFreq'] + (gD['endFreq']-gD['startFreq'])*me.xdata
+    #print(me.x, me.y, me.xdata, me.ydata, freq)
+    print("INFO:PickEvent:HeatMap:Freq:", freq)
+    gD['AxHeatMap'].text(0,0, freq)
+
+
 def plt_figures(d):
     plt.ion()
     # 8,5 => [[2,4],[2,1]], [[2,5]]
@@ -887,6 +901,7 @@ def plt_figures(d):
     d['BtnCurLvls'].on_clicked(event_curlvls)
     d['BtnQuit'] = plt.Button(d['AxBtnQuit'], "Quit")
     d['BtnQuit'].on_clicked(event_quit)
+    f.canvas.mpl_connect('pick_event', handle_pick)
     update_boolbtns(d)
 
 
