@@ -173,6 +173,8 @@ def _data_plotcompress(d, data, mode):
     elif (mode == PLTCOMPRESS_MAX) or (mode == PLTCOMPRESS_AVG):
         rows = d['xRes']
         cols = len(data)//rows
+        if cols == 0:
+            return data
         tData = data.reshape(rows, cols)
         if mode == PLTCOMPRESS_MAX:
             data = np.max(tData, axis=1)
@@ -387,8 +389,11 @@ def zero_span(d):
     print("ZeroSpan: min[{}] max[{}]".format(min(freqs), max(freqs)))
     if d['bPltHeatMap']:
         maxHM = 128
-        if (d['pltCompressHM'] in [ PLTCOMPRESS_MAX, PLTCOMPRESS_AVG]):
-            d['PltHeatMapWidth'] = d['xRes']
+        if (d['pltCompressHM'] in [ PLTCOMPRESS_MAX, PLTCOMPRESS_MIN, PLTCOMPRESS_AVG]):
+            if d['fftSize'] > d['xRes']:
+                d['PltHeatMapWidth'] = d['xRes']
+            else:
+                d['PltHeatMapWidth'] = d['fftSize']
         else:
             d['PltHeatMapWidth'] = d['fftSize']
         fftHM = np.zeros((maxHM, d['PltHeatMapWidth']))
