@@ -364,6 +364,12 @@ bGrid <boolean>
 
         Default: True; Control whether a grid is shown as part of the levels plot.
 
+bUsePSD <boolean>
+
+        Default: False; Control whether psd or my fft based logic is used.
+        PSD provides equivalent of power spectrum, while my logic provides
+        equivalent of a magnitude spectrum.
+
 
 NOTE: Do look into the source to get the latest | current default setting for the
 different options, and or to change as one sees fit.

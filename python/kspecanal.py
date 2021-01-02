@@ -329,7 +329,8 @@ def sdr_curscan(d):
     win = d['theWin']
     winAdj = len(win)/np.sum(win)
     if d['bUsePSD']:
-        p = plt.psd(samples, NFFT=d['fftSize'], window=win)
+        noverlap = d['fftSize']*(1-d['curScanNonOverlap'])
+        p = plt.psd(samples, NFFT=d['fftSize'], window=win, noverlap=noverlap)
         plt.cla()
         fftAll = p[0]
         return fftAll
