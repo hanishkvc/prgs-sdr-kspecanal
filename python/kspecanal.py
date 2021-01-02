@@ -304,6 +304,7 @@ def sdr_read(sdr, length):
     return samples
 
 
+gUsePSD = True
 def sdr_curscan(d):
     '''
     Scan the currently set freq band (upto max sampling rate supported).
@@ -327,6 +328,11 @@ def sdr_curscan(d):
     fftAll = None
     win = d['theWin']
     winAdj = len(win)/np.sum(win)
+    if gUsePSD:
+        p = plt.psd(samples, NFFT=d['fftSize'], window=win)
+        plt.cla()
+        fftAll = p[0]
+        return fftAll
     for i in range(numLoops):
         iStart = int(i*d['fftSize']*d['curScanNonOverlap'])
         iEnd = iStart + d['fftSize']
@@ -338,7 +344,6 @@ def sdr_curscan(d):
             fftAll = fftN
         else:
             fftAll = data_cumu(d, d['curScanCumuMode'], fftAll, 0, len(fftAll), fftN, 0, len(fftN))
-    #fftAll[0] = 0
     return fftAll
 
 
@@ -409,7 +414,7 @@ def zero_span(d):
         prevTime = curTime
         fftCur = sdr_curscan(d)
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
-        fftCur = np.fft.fftshift(fftCur)
+        #fftCur = np.fft.fftshift(fftCur)
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
         d['Fft.Cur'] = fftPr
@@ -508,7 +513,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             print("WARN:_scanRange: Dummy data for {} to {}".format(startFreq, startFreq+freqSpan))
             fftCur = np.ones(d['fftSize'])
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
-        fftCur = np.fft.fftshift(fftCur)
+        #fftCur = np.fft.fftshift(fftCur)
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         if d['bDataMax']:
             d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iEnd, fftPr, sStart, sEnd)
