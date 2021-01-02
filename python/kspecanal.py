@@ -304,7 +304,7 @@ def sdr_read(sdr, length):
     return samples
 
 
-gUsePSD = True
+gbUsePSD = False
 def sdr_curscan(d):
     '''
     Scan the currently set freq band (upto max sampling rate supported).
@@ -328,7 +328,7 @@ def sdr_curscan(d):
     fftAll = None
     win = d['theWin']
     winAdj = len(win)/np.sum(win)
-    if gUsePSD:
+    if d['bUsePSD']:
         p = plt.psd(samples, NFFT=d['fftSize'], window=win)
         plt.cla()
         fftAll = p[0]
@@ -646,6 +646,7 @@ def handle_args(d):
     d['bDataAvg'] = gbDataAvg
     d['bDataCur'] = gbDataCur
     d['bGrid'] = gbGrid
+    d['bUsePSD'] = gbUsePSD
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -729,6 +730,9 @@ def handle_args(d):
         elif (curArg == 'BGRID'):
             iArg += 1
             d['bGrid'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'BUSEPSD'):
+            iArg += 1
+            d['bUsePSD'] = _arg_boolean(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -765,7 +769,7 @@ def handle_args(d):
 
 def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
-    print("INFO: samplingRate[{}], gain[{}]".format(d['samplingRate'], d['gain']))
+    print("INFO: samplingRate[{}], gain[{}], bUsePSD[{}]".format(d['samplingRate'], d['gain'], d['bUsePSD']))
     print("INFO: fullSize[{}], fftSize[{}], curScanCumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['curScanCumuMode'], d['window']))
     print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
