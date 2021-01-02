@@ -112,6 +112,7 @@ NOTE: If the freq range being scanned isn't a multiple of the sampling
 rate, then endFreq will be adjusted to make it a multiple. User will
 be alerted about the same, in this case.
 
+
 QuickFullScan
 ---------------
 
@@ -119,9 +120,13 @@ kspecanal.py quickFullScan
 
 is a alias for
 
-        kspecanal.py scan startFreq 30e6 endFreq 1.5e9
+        kspecanal.py scan startFreq 30e6 endFreq 1.5e9 fftSize 64 pltCompress raw
 
-i.e this triggers a quick scan from 30e6 to 1.5e9
+i.e this triggers a quick scan from 30e6 to 1.5e9 with a small fftSize
+of 64, while parallely ensuring that the fft results are plotted without
+losing resolution (i.e pltCompress raw). So if the user where to zoom in
+to the plot, they can see the scan results with sufficient detail.
+
 
 FMScan
 --------
@@ -329,6 +334,9 @@ xRes <int_poweroftwovalue>
         display. Based on your situation, you may be able to increase this value,
         and still not lose any value.
 
+        NOTE: pltCompress/pltCompressHM of raw or conv will ignore xRes. xRes is
+        used mainly when Max or Min or Avg is used wrt pltCompress[HM].
+
 pltHighsNumMarkers <int>
 
         Default: 5; Control how many markers should be shown in the plot, wrt
@@ -385,12 +393,15 @@ Scan mode
 
         pltCompress raw <OR ELSE> pltCompress max <OR ELSE> pltCompress min
 
-        NOTE: Dont use pltCompress raw, if you are scanning a very large range
-        like 100Mhz or more. Else pyplot will slow down.
-
         # U can also add scanRangeNonOverlap to the mix
 
         scanRangeNonOverlap 1.0
+
+NOTE: Dont use pltCompress raw or conv, if you are scanning a very large range
+like 100Mhz or more, unless fftSize is also reduced to something like 64 or so.
+Else pyplot will slow down. While fftSize of 64 or so will still ensure that
+there is a basic level of freq info still available in the plot, if the user
+were to zoom in to see the same.
 
 To ensure that heatmap doesnt eat up any signal data, set the xRes to match the
 actual screen resolution of the heatmap and or lesser than it.

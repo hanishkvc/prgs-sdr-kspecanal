@@ -165,6 +165,7 @@ def _data_plotcompress(d, data, mode):
          and return the avg of each group.
 
     data length should be divisible into equal size groups using d['xRes']
+    for Max/Min/Avg.
     '''
     if mode == PLTCOMPRESS_RAW:
         return data
@@ -736,7 +737,8 @@ def handle_args(d):
         d['prgMode'] = PRGMODE_SCAN
         d['startFreq'] = 30e6
         d['endFreq'] = 1.5e9
-        #d['fftSize'] = 256
+        d['fftSize'] = 64
+        d['pltCompress'] = PLTCOMPRESS_RAW
     if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
     else:
@@ -753,6 +755,8 @@ def handle_args(d):
     d['WIN.KAISER'] = np.kaiser(d['fftSize'], 15)
     d['WIN.ONES'] = np.ones(d['fftSize'])
     d['theWin'] = d[d['window']]
+    if d['xRes'] > d['fftSize']:
+        d['xRes'] = d['fftSize']
 
 
 def print_info(d):
