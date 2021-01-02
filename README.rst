@@ -368,7 +368,9 @@ bUsePSD <boolean>
 
         Default: False; Control whether psd or my fft based logic is used.
         PSD provides equivalent of power spectrum, while my logic provides
-        equivalent of a magnitude spectrum.
+        equivalent of a magnitude spectrum. The PSD and related specgram
+        logic added to verify that the program's internal logic, is working
+        as expected and not having any issue in general.
 
 
 NOTE: Do look into the source to get the latest | current default setting for the
@@ -440,4 +442,7 @@ losses signal info, if the signal is surrounded by very weak or no signal in
 the adjacent frequencies. Need to use implement my own logic, with max instead
 of averaging when mapping multiple data points into individual pixels. [Done
 Rather process the data by merging adjacent data points, before plotting them]
+
+Skip few fft bins at begin and end, of each curscan, so that mirroring of freq
+at one end to the other end can be bypassed. i.e Freqs on top of nyquist freq.
 

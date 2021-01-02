@@ -330,6 +330,11 @@ def sdr_curscan(d):
     winAdj = len(win)/np.sum(win)
     if d['bUsePSD']:
         noverlap = d['fftSize']*(1-d['curScanNonOverlap'])
+        '''
+        p = plt.specgram(samples, NFFT=d['fftSize'], window=win, noverlap=noverlap, Fs=2, mode='magnitude')
+        plt.cla()
+        fftAll = np.average(p[0], axis=1)
+        '''
         p = plt.psd(samples, NFFT=d['fftSize'], window=win, noverlap=noverlap)
         plt.cla()
         fftAll = p[0]
