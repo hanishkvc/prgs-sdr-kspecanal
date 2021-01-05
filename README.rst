@@ -57,7 +57,7 @@ Linux with python3 and PyRtlSdr.
 Hardware
 ---------
 
-RtlSdr dongle.
+RtlSdr dongle (instead of generic dvb ones, equally cheap while targetting sdr with metal casing, tighter components may improve things a bit).
 
 Also to reduce noise/interference from the system, ideally laptop on battery power and USB host extension cable.
 
@@ -263,7 +263,7 @@ samplingRate <samplingRateFloat>
 
 minAmp4Clip <float>
 
-        Default (1/256)*0.33; Change it to control the forced noise floor.
+        Default (1/256)*0.00001; Change it to control the forced noise floor.
         Any measured signal level below this in the freq domain will be
         set to this value.
 
