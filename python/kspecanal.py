@@ -282,7 +282,7 @@ def sdr_setup(sdr, fC, fS, gain):
     return sdr, bOk
 
 
-gSdrReadUnit = 2**16
+gSdrReadUnit = 2**18
 def sdr_read(sdr, length):
     '''
     Read from the rtlsdr.
@@ -303,8 +303,9 @@ def sdr_read(sdr, length):
         remaining = length % gSdrReadUnit
         readLength = gSdrReadUnit
     else:
-        loopCnt = 1
-        readLength = length
+        remaining = length
+        loopCnt = 0
+        readLength = 0
     samples = np.zeros(length, dtype=complex)
     for i in range(loopCnt):
         iStart = i*readLength
@@ -314,7 +315,8 @@ def sdr_read(sdr, length):
         iStart = gSdrReadUnit*loopCnt
         iEnd = iStart+remaining
         adjustedRead = 2**np.ceil(np.log2(remaining))
-        print("WARN:MayDiscard:Reading {} for {} from {} to {}".format(adjustedRead, remaining, iStart, iEnd))
+        if adjustedRead != remaining:
+            print("WARN:WillDiscard:Reading {} for {} from {} to {}".format(adjustedRead, remaining, iStart, iEnd))
         samples[iStart:iEnd] = sdr.read_samples(adjustedRead)[0:remaining]
     return samples
 
