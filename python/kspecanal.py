@@ -294,7 +294,9 @@ def sdr_read(sdr, length):
 
     The logic supports reading non multiples of gSdrReadUnit. However rtlsdr
     doesnt seem to support reading non power of 2 buffer sizes over libusb,
-    so ensure to read buffers of length which satisfy this requirement.
+    SO ensure to read buffers of length which satisfy this requirement, ELSE
+    the logic will read the nearest higher power of 2 amount of samples and
+    discard the data towards the end, which is not needed.
     '''
     if length > gSdrReadUnit:
         loopCnt = length//gSdrReadUnit
@@ -311,8 +313,9 @@ def sdr_read(sdr, length):
     if remaining > 0:
         iStart = gSdrReadUnit*loopCnt
         iEnd = iStart+remaining
-        print("INFO:Reading {} for {} to {}".format(remaining, iStart, iEnd))
-        samples[iStart:iEnd] = sdr.read_samples(remaining)
+        adjustedRead = 2**np.ceil(np.log2(remaining))
+        print("WARN:MayDiscard:Reading {} for {} from {} to {}".format(adjustedRead, remaining, iStart, iEnd))
+        samples[iStart:iEnd] = sdr.read_samples(adjustedRead)[0:remaining]
     return samples
 
 
@@ -777,8 +780,8 @@ def handle_args(d):
         d['fullSize'] = d['fftSize'] * gFft2FullMult4Less
     else:
         d['fullSize'] = d['fftSize'] * gFft2FullMult4More
-    if (d['fullSize'] > gSdrReadUnit) and ((d['fullSize'] % gSdrReadUnit) != 0):
-        prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
+    #if (d['fullSize'] > gSdrReadUnit) and ((d['fullSize'] % gSdrReadUnit) != 0):
+    #    prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
     d['WIN.HAMMING'] = np.hamming(d['fftSize'])
     d['WIN.HANNING'] = np.hanning(d['fftSize'])
     d['WIN.KAISER'] = np.kaiser(d['fftSize'], 15)
