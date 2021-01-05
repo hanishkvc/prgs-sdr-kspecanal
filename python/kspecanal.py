@@ -282,7 +282,7 @@ def sdr_setup(sdr, fC, fS, gain):
     return sdr, bOk
 
 
-gSdrReadUnit = 2**18
+gSdrReadUnit = 2**16
 def sdr_read(sdr, length):
     '''
     Read from the rtlsdr.
@@ -291,16 +291,28 @@ def sdr_read(sdr, length):
 
     If the length to be read is larger than gSdrReadUnit, then it requires
     to be a multiple of gSdrReadUnit.
+
+    The logic supports reading non multiples of gSdrReadUnit. However rtlsdr
+    doesnt seem to support reading non power of 2 buffer sizes over libusb,
+    so ensure to read buffers of length which satisfy this requirement.
     '''
     if length > gSdrReadUnit:
         loopCnt = length//gSdrReadUnit
+        remaining = length % gSdrReadUnit
         readLength = gSdrReadUnit
     else:
         loopCnt = 1
         readLength = length
     samples = np.zeros(length, dtype=complex)
     for i in range(loopCnt):
-        samples[i*readLength:(i+1)*readLength] = sdr.read_samples(readLength)
+        iStart = i*readLength
+        iEnd = (i+1)*readLength
+        samples[iStart:iEnd] = sdr.read_samples(readLength)
+    if remaining > 0:
+        iStart = gSdrReadUnit*loopCnt
+        iEnd = iStart+remaining
+        print("INFO:Reading {} for {} to {}".format(remaining, iStart, iEnd))
+        samples[iStart:iEnd] = sdr.read_samples(remaining)
     return samples
 
 
