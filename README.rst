@@ -45,6 +45,24 @@ One can mix and match the options supported by the program to try and
 explore the emissions/signals in a suitable way.
 
 
+
+Requirements
+##############
+
+Software
+---------
+
+Linux with python3 and PyRtlSdr.
+
+Hardware
+---------
+
+RtlSdr dongle.
+
+Also to reduce noise/interference from the system, ideally laptop on battery power and USB host extension cable.
+
+
+
 Use
 #####
 

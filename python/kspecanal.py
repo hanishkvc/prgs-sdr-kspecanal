@@ -77,11 +77,12 @@ conv = [0.25, 0.5, 0.25]
 conv = [0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]
 conv = [0.1, 0.2, 0.4, 0.2, 0.1]
 conv = np.kaiser(512,64)
+conv = np.kaiser(256,64)
 conv = np.kaiser(128,64)
 conv = np.kaiser(64,64)
 DataProcEndAdj = 1.5
 '''
-DataProcConv = np.kaiser(64,64)
+DataProcConv = np.kaiser(128,64)
 def data_proc(d, vals, dataProc, infTo = None):
     '''
     Process the passed array of values in different ways.
