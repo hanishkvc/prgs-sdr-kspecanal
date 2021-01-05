@@ -302,6 +302,11 @@ scanRangeNonOverlap <float>
         adjacent freq band. Could help overcome any non linearity in measuring
         within a freq band, to an extent.
 
+        NOTE: If fftSize is power of 2 value, then the scanRangeNonOverlap will
+        require to be value which is some sum of (1/2**N)'s, which is less than
+        1.0 i.e values like 0.03125, 0.0625, 0.125, 0.25, 0.5, 0.75, 0.78125 or
+        0.09375 or so ...
+
 prgLoopCnt <int>
 
         Default: A large value; Change to a smaller value, if you want to scan
