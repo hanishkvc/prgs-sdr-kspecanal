@@ -48,7 +48,7 @@ gFft2FullMult4Less = 8
 gFft2FullMult4More = 2
 gGain = 19.1
 gWindow = WINDOW_ONES
-gMinAmp4Clip = (1/256)*0.33
+gMinAmp4Clip = (1/256)*0.01
 gScanRangeNonOverlap = 0.75
 gPrgLoopCnt = 8192
 gXRes = 512
@@ -233,7 +233,7 @@ def plot_highs(d, freqs, levels):
     d['AxFreqs'].set_yticks([])
     freqRange = freqs[-1] - freqs[0]
     delta4Marking = d['pltHighsDelta4Marking']*freqRange
-    print("PlotHighs: Freqs {} to {} : delta4Marking {}".format(freqs[0], freqs[-1], delta4Marking))
+    print("PlotHighs: Freqs {} to {} : delta4Marking {} : min {} max {}".format(freqs[0], freqs[-1], delta4Marking, np.min(levels), np.max(levels)))
     ordered = levels.argsort()
     marked = np.array([])
     cntMarked = 0
@@ -472,8 +472,11 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     Max, Min, Avg and Cur.
     '''
     freqSpan = d['samplingRate']
-    if (((freqSpan*d['scanRangeNonOverlap'])%1) != 0) or ((d['fftSize']*d['scanRangeNonOverlap'])%1 != 0):
-        msg = "ERROR: freqSpan [{}] or fftSize[{}] x scanRangeNonOverlap [{}] is not int".format(freqSpan, d['fftSize'], d['scanRangeNonOverlap'])
+    if ((freqSpan*d['scanRangeNonOverlap'])%1) != 0:
+        msg = "ERROR: freqSpan [{}] x scanRangeNonOverlap [{}] is not int".format(freqSpan, d['scanRangeNonOverlap'])
+        prg_quit(d, msg)
+    if ((d['fftSize']*d['scanRangeNonOverlap'])%1) != 0:
+        msg = "ERROR: fftSize[{}] x scanRangeNonOverlap [{}] is not int".format(d['fftSize'], d['scanRangeNonOverlap'])
         prg_quit(d, msg)
     curFreq = d['startFreq'] + freqSpan/2
     startFreq = curFreq - freqSpan/2
