@@ -495,6 +495,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         prg_quit(d, msg)
     curFreq = d['startFreq'] + freqSpan/2
     startFreq = curFreq - freqSpan/2
+    #endFreq = curFreq + freqSpan/2
     print("_scanRange: start:{} end:{} samplingRate:{}".format(d['startFreq'], d['endFreq'], d['samplingRate']))
     totalFreqs = d['endFreq'] - d['startFreq']
     numGroups = int(totalFreqs/freqSpan)
@@ -548,6 +549,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
+            #d['AxLevels'].plot(startFreq, -30, "bo")
+            #d['AxLevels'].plot(curFreq, -30, "ro")
+            #d['AxLevels'].plot(endFreq, -30, "bo")
             if d['bGrid']:
                 d['AxLevels'].grid(True)
             if d['bDataMax']:
@@ -564,6 +568,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
                 d['AxLevels'].plot(xFreqs, yLvls, 'b')
         curFreq += freqSpan*d['scanRangeNonOverlap']
         startFreq = curFreq - freqSpan/2
+        #endFreq = curFreq + freqSpan/2
         plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
