@@ -792,8 +792,25 @@ def handle_args(d):
     d['WIN.KAISER'] = np.kaiser(d['fftSize'], 15)
     d['WIN.ONES'] = np.ones(d['fftSize'])
     d['theWin'] = d[d['window']]
+    # Adjust xRes, if required
     if d['xRes'] > d['fftSize']:
+        print("WARN:fftSize[{}] < xRes[{}], setting xRes to fftSize".format(d['fftSize'], d['xRes']))
         d['xRes'] = d['fftSize']
+    else:
+        minXRes = 50
+        if d['fftSize'] % d['xRes'] != 0:
+            bFound = False
+            for i in range(2, int(d['fftSize']/minXRes)):
+                if d['fftSize'] % i == 0:
+                    newXRes = d['fftSize'] / i
+                    input("WARN:fftSize[{}] NotMultipleOf xRes[{}], setting xRes to {}".format(d['fftSize'], d['xRes'], newXRes))
+                    bFound = True
+                    break
+            if not bFound:
+                newXRes = d['fftSize']
+                input("WARN:fftSize[{}] NotMultipleOf xRes[{}], Nor suitable xRes found, setting xRes to fftSize {}".format(d['fftSize'], d['xRes'], newXRes))
+            d['xRes'] = newXRes
+
 
 
 def print_info(d):
