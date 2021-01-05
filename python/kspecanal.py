@@ -72,6 +72,16 @@ gbDataAvg = True
 gbDataCur = True
 
 
+'''
+conv = [0.25, 0.5, 0.25]
+conv = [0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]
+conv = [0.1, 0.2, 0.4, 0.2, 0.1]
+conv = np.kaiser(512,64)
+conv = np.kaiser(128,64)
+conv = np.kaiser(64,64)
+DataProcEndAdj = 1.5
+'''
+DataProcConv = np.kaiser(64,64)
 def data_proc(d, vals, dataProc, infTo = None):
     '''
     Process the passed array of values in different ways.
@@ -98,12 +108,13 @@ def data_proc(d, vals, dataProc, infTo = None):
         if infTo != None:
             vals[np.isinf(vals)] = infTo
     elif dataProc == 'Conv':
-        conv = [0.25, 0.5, 0.25]
-        conv = [0.05, 0.1, 0.2, 0.3, 0.2, 0.1, 0.05]
-        conv = [0.1, 0.2, 0.4, 0.2, 0.1]
+        conv = DataProcConv
+        #winAdj = len(conv)/np.sum(conv)
+        #winAdj = 10*np.log10(winAdj)
         vals = np.convolve(vals, conv, mode='same')
-        vals[0] *= 1.5
-        vals[-1] *= 1.5
+        avg = np.average(vals)
+        vals[:12] = avg
+        vals[-12:] = avg
     return vals
 
 
@@ -791,7 +802,7 @@ def handle_args(d):
     #    prg_quit(d, "ERROR:fullSize[{}] Not multiple of gSdrReadUnit[{}]".format(d['fullSize'], gSdrReadUnit))
     d['WIN.HAMMING'] = np.hamming(d['fftSize'])
     d['WIN.HANNING'] = np.hanning(d['fftSize'])
-    d['WIN.KAISER'] = np.kaiser(d['fftSize'], 15)
+    d['WIN.KAISER'] = np.kaiser(d['fftSize'], 64)
     d['WIN.ONES'] = np.ones(d['fftSize'])
     d['theWin'] = d[d['window']]
     # Adjust xRes, if required
