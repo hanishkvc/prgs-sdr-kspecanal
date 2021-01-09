@@ -488,6 +488,13 @@ def zero_span(d):
         plt.pause(0.0001)
 
 
+'''
+If gScanRangeBaseIsRaw then
+    Max, Min and Avg uses the curScan result almost directly as its source.
+Else
+    Max, Min and Avg use the avg of the overlapped curScan results.
+'''
+gScanRangeBaseIsRaw = False
 def _scan_range(d, freqsAll, fftAll, runCount=-1):
     '''
     Scan a specified range, this can be larger than the freq band
@@ -503,7 +510,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     Cur is a average of the overlaped scanning during sliding window
     over the full frequency range.
 
-    Max,Min and Avg is generated from Fft.Cur.
+    Max,Min and Avg is generated from Fft.Cur or fftPr.
     HeatMap is generated from Fft.Avg data.
     '''
     freqSpan = d['samplingRate']
@@ -570,12 +577,24 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
                 sAvgEnd = sStart + (iOldEnd - iStart) # iOldEnd - iStart # Both are same
                 d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sAvgEnd)
             iOldEnd = iEnd
+        if gScanRangeBaseIsRaw:
+            dstStart = iStart
+            dstEnd = iEnd
+            srcData = fftPr
+            srcStart = sStart
+            srcEnd = sEnd
+        else:
+            dstStart = iStart
+            dstEnd = iDone
+            srcData = d['Fft.Cur']
+            srcStart = iStart
+            srcEnd = iDone
         if d['bDataMax']:
-            d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
+            d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], dstStart, dstEnd, srcData, srcStart, srcEnd)
         if d['bDataMin']:
-            d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
+            d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], dstStart, dstEnd, srcData, srcStart, srcEnd)
         if d['bDataAvg'] or True:
-            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
+            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], dstStart, dstEnd, srcData, srcStart, srcEnd)
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
