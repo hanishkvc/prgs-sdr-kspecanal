@@ -560,9 +560,10 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iEnd, fftPr, sStart, sEnd)
         d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iEnd, fftPr, sStart, sEnd)
         if d['bDataCur']:
-            d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iOldEnd, iEnd, fftPr, sStart, sEnd)
+            delta = d['fftSize'] - (iEnd - iOldEnd)
+            d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iOldEnd, iEnd, fftPr, sStart+delta, sEnd)
             if iOldEnd != 0:
-                d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sEnd)
+                d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sStart+delta)
             iOldEnd = iEnd
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
