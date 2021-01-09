@@ -537,6 +537,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     while startFreq < d['endFreq']:
         iStart = int(i*d['fftSize']*d['scanRangeNonOverlap'])
         iEnd = iStart+d['fftSize']
+        iDone = int((i+1)*d['fftSize']*d['scanRangeNonOverlap'])
         sStart = 0
         if iEnd > totalEntries:
             sEnd = iEnd - iStart - (iEnd - totalEntries)
@@ -561,11 +562,11 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
                 d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sStart+delta)
             iOldEnd = iEnd
         if d['bDataMax']:
-            d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iOldEnd, d['Fft.Cur'], iStart, iOldEnd)
+            d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
         if d['bDataMin']:
-            d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iOldEnd, d['Fft.Cur'], iStart, iOldEnd)
+            d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
         if d['bDataAvg']:
-            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iOldEnd, d['Fft.Cur'], iStart, iOldEnd)
+            d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
             d['AxLevels'].clear()
