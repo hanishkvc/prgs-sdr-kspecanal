@@ -110,8 +110,20 @@ The signal level plot contains
         If scanRangeNonOverlap is less than 1.0, then for freqs which
         are scanned more than once in a overlapped manner, as part of
         a single full range scan, the average across the overlapped
-        scans, is what is stored wrt cur dataset.
+        scans, is what is stored wrt cur dataset. However one can see
+        the cur curve tending towards its avg in the GUI.
 
+        NOTE: Red, Yellow and Green curves work on the averaged cur
+        curve, when seen across all full range scans till then.
+        While the Blue curve relates to the average of the signal
+        level seen across overlapped scans in the current full scan
+        only.
+
+NOTE: The initial non overlapping part of the 1st freq window in the
+stepped overlapping sliding window over the full freq range, denotes
+raw data and not avgd data (when the freq is at different positions
+in the raw scan range), so chances are it could be ~2 dB down, due to
+potential non-linearity that I seem to have noticed in rtlsdr.
 
 
 Normal
@@ -321,7 +333,7 @@ bPltHeatMap <true|false>
 
 scanRangeNonOverlap <float>
 
-        Default: 0.75; Change to control how much of the freq band is overlapped
+        Default: 0.5; Change to control how much of the freq band is overlapped
         as the scan range logic scans/steps through a given range of frequencies.
         Set it to 1.0 to avoid overlapping, or set it to 0.5 to overlap 50% of the
         freq band, as the logic tunes to the next center freq to scan the next
@@ -332,6 +344,8 @@ scanRangeNonOverlap <float>
         require to be value which is some sum of (1/2**N)'s, which is less than
         1.0 i.e values like 0.03125, 0.0625, 0.125, 0.25, 0.5, 0.75, 0.78125 or
         0.09375 or so ...
+
+        NOTE: more overlapping also cumulates signal over time.
 
 prgLoopCnt <int>
 
@@ -439,7 +453,7 @@ Scan mode
 
         # U can also add scanRangeNonOverlap to the mix
 
-        scanRangeNonOverlap 1.0
+        scanRangeNonOverlap 1.0 and or scanRangeNonOverlap 0.03125
 
 NOTE: Dont use pltCompress raw or conv, if you are scanning a very large range
 like 100Mhz or more, unless fftSize is also reduced to something like 64 or so.
@@ -479,6 +493,7 @@ the adjacent frequencies. Need to use implement my own logic, with max instead
 of averaging when mapping multiple data points into individual pixels. [Done
 Rather process the data by merging adjacent data points, before plotting them]
 
-Skip few fft bins at begin and end, of each curscan, so that mirroring of freq
-at one end to the other end can be bypassed. i.e Freqs on top of nyquist freq.
+Skip few fft bins at begin and end, of each curscan, so that mirroring if any
+of freq at one end to the other end can be bypassed, i.e Freqs around the nyquist
+freq and or to discard non linearity across the freq band and or ...
 
