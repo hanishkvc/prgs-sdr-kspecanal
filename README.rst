@@ -109,21 +109,24 @@ The signal level plot contains
         Blue curve - relates to siglvl data of the current full scan.
         If scanRangeNonOverlap is less than 1.0, then for freqs which
         are scanned more than once in a overlapped manner, as part of
-        a single full range scan, the average across the overlapped
-        scans, is what is stored wrt cur dataset. However one can see
-        the cur curve tending towards its avg in the GUI.
+        a single full range scan, either the scan results are used as
+        such or the average across the overlapped scans, is what is
+        stored wrt cur dataset. One can see the cur curve tending
+        towards its avg in the GUI, if avg is what is used.
 
-        NOTE: Red, Yellow and Green curves work on the averaged cur
-        curve, when seen across all full range scans till then.
-        While the Blue curve relates to the average of the signal
-        level seen across overlapped scans in the current full scan
-        only.
+        NOTE: Red, Yellow and Green curves work either on the raw cur
+        data or the averaged cur data. In turn it contains a view across
+        all full range scans till then. While the Blue curve relates to
+        the raw or the average of the signal level seen across overlapped
+        scans in the current full scan only.
 
-NOTE: The initial non overlapping part of the 1st freq window in the
-stepped overlapping sliding window over the full freq range, denotes
-raw data and not avgd data (when the freq is at different positions
-in the raw scan range), so chances are it could be ~2 dB down, due to
-potential non-linearity that I seem to have noticed in rtlsdr.
+NOTE: There is some potential non linearity towards either end of the
+raw scan range of rtlsdr. Do keep this in mind. For example for the
+averaged cur scan data case, the initial non overlapping part of the
+1st freq window in the stepped overlapping sliding window over full
+freq range, denotes raw data and not avgd data (when the freq is at
+different positions in the raw scan range).  So chances are it could
+be ~2 dB or so down potentially.
 
 
 Normal
