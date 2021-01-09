@@ -555,10 +555,13 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             fftCur = np.ones(d['fftSize'])
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
-        if d['bDataCur']:
+        if d['bDataCur'] or True:
             delta = d['fftSize'] - (iEnd - iOldEnd)
             d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iOldEnd, iEnd, fftPr, sStart+delta, sEnd)
             if iOldEnd != 0:
+                if iOldEnd > totalEntries:
+                    iOldEnd = totalEntries
+                delta = iOldEnd - iStart
                 d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sStart+delta)
             iOldEnd = iEnd
         if d['bDataMax']:
