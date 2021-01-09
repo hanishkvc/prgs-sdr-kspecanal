@@ -556,13 +556,13 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         fftCur = data_proc(d, fftCur, gScanRangeClipProcMode)
         fftPr = fftvals_dispproc(d, np.copy(fftCur), gScanRangeFftDispProcMode, infTo=0)
         if d['bDataCur'] or True:
-            delta = d['fftSize'] - (iEnd - iOldEnd)
-            d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iOldEnd, iEnd, fftPr, sStart+delta, sEnd)
+            sRawStart = sStart + (d['fftSize'] - (iEnd - iOldEnd))
+            d['Fft.Cur'] = data_cumu(d, CUMUMODE_RAW, d['Fft.Cur'], iOldEnd, iEnd, fftPr, sRawStart, sEnd)
             if iOldEnd != 0:
                 if iOldEnd > totalEntries:
                     iOldEnd = totalEntries
-                delta = iOldEnd - iStart
-                d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sStart+delta)
+                sAvgEnd = sStart + (iOldEnd - iStart) # iOldEnd - iStart # Both are same
+                d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sAvgEnd)
             iOldEnd = iEnd
         if d['bDataMax']:
             d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
