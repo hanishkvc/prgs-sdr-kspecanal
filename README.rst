@@ -422,6 +422,9 @@ bUsePSD <boolean>
         logic added to verify that the program's internal logic, is working
         as expected and not having any issue in general.
 
+gbScanRangeBaseDataIsRaw <boolean>
+        Default: False; If TRUE, Max-Min-Avg uses the curScan result as its
+        source. Else Max-Min-Avg use the avg of the overlapped curScan results.
 
 NOTE: Do look into the source to get the latest | current default setting for the
 different options, and or to change as one sees fit.

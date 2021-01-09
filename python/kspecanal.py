@@ -488,13 +488,7 @@ def zero_span(d):
         plt.pause(0.0001)
 
 
-'''
-If gScanRangeBaseIsRaw then
-    Max, Min and Avg uses the curScan result almost directly as its source.
-Else
-    Max, Min and Avg use the avg of the overlapped curScan results.
-'''
-gScanRangeBaseIsRaw = False
+gbScanRangeBaseDataIsRaw = False
 def _scan_range(d, freqsAll, fftAll, runCount=-1):
     '''
     Scan a specified range, this can be larger than the freq band
@@ -577,7 +571,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
                 sAvgEnd = sStart + (iOldEnd - iStart) # iOldEnd - iStart # Both are same
                 d['Fft.Cur'] = data_cumu(d, CUMUMODE_AVG, d['Fft.Cur'], iStart, iOldEnd, fftPr, sStart, sAvgEnd)
             iOldEnd = iEnd
-        if gScanRangeBaseIsRaw:
+        if d['bScanRangeBaseDataIsRaw']:
             dstStart = iStart
             dstEnd = iEnd
             srcData = fftPr
@@ -732,6 +726,7 @@ def handle_args(d):
     d['bDataCur'] = gbDataCur
     d['bGrid'] = gbGrid
     d['bUsePSD'] = gbUsePSD
+    d['bScanRangeBaseDataIsRaw'] = gbScanRangeBaseDataIsRaw
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -818,6 +813,9 @@ def handle_args(d):
         elif (curArg == 'BUSEPSD'):
             iArg += 1
             d['bUsePSD'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'BSCANRANGEBASEDATAISRAW'):
+            iArg += 1
+            d['bScanRangeBaseDataIsRaw'] = _arg_boolean(sys.argv[iArg])
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -868,7 +866,8 @@ def print_info(d):
     print("INFO: startFreq[{}] centerFreq[{}] endFreq[{}]".format(d['startFreq'], d['centerFreq'], d['endFreq']))
     print("INFO: samplingRate[{}], gain[{}], bUsePSD[{}]".format(d['samplingRate'], d['gain'], d['bUsePSD']))
     print("INFO: fullSize[{}], fftSize[{}], curScanCumuMode[{}], window[{}]".format(d['fullSize'], d['fftSize'], d['curScanCumuMode'], d['window']))
-    print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}]".format(d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap']))
+    print("INFO: minAmp4Clip[{}], curScanNonOverlap[{}], scanRangeNonOverlap[{}], bScanRangeBaseDataIsRaw[{}]".format(
+            d['minAmp4Clip'], d['curScanNonOverlap'], d['scanRangeNonOverlap'], d['bScanRangeBaseDataIsRaw']))
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
     print("INFO: xRes [{}], bGrid [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['bGrid'], d['pltCompress'], d['pltCompressHM']))
