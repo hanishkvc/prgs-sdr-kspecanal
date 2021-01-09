@@ -106,11 +106,11 @@ The signal level plot contains
 
         Green curve - the average of siglvls seen till then and
 
-        Blue curve - relates to siglvl data of the current scan.
-        If scanRangeNonOverlap is less than 1.0, then for freqs
-        which are scanned more than once in a overlapped manner,
-        as part of a single full range scan, the value of the
-        last sub scan, is what is retained wrt cur dataset.
+        Blue curve - relates to siglvl data of the current full scan.
+        If scanRangeNonOverlap is less than 1.0, then for freqs which
+        are scanned more than once in a overlapped manner, as part of
+        a single full range scan, the average across the overlapped
+        scans, is what is stored wrt cur dataset.
 
 
 
@@ -349,7 +349,9 @@ pltCompress <Raw|Avg|Max|Min|Conv>
         fftSize and xRes, decides how finegrained is the freq resolution you see
         on the screen. NOTE: Using Avg will smooth the display, but will impact
         the signal levels seen. This controls the signal levels plot and doesnt
-        impact the heatmap plot.
+        impact the heatmap plot. Also note that in the default program flow,
+        it may operate on log data and not the raw siglevel data. So averaging
+        is not a simple averaging in one sense.
 
 xRes <int_poweroftwovalue>
 

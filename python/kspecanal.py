@@ -497,8 +497,11 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     These multiple scans to cover the full range, in turn can be either
     overlapped or not, as decided by scanRangeNonOverlap.
 
-    It generates multiple data sets from the scanned signal levels like
-    Max, Min, Avg and Cur.
+    It generates multiple data sets from the scanned signal levels
+    like Max, Min, Avg and Cur.
+
+    Cur is a average of the overlaped scanning during sliding window
+    over the full frequency range.
     '''
     freqSpan = d['samplingRate']
     if ((freqSpan*d['scanRangeNonOverlap'])%1) != 0:
