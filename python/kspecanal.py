@@ -502,6 +502,9 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
 
     Cur is a average of the overlaped scanning during sliding window
     over the full frequency range.
+
+    Max,Min and Avg is generated from Fft.Cur.
+    HeatMap is generated from Fft.Avg data.
     '''
     freqSpan = d['samplingRate']
     if ((freqSpan*d['scanRangeNonOverlap'])%1) != 0:
@@ -571,7 +574,7 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
             d['Fft.Max'] = data_cumu(d, CUMUMODE_MAX, d['Fft.Max'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
         if d['bDataMin']:
             d['Fft.Min'] = data_cumu(d, CUMUMODE_MIN, d['Fft.Min'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
-        if d['bDataAvg']:
+        if d['bDataAvg'] or True:
             d['Fft.Avg'] = data_cumu(d, cumuMode4Avg, d['Fft.Avg'], iStart, iDone, d['Fft.Cur'], iStart, iDone)
         fftMax, fftMin, fftAvg, fftCurAdj = _adj_siglvls(d, d['Fft.Cur'])
         if d['bPltLevels']:
@@ -599,7 +602,6 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
         plt.pause(0.0001)
         i += 1
     if d['bPltLevels']:
-        #xFreqs, yLvls = data_plotcompress(d, freqsAll, fftCurAdj)
         plot_highs(d, xFreqs, yLvls)
     if d['bPltHeatMap']:
         d['fftHM'][d['fftHMIndex'], :] = _data_plotcompress(d, fftAvg, d['pltCompressHM'])
