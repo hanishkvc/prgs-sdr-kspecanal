@@ -109,16 +109,15 @@ The signal level plot contains
         Blue curve - relates to siglvl data of the current full scan.
         If scanRangeNonOverlap is less than 1.0, then for freqs which
         are scanned more than once in a overlapped manner, as part of
-        a single full range scan, either the scan results are used as
-        such or the average across the overlapped scans, is what is
-        stored wrt cur dataset. One can see the cur curve tending
-        towards its avg in the GUI, if avg is what is used.
+        a single full range scan, the average across the overlapped
+        scans, is what is stored wrt cur dataset. One can see the cur
+        curve tending towards its avg in the plot.
 
         NOTE: Red, Yellow and Green curves work either on the raw cur
         data or the averaged cur data. In turn it contains a view across
         all full range scans till then. While the Blue curve relates to
-        the raw or the average of the signal level seen across overlapped
-        scans in the current full scan only.
+        the average of the signal level seen across overlapped scans in
+        the current full scan only.
 
 NOTE: There is some potential non linearity towards either end of the
 raw scan range of rtlsdr. Do keep this in mind. For example for the
