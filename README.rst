@@ -169,7 +169,8 @@ signal levels. To help with same the program supports
 saveSigLvls <file_to_save_to>
 
         This tells the program to save the current Avg signal levels
-        to be saved into the specified file.
+        to be saved into the specified file, along with start and
+        end freqs of the current range of freqs being scanned.
 
 adjSigLvls <file_with_siglvls>
 
@@ -177,11 +178,18 @@ adjSigLvls <file_with_siglvls>
         inturn substract the same from the current signal levels,
         before plotting them.
 
-        NOTE: With this the base / pseudo noise floor increases to 0 dB.
+        This works provided the current frequency range being scanned
+        is the same as the freq range when the signal levels were saved.
 
-NOTE: The signal level stored doesnt have any frequency info. So one
-requires to pass to adjsiglvls a signal levels file, which was saved
-from a equivalent scan range, else the results would be funny ;-)
+        NOTE: This shifts the signal floor to 0 dB.
+
+One requires to pass to adjsiglvls a signal levels file, which was saved
+from a equivalent scan previously ;-(
+
+When scanning over a freq range, the program may auto adjust the endFreq
+so that the full freq range is a multiple of the selected samplingRate.
+So if using such a saved signal levels file, one will have to explicitly
+specify the scan command with the adjusted endFreq ourselves.
 
 
 UI

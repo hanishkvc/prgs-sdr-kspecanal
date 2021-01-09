@@ -628,6 +628,8 @@ def _save_siglvls(d):
     try:
         if d['SaveSigLvls'] != '':
             f = open(d['SaveSigLvls'], "wb+")
+            pickle.dump(d['startFreq'], f)
+            pickle.dump(d['endFreq'], f)
             pickle.dump(d['Fft.Avg'], f)
             f.close()
             print("INFO:_save_siglvls: success...", d['SaveSigLvls'])
@@ -641,9 +643,15 @@ def _load_siglvls(d):
     try:
         if d['AdjSigLvls'] != '':
             f = open(d['AdjSigLvls'], "rb")
+            startFreq = pickle.load(f)
+            endFreq = pickle.load(f)
             d['Fft.Adj'] = pickle.load(f)
             f.close()
-            print("INFO:_load_siglvls: success...", d['AdjSigLvls'])
+            if (startFreq == d['startFreq']) and (endFreq == d['endFreq']):
+                print("INFO:_load_siglvls: success...", d['AdjSigLvls'])
+            else:
+                input("ERRR:_load_siglvls:{}:savedRange[{}-{}] curFreqRange[{}-{}]".format(d['AdjSigLvls'], startFreq, endFreq, d['startFreq'], d['endFreq']))
+                d['AdjSigLvls'] = ''
         else:
             print("INFO:_load_siglvls: ignoring...")
     except:
