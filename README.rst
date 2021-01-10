@@ -103,9 +103,9 @@ NOTE: Other than the normal zeroSpan mode explained above, it also supports
 zeroSpanSave and zeroSpanPlay modes, which is explained later in this document.
 
 .. figure:: images/ZeroSpan.png
-        :alt: a sample image of zerospan
+   :alt: a sample image of zerospan
 
-Figure: a sample image of zerospan
+   Figure: a sample image of zerospan
 
 
 Scan
@@ -189,19 +189,19 @@ If user doesnt specify any arguments, then the program defaults to this
 mode.
 
 .. figure:: images/FMScanPltCompressAvg.png
-        :alt: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
+   :alt: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
 
-Figure: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
+   Figure: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
 
 .. figure:: images/FMScanPltCompressMax.png
-        :alt: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
+   :alt: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
 
-Figure: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
+   Figure: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
 
 .. figure:: images/FMScanAvgMinPltCompressMax.png
-        :alt: a image of scan (fmscan); Min and Avg SigLevels only
+   :alt: a image of scan (fmscan) with pltCompress max; Min and Avg SigLevels only
 
-Figure: a image of scan (fmscan); Min and Avg SigLevels only
+   Figure: a image of scan (fmscan) with pltCompress max; Min and Avg SigLevels only
 
 
 HideExistingSignals
@@ -250,9 +250,9 @@ To check for any changes wrt previously saved signal levels use
 NOTE: Even thou the example shows zeroSpan mode, it also works for scan mode.
 
 .. figure:: images/ZeroSpanAdjusted.png
-        :alt: a sample image of zerospan adjusted wrt prev captured siglevels
+   :alt: a sample image of zerospan adjusted wrt prev captured siglevels
 
-Figure: a sample image of zerospan adjusted wrt prev captured siglevels
+   Figure: a sample image of zerospan adjusted wrt prev captured siglevels
 
 
 SaveAndPlayback
@@ -515,6 +515,7 @@ bUsePSD <boolean>
         as expected and not having any issue in general.
 
 gbScanRangeBaseDataIsRaw <boolean>
+
         Default: False; If TRUE, Max-Min-Avg uses the curScan result as its
         source. Else Max-Min-Avg use the avg of the overlapped curScan results.
 
@@ -564,8 +565,8 @@ is Not user controllable from commandline.
 
 
 
-TODO
-#######
+TODO/DONE
+##########
 
 Account -ve freqs of complex iq fft. [Done]
 
