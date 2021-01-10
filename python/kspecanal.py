@@ -494,9 +494,9 @@ def zero_span(d):
 
 
 
-gZeroSpanSave = '/tmp/zerospan.save'
+gZeroSpanSaveFile = '/tmp/zerospan.save'
 def zero_span_save(d):
-    f = open(d['zeroSpanSave'], "wb+")
+    f = open(d['zeroSpanSaveFile'], "wb+")
     d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
@@ -765,8 +765,8 @@ def handle_args(d):
     d['bGrid'] = gbGrid
     d['bUsePSD'] = gbUsePSD
     d['bScanRangeBaseDataIsRaw'] = gbScanRangeBaseDataIsRaw
-    d['zeroSpanSave'] = gZeroSpanSave
-    d['zeroSpanPlay'] = gZeroSpanSave
+    d['zeroSpanSaveFile'] = gZeroSpanSaveFile
+    d['zeroSpanPlayFile'] = gZeroSpanSaveFile
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
@@ -856,6 +856,12 @@ def handle_args(d):
         elif (curArg == 'BSCANRANGEBASEDATAISRAW'):
             iArg += 1
             d['bScanRangeBaseDataIsRaw'] = _arg_boolean(sys.argv[iArg])
+        elif (curArg == 'ZEROSPANSAVEFILE'):
+            iArg += 1
+            d['zeroSpanSaveFile'] = sys.argv[iArg]
+        elif (curArg == 'ZEROSPANPLAYFILE'):
+            iArg += 1
+            d['zeroSpanPlayFile'] = sys.argv[iArg]
         else:
             msg = "ERROR:handle_args: Unknown argument [{}]".format(curArg)
             prg_quit(d, msg)
@@ -911,8 +917,9 @@ def print_info(d):
     print("INFO: prgMode [{}], prgLoopCnt[{}], bPltLevels[{}],  bPltHeatMap[{}]".format(d['prgMode'], d['prgLoopCnt'], d['bPltLevels'], d['bPltHeatMap']))
     print("INFO: pltHighsNumMarkers[{}], pltHighsDelta4Marking[{}], pltHighsPause[{}]".format(d['pltHighsNumMarkers'], d['pltHighsDelta4Marking'], d['pltHighsPause']))
     print("INFO: xRes [{}], bGrid [{}], pltCompress [{}], pltCompressHM [{}]".format(d['xRes'], d['bGrid'], d['pltCompress'], d['pltCompressHM']))
-    print("INFO: SaveSigLvls [{}], AdjSigLvls [{}]".format(d['SaveSigLvls'], d['AdjSigLvls']))
+    print("INFO: SaveSigLvls [{}], AdjSigLvls [{}]; zeroSpanSaveFile[{}], zeroSpanPlayFile[{}]".format(d['SaveSigLvls'], d['AdjSigLvls'], d['zeroSpanSaveFile'], d['zeroSpanPlayFile']))
     print("INFO: bDataMax [{}], bDataMin [{}], bDataAvg[{}], bDataCur [{}]".format(d['bDataMax'], d['bDataMin'] , d['bDataAvg'], d['bDataCur']))
+
 
 
 def prg_quit(d, msg = None, tryExit=True):
@@ -1081,7 +1088,7 @@ def do_run(d):
     elif d['prgMode'] == PRGMODE_ZEROSPANSAVE:
         zero_span_save(d)
     elif d['prgMode'] == PRGMODE_ZEROSPANPLAY:
-        d['zeroSpanFile'] = open(d['zeroSpanPlay'], "rb")
+        d['zeroSpanFile'] = open(d['zeroSpanPlayFile'], "rb")
         sdr_curscan = zero_span_play
         zero_span(d)
         d['zeroSpanFile'].close()

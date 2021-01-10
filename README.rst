@@ -91,6 +91,9 @@ These are shown as 4 curves
 It also shows a heatmap | waterfall of the instanteneous(cur) signal levels
 over a period of time till then.
 
+NOTE: Other than the normal zeroSpan mode explained above, it also supports
+zeroSpanSave and zeroSpanPlay modes, which is explained later in this document.
+
 
 Scan
 =======
@@ -178,7 +181,8 @@ HideExistingSignals
 
 Sometimes you may want to remove the existing signals from the plot
 and then check for any new signals and or variation wrt existing
-signal levels. To help with same the program supports
+signal levels. To help with same the program supports the following
+commandline arguments.
 
 saveSigLvls <file_to_save_to>
 
@@ -204,6 +208,50 @@ When scanning over a freq range, the program may auto adjust the endFreq
 so that the full freq range is a multiple of the selected samplingRate.
 So if using such a saved signal levels file, one will have to explicitly
 specify the scan command with the adjusted endFreq ourselves.
+
+Example:
+
+To save existing signal levels use
+
+        kspecanal.py zeroSpan centerFreq <SomeFreqOfInterest> saveSigLvls /tmp/siglevels.bin
+
+To check for any changes wrt previously saved signal levels use
+
+        kspecanal.py zeroSpan centerFreq <SomeFreqOfInterest> adjSigLvls /tmp/siglevels.bin
+
+NOTE: Even thou the example shows zeroSpan mode, it also works for scan mode.
+
+
+SaveAndPlayback
+=================
+
+To ensure that we sample emissions of interest more often, without wasting
+time on plotting them etc (any event during which we may miss out), one can
+sample and save fft results, into a file along with timestamp and then at a
+later date or time, we can playback this capture.
+
+The program supports the following commandline arguments to support this.
+
+zeroSpanSave zeroSpanSaveFile <FileToSaveTo>
+
+        Do zeroSpan in save mode. The fft results of scans are saved
+        into the specified file. No signal level plots/heatmaps are
+        shown in this mode.
+
+zeroSpanPlay zeroSpanPlayFile <SavedFileToPlayback>
+
+        Do zeroSpan in play mode. In this mode, instead of plotting the
+        current emissions, it plots emissions which were captured previously
+        using zeroSpanSave mode.
+
+NOTE: This is currently supported only wrt zerospan.
+
+Example:
+
+        kspecanal.py zeroSpanSave centerFreq <FreqOfIntereset> zeroSpanSaveFile <FileToSaveDataTo>
+
+        kspecanal.py zeroSpanPlay centerFreq <freqUsedWhenSaving> zeroSpanPlayFile <FileUsedWhileSaving>
+
 
 
 UI
