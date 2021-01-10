@@ -1,10 +1,15 @@
 #####################################
 Playing with Looking at EM spectrum
 #####################################
-HanishKVC, 20201226
+HanishKVC, v20210110IST2011
+
+.. contents::
+
 
 Gist: this logic, rtlsdr ...
 ################################
+
+Gist of my thinking, when I started on this
 
 While design of a product, one is interested in understanding
 
@@ -50,12 +55,15 @@ Requirements
 ##############
 
 Software
----------
+=========
 
-Linux with python3 and the following python modules/libraries NumPy, MatplotLib and PyRtlSdr.
+Linux with python3
+
+along with the following python modules/libraries NumPy, MatplotLib and PyRtlSdr.
+
 
 Hardware
----------
+=========
 
 RtlSdr dongle (instead of generic dvb ones, equally cheap while targetting sdr with metal casing, tighter components may improve things a bit).
 
@@ -123,12 +131,12 @@ The signal level plot contains
         the current full scan only.
 
 NOTE: There is some potential non linearity towards either end of the
-raw scan range of rtlsdr. Do keep this in mind. For example for the
-averaged cur scan data case, the initial non overlapping part of the
-1st freq window in the stepped overlapping sliding window over full
-freq range, denotes raw data and not avgd data (when the freq is at
-different positions in the raw scan range).  So chances are it could
-be ~2 dB or so down potentially.
+raw scan range of rtlsdr. Do keep this in mind. Bcas of this for example
+for the averaged cur scan data case, the initial non overlapping part of
+the 1st freq window in the stepped overlapping sliding window over full
+freq range, denotes raw data and not avgd data (where the same freq is
+scanned at different positions in the raw scan range). So chances are it
+could be ~2-3 dB or so down potentially, based on what I have noticed.
 
 
 Normal
@@ -226,9 +234,10 @@ SaveAndPlayback
 =================
 
 To ensure that we sample emissions of interest more often, without wasting
-time on plotting them etc (any event during which we may miss out), one can
-sample and save fft results, into a file along with timestamp and then at a
-later date or time, we can playback this capture.
+time on plotting them etc (any event during which we may miss out, in the
+current flow of logic), one can sample and save fft results, into a file
+along with timestamp and then at a later date or time, we can playback this
+capture.
 
 The program supports the following commandline arguments to support this.
 
@@ -244,7 +253,10 @@ zeroSpanPlay zeroSpanPlayFile <SavedFileToPlayback>
         current emissions, it plots emissions which were captured previously
         using zeroSpanSave mode.
 
-NOTE: This is currently supported only wrt zerospan.
+NOTE: This is currently supported only wrt zerospan. Also it saves the
+overlapped sliding based cumulated fft results of its curScan logic, so
+one cant apply different window on raw time domain data samples at a
+later time during playback or so.
 
 Example:
 
@@ -551,7 +563,8 @@ the adjacent frequencies. Need to use implement my own logic, with max instead
 of averaging when mapping multiple data points into individual pixels. [Done
 Rather process the data by merging adjacent data points, before plotting them]
 
-Skip few fft bins at begin and end, of each curscan, so that mirroring if any
-of freq at one end to the other end can be bypassed, i.e Freqs around the nyquist
-freq and or to discard non linearity across the freq band and or ...
+Skip few fft bins at begin and end, of each curscan, so that mirroring/minimal
+leakage if any of freq at one end to other end can be bypassed i.e wrt freqs
+around the nyquist freq and or to discard non linearity across the freq band
+and or ...
 
