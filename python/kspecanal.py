@@ -497,6 +497,9 @@ def zero_span(d):
 gZeroSpanSaveFile = '/tmp/zerospan.save'
 def zero_span_save(d):
     f = open(d['zeroSpanSaveFile'], "wb+")
+    pickle.dump(d['centerFreq'], f)
+    pickle.dump(d['samplingRate'], f)
+    pickle.dump(d['gain'], f)
     d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
@@ -1088,7 +1091,11 @@ def do_run(d):
     elif d['prgMode'] == PRGMODE_ZEROSPANSAVE:
         zero_span_save(d)
     elif d['prgMode'] == PRGMODE_ZEROSPANPLAY:
-        d['zeroSpanFile'] = open(d['zeroSpanPlayFile'], "rb")
+        d['zeroSpanFile'] = f = open(d['zeroSpanPlayFile'], "rb")
+        d['centerFreq'] = pickle.load(f)
+        d['samplingRate'] = pickle.load(f)
+        d['gain'] = pickle.load(f)
+        print_info(d)
         sdr_curscan = zero_span_play
         zero_span(d)
         d['zeroSpanFile'].close()
