@@ -272,6 +272,12 @@ def plot_highs(d, freqs, levels):
         input("PltHighsPause: Press any key to continue...")
 
 
+def _calc_startendfreq(centerFreq, samplingRate):
+    startFreq = centerFreq - samplingRate/2
+    endFreq = centerFreq + samplingRate/2
+    return startFreq, endFreq
+
+
 def sdr_setup(sdr, fC, fS, gain):
     '''
     Setup rtlsdr.
@@ -882,8 +888,7 @@ def handle_args(d):
     if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
     else: # ZeroSpan or related i.e save or play
-        d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
-        d['endFreq'] = d['centerFreq'] + d['samplingRate']/2
+        d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
     if d['fftSize'] < (d['samplingRate']//8):
         d['fullSize'] = d['fftSize'] * gFft2FullMult4Less
     else:
@@ -1095,6 +1100,7 @@ def do_run(d):
         d['centerFreq'] = pickle.load(f)
         d['samplingRate'] = pickle.load(f)
         d['gain'] = pickle.load(f)
+        d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
         print_info(d)
         sdr_curscan = zero_span_play
         zero_span(d)
