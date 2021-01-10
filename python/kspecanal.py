@@ -17,6 +17,7 @@ import rtlsdr
 
 PRGMODE_SCAN = 'SCAN'
 PRGMODE_ZEROSPAN = 'ZEROSPAN'
+PRGMODE_ZEROSPANSAVE = 'ZEROSPANSAVE'
 PRGMODE_ALIAS_FMSCAN = 'FMSCAN'
 PRGMODE_ALIAS_QUICKFULLSCAN = 'QUICKFULLSCAN'
 PLTFIG_LEVELS = "Levels"
@@ -488,6 +489,25 @@ def zero_span(d):
         plt.pause(0.0001)
 
 
+
+gZeroSpanSave = '/tmp/zerospan.save'
+def zero_span_save(d):
+    f = open(d['zeroSpanSave'], "wb+")
+    d['sdr'], bSdrSetup = sdr_setup(d['sdr'], d['centerFreq'], d['samplingRate'], d['gain'])
+    prevTime = time.time()
+    for i in range(d['prgLoopCnt']):
+        if d['cmd.stop']:
+            break
+        curTime = time.time()
+        print("ZeroSpanSave:{}:{}".format(i, curTime-prevTime))
+        prevTime = curTime
+        fftCur = sdr_curscan(d)
+        pickle.dump(curTime, f)
+        pickle.dump(fftCur, f)
+    f.close()
+
+
+
 gbScanRangeBaseDataIsRaw = False
 def _scan_range(d, freqsAll, fftAll, runCount=-1):
     '''
@@ -727,10 +747,11 @@ def handle_args(d):
     d['bGrid'] = gbGrid
     d['bUsePSD'] = gbUsePSD
     d['bScanRangeBaseDataIsRaw'] = gbScanRangeBaseDataIsRaw
+    d['zeroSpanSave'] = gZeroSpanSave
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
-        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_SCAN) or (curArg == PRGMODE_ALIAS_FMSCAN) or (curArg == PRGMODE_ALIAS_QUICKFULLSCAN):
+        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_ZEROSPANSAVE) or (curArg == PRGMODE_SCAN) or (curArg == PRGMODE_ALIAS_FMSCAN) or (curArg == PRGMODE_ALIAS_QUICKFULLSCAN):
             d['prgMode'] = curArg
         elif (curArg == 'CENTERFREQ'):
             iArg += 1
@@ -832,7 +853,7 @@ def handle_args(d):
         d['pltCompress'] = PLTCOMPRESS_RAW
     if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
-    else:
+    else: # ZeroSpan or ZeroSpanSave
         d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
         d['endFreq'] = d['centerFreq'] + d['samplingRate']/2
     if d['fftSize'] < (d['samplingRate']//8):
@@ -1034,6 +1055,14 @@ def handle_signals(d):
     signal.signal(signal.SIGINT, handle_sigint)
 
 
+def do_run(d):
+    if d['prgMode'] == PRGMODE_SCAN:
+        scan_range(d)
+    elif d['prgMode'] == PRGMODE_ZEROSPANSAVE:
+        zero_span_save(d)
+    else:
+        zero_span(d)
+
 
 gD = {}
 gD['cmd.stop'] = False
@@ -1043,10 +1072,7 @@ print_info(gD)
 handle_signals(gD)
 plt_figures(gD)
 gD['sdr'] = rtlsdr.RtlSdr()
-if gD['prgMode'] == PRGMODE_SCAN:
-    scan_range(gD)
-else:
-    zero_span(gD)
+do_run(gD)
 gD['sdr'].close()
 
 
