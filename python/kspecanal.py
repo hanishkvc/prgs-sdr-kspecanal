@@ -1100,8 +1100,13 @@ def do_run(d):
         d['centerFreq'] = pickle.load(f)
         d['samplingRate'] = pickle.load(f)
         d['gain'] = pickle.load(f)
+        startFreq = d['startFreq']
+        endFreq = d['endFreq']
+        samplingRate = d['samplingRate']
+        gain = d['gain']
         d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
-        print_info(d)
+        if (startFreq != d['startFreq']) or (endFreq != d['endFreq']) or (samplingRate != d['samplingRate']) or (gain != d['gain']):
+            input("INFO:zeroSpanPlay:updating: start[{}] - end[{}], samplingRate[{}], gain[{}]".format(d['startFreq'], d['endFreq'], d['samplingRate'], d['gain']))
         sdr_curscan = zero_span_play
         zero_span(d)
         d['zeroSpanFile'].close()

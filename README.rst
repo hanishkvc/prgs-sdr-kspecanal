@@ -52,7 +52,7 @@ Requirements
 Software
 ---------
 
-Linux with python3 and PyRtlSdr.
+Linux with python3 and the following python modules/libraries NumPy, MatplotLib and PyRtlSdr.
 
 Hardware
 ---------
@@ -252,6 +252,11 @@ Example:
 
         kspecanal.py zeroSpanPlay centerFreq <freqUsedWhenSaving> zeroSpanPlayFile <FileUsedWhileSaving>
 
+        NOTE: If the specified centerFreq for zeroSpanPlay is different
+        from the one used during zeroSpanSave, then the user will be
+        alerted about the same in the commandline, and user requires
+        to press any key to continue with the program. Same wrt gain
+        and samplingRate.
 
 
 UI
