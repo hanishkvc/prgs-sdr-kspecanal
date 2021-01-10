@@ -423,6 +423,7 @@ def zero_span(d):
 
     Also a history of instanteneous(Cur) signal levels is shown as a heat map.
     '''
+    d['timeWasStr'] = None
     d['Fft.Max'] = None
     d['Fft.Min'] = None
     d['Fft.Avg'] = None
@@ -485,6 +486,8 @@ def zero_span(d):
             if d['bDataCur']:
                 xFreqs, yLvls = data_plotcompress(d, freqs, fftPrTmp)
                 d['AxLevels'].plot(xFreqs, yLvls, 'b')
+            if d['timeWasStr'] != None:
+                d['AxLevels'].set_xlabel(d['timeWasStr'])
             plt.draw()
             plot_highs(d, xFreqs, yLvls)
         plt.pause(0.0001)
@@ -510,8 +513,15 @@ def zero_span_save(d):
 
 
 def zero_span_play(d):
+    '''
+    Returns the next time and fft result data from file which contains the saved data.
+    Time is returned as seconds since epoch as well as in string format.
+    '''
     d['timeWas'] = pickle.load(d['zeroSpanFile'])
-    print("INFO:zeroSpanPlay:timeWas:{}".format(time.strftime("%Y%m%d", time.gmtime(d['timeWas']))))
+    timeWasMilli = int((d['timeWas'] - int(d['timeWas']))*1000)
+    timeWas = time.strftime("%Y%m%d%Z%H%M%S", time.gmtime(d['timeWas']))
+    d['timeWasStr'] = "{}.{:03}".format(timeWas, timeWasMilli)
+    print("INFO:zeroSpanPlay:timeWas:{}".format(d['timeWasStr']))
     return pickle.load(d['zeroSpanFile'])
 
 
