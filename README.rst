@@ -102,6 +102,11 @@ over a period of time till then.
 NOTE: Other than the normal zeroSpan mode explained above, it also supports
 zeroSpanSave and zeroSpanPlay modes, which is explained later in this document.
 
+.. figure:: images/ZeroSpan.png
+        :alt: a sample image of zerospan
+
+Figure: a sample image of zerospan
+
 
 Scan
 =======
@@ -183,6 +188,21 @@ is a alias for
 If user doesnt specify any arguments, then the program defaults to this
 mode.
 
+.. figure:: images/FMScanPltCompressAvg.png
+        :alt: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
+
+Figure: a image of scan (fmscan) with pltCompress avg; Max/Min/Avg/Cur SigLevels
+
+.. figure:: images/FMScanPltCompressMax.png
+        :alt: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
+
+Figure: a image of scan (fmscan) with pltCompress max; Max/Min/Avg/Cur SigLevels
+
+.. figure:: images/FMScanAvgMinPltCompressMax.png
+        :alt: a image of scan (fmscan); Min and Avg SigLevels only
+
+Figure: a image of scan (fmscan); Min and Avg SigLevels only
+
 
 HideExistingSignals
 =====================
@@ -228,6 +248,11 @@ To check for any changes wrt previously saved signal levels use
         kspecanal.py zeroSpan centerFreq <SomeFreqOfInterest> adjSigLvls /tmp/siglevels.bin
 
 NOTE: Even thou the example shows zeroSpan mode, it also works for scan mode.
+
+.. figure:: images/ZeroSpanAdjusted.png
+        :alt: a sample image of zerospan adjusted wrt prev captured siglevels
+
+Figure: a sample image of zerospan adjusted wrt prev captured siglevels
 
 
 SaveAndPlayback
