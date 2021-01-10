@@ -18,6 +18,7 @@ import rtlsdr
 PRGMODE_SCAN = 'SCAN'
 PRGMODE_ZEROSPAN = 'ZEROSPAN'
 PRGMODE_ZEROSPANSAVE = 'ZEROSPANSAVE'
+PRGMODE_ZEROSPANPLAY = 'ZEROSPANPLAY'
 PRGMODE_ALIAS_FMSCAN = 'FMSCAN'
 PRGMODE_ALIAS_QUICKFULLSCAN = 'QUICKFULLSCAN'
 PLTFIG_LEVELS = "Levels"
@@ -508,6 +509,13 @@ def zero_span_save(d):
 
 
 
+def zero_span_play(d):
+    d['timeWas'] = pickle.load(d['zeroSpanFile'])
+    print("INFO:zeroSpanPlay:timeWas:{}".format(time.strftime("%Y%m%d", time.gmtime(d['timeWas']))))
+    return pickle.load(d['zeroSpanFile'])
+
+
+
 gbScanRangeBaseDataIsRaw = False
 def _scan_range(d, freqsAll, fftAll, runCount=-1):
     '''
@@ -748,10 +756,11 @@ def handle_args(d):
     d['bUsePSD'] = gbUsePSD
     d['bScanRangeBaseDataIsRaw'] = gbScanRangeBaseDataIsRaw
     d['zeroSpanSave'] = gZeroSpanSave
+    d['zeroSpanPlay'] = gZeroSpanSave
     iArg = 1
     while iArg < len(sys.argv):
         curArg = sys.argv[iArg].upper()
-        if (curArg == PRGMODE_ZEROSPAN) or (curArg == PRGMODE_ZEROSPANSAVE) or (curArg == PRGMODE_SCAN) or (curArg == PRGMODE_ALIAS_FMSCAN) or (curArg == PRGMODE_ALIAS_QUICKFULLSCAN):
+        if (curArg in [PRGMODE_ZEROSPAN, PRGMODE_ZEROSPANSAVE, PRGMODE_ZEROSPANPLAY, PRGMODE_SCAN, PRGMODE_ALIAS_FMSCAN, PRGMODE_ALIAS_QUICKFULLSCAN]):
             d['prgMode'] = curArg
         elif (curArg == 'CENTERFREQ'):
             iArg += 1
@@ -853,7 +862,7 @@ def handle_args(d):
         d['pltCompress'] = PLTCOMPRESS_RAW
     if d['prgMode'] == PRGMODE_SCAN:
         d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
-    else: # ZeroSpan or ZeroSpanSave
+    else: # ZeroSpan or related i.e save or play
         d['startFreq'] = d['centerFreq'] - d['samplingRate']/2
         d['endFreq'] = d['centerFreq'] + d['samplingRate']/2
     if d['fftSize'] < (d['samplingRate']//8):
@@ -1056,10 +1065,16 @@ def handle_signals(d):
 
 
 def do_run(d):
+    global sdr_curscan
     if d['prgMode'] == PRGMODE_SCAN:
         scan_range(d)
     elif d['prgMode'] == PRGMODE_ZEROSPANSAVE:
         zero_span_save(d)
+    elif d['prgMode'] == PRGMODE_ZEROSPANPLAY:
+        d['zeroSpanFile'] = open(d['zeroSpanPlay'], "rb")
+        sdr_curscan = zero_span_play
+        zero_span(d)
+        d['zeroSpanFile'].close()
     else:
         zero_span(d)
 
