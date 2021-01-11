@@ -521,6 +521,23 @@ def zero_span_save(d):
 
 
 
+def zero_span_play_setup(d):
+    global sdr_curscan
+    d['zeroSpanFile'] = f = open(d['zeroSpanPlayFile'], "rb")
+    d['centerFreq'] = pickle.load(f)
+    d['samplingRate'] = pickle.load(f)
+    d['gain'] = pickle.load(f)
+    startFreq = d['startFreq']
+    endFreq = d['endFreq']
+    samplingRate = d['samplingRate']
+    gain = d['gain']
+    d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
+    if (startFreq != d['startFreq']) or (endFreq != d['endFreq']) or (samplingRate != d['samplingRate']) or (gain != d['gain']):
+        print("WARN:zeroSpanPlay:updating: start[{}] - end[{}], samplingRate[{}], gain[{}]".format(d['startFreq'], d['endFreq'], d['samplingRate'], d['gain']))
+    sdr_curscan = zero_span_play
+
+
+
 def zero_span_play(d):
     '''
     Returns the next time and fft result data from file which contains the saved data.
@@ -1094,24 +1111,12 @@ def handle_signals(d):
 
 
 def do_run(d):
-    global sdr_curscan
     if d['prgMode'] == PRGMODE_SCAN:
         scan_range(d)
     elif d['prgMode'] == PRGMODE_ZEROSPANSAVE:
         zero_span_save(d)
     elif d['prgMode'] == PRGMODE_ZEROSPANPLAY:
-        d['zeroSpanFile'] = f = open(d['zeroSpanPlayFile'], "rb")
-        d['centerFreq'] = pickle.load(f)
-        d['samplingRate'] = pickle.load(f)
-        d['gain'] = pickle.load(f)
-        startFreq = d['startFreq']
-        endFreq = d['endFreq']
-        samplingRate = d['samplingRate']
-        gain = d['gain']
-        d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
-        if (startFreq != d['startFreq']) or (endFreq != d['endFreq']) or (samplingRate != d['samplingRate']) or (gain != d['gain']):
-            input("INFO:zeroSpanPlay:updating: start[{}] - end[{}], samplingRate[{}], gain[{}]".format(d['startFreq'], d['endFreq'], d['samplingRate'], d['gain']))
-        sdr_curscan = zero_span_play
+        zero_span_play_setup(d)
         zero_span(d)
         d['zeroSpanFile'].close()
     else:

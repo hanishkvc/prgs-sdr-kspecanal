@@ -242,7 +242,7 @@ To check for any changes wrt previously saved signal levels use
 
         kspecanal.py zeroSpan centerFreq <SomeFreqOfInterest> adjSigLvls /tmp/siglevels.bin
 
-NOTE: Even thou the example shows zeroSpan mode, it also works for scan mode.
+NOTE: Even thou the example above shows zeroSpan mode, it also works for scan mode.
 
 .. figure:: images/ZeroSpanAdjSigLvls.png
    :alt: a sample image of zerospan adjusted wrt prev captured siglevels
@@ -272,6 +272,14 @@ zeroSpanSave zeroSpanSaveFile <FileToSaveTo>
         into the specified file. No signal level plots/heatmaps are
         shown in this mode.
 
+        NOTE: User can use ctrl+c to quit the program, once they have
+        captured scan results for the time that they require. User may have
+        to press ctrl+c more than once, sometimes. By default the program
+        will capture prgLoopCnt number of scan results, if the user doesnt
+        quit the program before that. If user wants to capture for a longer
+        time, then they should specify a larger value for the same in the
+        commandline.
+
 zeroSpanPlay zeroSpanPlayFile <SavedFileToPlayback>
 
         Do zeroSpan in play mode. In this mode, instead of plotting the
@@ -289,11 +297,11 @@ Example:
 
         kspecanal.py zeroSpanPlay centerFreq <freqUsedWhenSaving> zeroSpanPlayFile <FileUsedWhileSaving>
 
-        NOTE: If the specified centerFreq for zeroSpanPlay is different
-        from the one used during zeroSpanSave, then the user will be
-        alerted about the same in the commandline, and user requires
-        to press any key to continue with the program. Same wrt gain
-        and samplingRate.
+        NOTE: If the specified centerFreq/samplingRate/gain for zeroSpanPlay
+        is different from the one used during zeroSpanSave, then the prg will
+        update them to match that in saved file and the user will be alerted
+        about the same in the commandline.
+
 
 
 UI
