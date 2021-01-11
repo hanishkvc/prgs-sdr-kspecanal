@@ -668,17 +668,21 @@ def _scan_range(d, freqsAll, fftAll, runCount=-1):
     return freqsAll, fftAll
 
 
-def scan_range(d):
-    freqs = None
-    ffts = None
+def _fixupfreqs_scanrange(d):
     # Adjust endFreq such that start-end is a multiple of samplingRate, if required
     freqBands = (d['endFreq'] - d['startFreq'])/d['samplingRate']
     if (freqBands % 1) != 0:
         d['orig.EndFreq'] = d['endFreq']
         d['endFreq'] = d['startFreq'] + np.ceil(freqBands)*d['samplingRate']
-        d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
         print("WARN:scanRange:Adjusting endFreq: orig [{}] adjusted [{}], so that fullRange is Multiple of samplingRate/freqBand [{}]".format(d['orig.EndFreq'], d['endFreq'], d['samplingRate']))
         #input("Press any key to continue...")
+    d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
+
+
+def scan_range(d):
+    freqs = None
+    ffts = None
+    _fixupfreqs_scanrange(d)
     if d['bPltHeatMap']:
         hm = _heatmap_create(d, np.zeros([3,3]))
     prevTime = time.time()
@@ -886,7 +890,7 @@ def handle_args(d):
         d['fftSize'] = 64
         d['pltCompress'] = PLTCOMPRESS_RAW
     if d['prgMode'] == PRGMODE_SCAN:
-        d['centerFreq'] = d['startFreq'] + ((d['endFreq'] - d['startFreq'])/2)
+        _fixupfreqs_scanrange(d)
     else: # ZeroSpan or related i.e save or play
         d['startFreq'], d['endFreq'] = _calc_startendfreq(d['centerFreq'], d['samplingRate'])
     if d['fftSize'] < (d['samplingRate']//8):

@@ -232,11 +232,6 @@ adjSigLvls <file_with_siglvls>
 One requires to pass to adjsiglvls a signal levels file, which was saved
 from a equivalent scan previously ;-(
 
-When scanning over a freq range, the program may auto adjust the endFreq
-so that the full freq range is a multiple of the selected samplingRate.
-So if using such a saved signal levels file, one will have to explicitly
-specify the scan command with the adjusted endFreq ourselves.
-
 Example:
 
 To save existing signal levels use
@@ -249,10 +244,15 @@ To check for any changes wrt previously saved signal levels use
 
 NOTE: Even thou the example shows zeroSpan mode, it also works for scan mode.
 
-.. figure:: images/ZeroSpanAdjusted.png
+.. figure:: images/ZeroSpanAdjSigLvls.png
    :alt: a sample image of zerospan adjusted wrt prev captured siglevels
 
    Figure: a sample image of zerospan adjusted wrt prev captured siglevels
+
+.. figure:: images/ScanRangeAdjSigLvls.png
+   :alt: a sample image of scan (fmscan) adjusted wrt prev captured siglevels
+
+   Figure: a sample image of scan (fmscan) adjusted wrt prev captured siglevels
 
 
 SaveAndPlayback
