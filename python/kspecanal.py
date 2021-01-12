@@ -458,12 +458,12 @@ def zero_span(d):
         hm = _heatmap_create(d, fftHM)
     prevTime = time.time()
     for i in range(d['prgLoopCnt']):
-        if d['cmd.stop']:
-            break
         curTime = time.time()
         print("ZeroSpan:{}:{}".format(i, curTime-prevTime))
         prevTime = curTime
         fftCur = sdr_curscan(d)
+        if d['cmd.stop']:
+            break
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         #print("DBUG:ZeroSpan:fftCur:0:{}:mid:{}".format(fftCur[0], fftCur[(len(fftCur)//2)-1:(len(fftCur)//2)+1]))
         fftPr = fftvals_dispproc(d, fftCur, gZeroSpanFftDispProcMode)
@@ -549,12 +549,19 @@ def zero_span_play(d):
     Returns the next time and fft result data from file which contains the saved data.
     Time is returned as seconds since epoch as well as in string format.
     '''
-    d['timeWas'] = pickle.load(d['zeroSpanFile'])
-    timeWasMilli = int((d['timeWas'] - int(d['timeWas']))*1000)
-    timeWas = time.strftime("%Y%m%d%Z%H%M%S", time.gmtime(d['timeWas']))
-    d['timeWasStr'] = "{}.{:03}".format(timeWas, timeWasMilli)
-    print("INFO:zeroSpanPlay:timeWas:{}".format(d['timeWasStr']))
-    return pickle.load(d['zeroSpanFile'])
+    try:
+        d['timeWas'] = pickle.load(d['zeroSpanFile'])
+        timeWasMilli = int((d['timeWas'] - int(d['timeWas']))*1000)
+        timeWas = time.strftime("%Y%m%d%Z%H%M%S", time.gmtime(d['timeWas']))
+        d['timeWasStr'] = "{}.{:03}".format(timeWas, timeWasMilli)
+        print("INFO:zeroSpanPlay:timeWas:{}".format(d['timeWasStr']))
+        data = pickle.load(d['zeroSpanFile'])
+    except:
+        msg = "WARN:zero_span_play:loading failed, stoping..."
+        prg_quit(d, msg, False)
+        d['timeWas'] = 194700000
+        data = None
+    return data
 
 
 

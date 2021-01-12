@@ -264,6 +264,12 @@ current flow of logic), one can sample and save fft results, into a file
 along with timestamp and then at a later date or time, we can playback this
 capture.
 
+NOTE: By reducing the fftSize to 1024 or 512 or so, you can speed up the
+interval at which fft results are captured. At same time these results
+will have lesser freq resolution, as there will be fewer freq fft bins,
+but that may be fine in many cases. If you use a non default fftSize,
+remember to specify the same for both save and play runs.
+
 The program supports the following commandline arguments to support this.
 
 zeroSpanSave zeroSpanSaveFile <FileToSaveTo>
