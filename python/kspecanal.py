@@ -278,6 +278,12 @@ def _calc_startendfreq(centerFreq, samplingRate):
     return startFreq, endFreq
 
 
+def sdr_info(sdr):
+    print("INFO:Sdr:SupportedGains:", sdr.valid_gains_db)
+    print("INFO:Sdr:Bandwidth:", sdr.bandwidth)
+    print("INFO:Sdr:freqCorrection:", sdr.freq_correction)
+
+
 def sdr_setup(sdr, fC, fS, gain):
     '''
     Setup rtlsdr.
@@ -1131,6 +1137,7 @@ print_info(gD)
 handle_signals(gD)
 plt_figures(gD)
 gD['sdr'] = rtlsdr.RtlSdr()
+sdr_info(gD['sdr'])
 do_run(gD)
 gD['sdr'].close()
 
