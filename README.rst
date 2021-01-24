@@ -608,3 +608,15 @@ leakage if any of freq at one end to other end can be bypassed i.e wrt freqs
 around the nyquist freq and or to discard non linearity across the freq band
 and or ...
 
+Assume default sampled data as being a oversampled capture and then create
+a interpolated data which has a higher sample resolution, but potentially
+lower effective freq bandwidth. This will use the freq overlapped sliding
+in a slightly different way which inturn has a lower freq overlap at the end.
+
+        Say decimate 4 adjacent samples into 1 sample and then divide by 2.
+        Gaining 1 additional bit resolution wrt samples, while reducing the
+        effective freq band being captured per scan by 4 potentially. Need
+        to check how this may work out practically. Or rather leave it has
+        a option to the user to decide, whether to use it or not. Add as a
+        preprocessor of time domain data.
+
